@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPHEREx Mission Control // API Console</title>
+  <!-- Google Fonts: Inter for UI & JetBrains Mono for Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Highlight.js for Syntax Highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+
+  <style>
+    :root {
+      --bg-base: #06080e;
+      --bg-surface: rgba(16, 21, 33, 0.6);
+      --bg-surface-hover: rgba(22, 29, 46, 0.75);
+      --bg-card: rgba(13, 17, 28, 0.65);
+      --bg-terminal: #030408;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(59, 130, 246, 0.4);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-glow: rgba(59, 130, 246, 0.2);
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-amber: #f59e0b;
+      --text-title: #f8fafc;
+      --text-body: #94a3b8;
+      --text-muted: #64748b;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-body);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.12), transparent 70%),
+        radial-gradient(ellipse 60% 30% at 90% 100%, rgba(99, 102, 241, 0.06), transparent 60%);
+      background-attachment: fixed;
+    }
+
+    /* Top Navigation Bar - SaaS Linear style */
+    header.navbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(6, 8, 14, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(99, 102, 241, 0.2));
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #60a5fa;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+    }
+
+    .brand-titles h1 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-title);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-titles p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .nav-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .time-badge {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--primary);
+    }
+
+    /* Layout */
+    .app-layout {
+      display: flex;
+      flex: 1;
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    /* Sidebar Navigation */
+    aside.sidebar {
+      width: 280px;
+      padding: 32px 20px;
+      border-right: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 64px;
+      height: calc(100vh - 64px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .sidebar-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 16px;
+      backdrop-filter: blur(12px);
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 10px var(--accent-green);
+      animation: pulse 2.5s infinite ease-in-out;
+    }
+
+    .pulse-dot.offline {
+      background: var(--accent-red);
+      box-shadow: 0 0 10px var(--accent-red);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.9); }
+    }
+
+    .status-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-title);
+      font-family: var(--font-mono);
+    }
+
+    .meta-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 10px;
+    }
+
+    .meta-item {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .meta-item span:last-child {
+      color: var(--text-title);
+      font-family: var(--font-mono);
+    }
+
+    .nav-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      padding-left: 8px;
+    }
+
+    .nav-group {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: var(--text-body);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.2s ease-in-out;
+      border: 1px solid transparent;
+    }
+
+    .nav-link:hover {
+      background: var(--bg-surface-hover);
+      color: var(--text-title);
+      border-color: var(--border-subtle);
+    }
+
+    .nav-tag {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      padding-left: 8px;
+      line-height: 1.5;
+    }
+
+    /* Main Content */
+    main.content {
+      flex: 1;
+      padding: 44px 56px 80px 56px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      max-width: 1080px;
+    }
+
+    /* Hero Banner */
+    .hero {
+      margin-bottom: 8px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      color: #60a5fa;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+
+    .hero h2 {
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: var(--text-title);
+      letter-spacing: -0.025em;
+      margin-bottom: 10px;
+      line-height: 1.25;
+    }
+
+    .hero p {
+      font-size: 0.95rem;
+      color: var(--text-body);
+      max-width: 780px;
+      line-height: 1.65;
+    }
+
+    /* Endpoint Card (Linear / Vercel style) */
+    .endpoint-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 28px 32px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .endpoint-card:hover {
+      border-color: rgba(255, 255, 255, 0.14);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .path-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge-method {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--accent-green);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .path-text {
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-title);
+      letter-spacing: -0.01em;
+    }
+
+    .category-tag {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      padding: 3px 10px;
+      border-radius: 6px;
+    }
+
+    .storytelling {
+      font-size: 0.9rem;
+      color: var(--text-body);
+      line-height: 1.65;
+      margin-bottom: 22px;
+    }
+
+    /* Actions & Form Controls */
+    .action-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      background: rgba(4, 6, 11, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 6px 12px;
+      transition: border-color 0.2s ease;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+    }
+
+    .input-prefix {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-right: 8px;
+    }
+
+    .param-field {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--text-title);
+      width: 140px;
+    }
+
+    .chip-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 4px 9px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chip:hover {
+      background: rgba(255, 255, 255, 0.09);
+      color: var(--text-title);
+    }
+
+    /* Execute Button - SaaS Modern */
+    .btn-action {
+      background: var(--primary);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-action:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 4px 14px var(--primary-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn-action:active {
+      transform: translateY(0);
+    }
+
+    .btn-action.secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-title);
+      border-color: var(--border-subtle);
+      box-shadow: none;
+    }
+
+    .btn-action.secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: none;
+    }
+
+    /* Icon SVGs */
+    .icon {
+      width: 15px;
+      height: 15px;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    /* Spinner */
+    .spinner-icon {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: none;
+    }
+
+    .btn-action.loading .spinner-icon {
+      display: inline-block;
+    }
+
+    .btn-action.loading .play-icon {
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Terminal Window - Pitch Black Glow */
+    .terminal-box {
+      background: var(--bg-terminal);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      margin-top: 14px;
+    }
+
+    .terminal-header {
+      background: rgba(13, 17, 28, 0.85);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 9px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+    }
+
+    .term-status-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-badge {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+    }
+
+    .status-badge.success {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--accent-green);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-badge.error {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--accent-red);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .term-buttons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-tool {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+
+    .btn-tool:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-title);
+      border-color: var(--border-subtle);
+    }
+
+    pre.code-view {
+      padding: 18px 20px;
+      margin: 0;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.6;
+      color: #cbd5e1;
+      background: transparent !important;
+    }
+
+    code.hljs {
+      background: transparent !important;
+      padding: 0 !important;
+    }
+
+    /* Images Visualizer Showcase */
+    .image-showcase {
+      background: #020306;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 16px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .image-frame {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      background: #000000;
+      max-width: 100%;
+    }
+
+    .image-frame img {
+      display: block;
+      max-width: 100%;
+      max-height: 460px;
+      object-fit: contain;
+      transition: opacity 0.25s ease;
+    }
+
+    .image-meta-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      margin-top: 14px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Responsive */
+    @media (max-width: 960px) {
+      .app-layout {
+        flex-direction: column;
+      }
+      aside.sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid var(--border-subtle);
+        padding: 24px 20px;
+      }
+      main.content {
+        padding: 28px 20px 60px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <a href="/mission-control" class="nav-brand">
+      <div class="brand-icon">
+        <!-- Telescope / Satellite minimal SVG -->
+        <svg class="icon" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v3m0 14v3M2 12h3m14 0h3M5.6 5.6l2.1 2.1m8.6 8.6l2.1 2.1M5.6 18.4l2.1-2.1m8.6-8.6l2.1-2.1"/>
+        </svg>
+      </div>
+      <div class="brand-titles">
+        <h1>SPHEREx Mission Control</h1>
+        <p>COSMIC EXPLORER // INTERACTIVE API BENCH</p>
+      </div>
+    </a>
+    <div class="nav-meta">
+      <div class="time-badge">
+        <span class="badge-dot"></span>
+        <span id="utc-clock">00:00:00 UTC</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- App Layout -->
+  <div class="app-layout">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      
+      <!-- System Status Widget -->
+      <div class="sidebar-card">
+        <div class="status-row">
+          <div class="pulse-dot" id="system-status-dot"></div>
+          <span class="status-label" id="system-status-text">Connecting...</span>
+        </div>
+        <div class="meta-list">
+          <div class="meta-item">
+            <span>Latency</span>
+            <span id="meta-latency">-- ms</span>
+          </div>
+          <div class="meta-item">
+            <span>Engine</span>
+            <span id="meta-engine">FastAPI</span>
+          </div>
+          <div class="meta-item">
+            <span>Archive</span>
+            <span id="meta-archive">NASA IRSA</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <div>
+        <div class="nav-label">API Endpoints</div>
+        <ul class="nav-group">
+          <li>
+            <a href="#card-status" class="nav-link">
+              <span>System Health</span>
+              <span class="nav-tag">/status</span>
+            </a>
+          </li>
+          <li>
+            <a href="#card-apod" class="nav-link">
+              <span>NASA APOD</span>
+              <span class="nav-tag">/apod</span>
+            </a>
+          </li>
+          <li>
+            <a href="#card-neows" class="nav-link">
+              <span>NASA NeoWs Feed</span>
+              <span class="nav-tag">/neows</span>
+            </a>
+          </li>
+          <li>
+            <a href="#card-objects" class="nav-link">
+              <span>Object Catalog</span>
+              <span class="nav-tag">/objects</span>
+            </a>
+          </li>
+          <li>
+            <a href="#card-metadata" class="nav-link">
+              <span>FITS Metadata</span>
+              <span class="nav-tag">/metadata</span>
+            </a>
+          </li>
+          <li>
+            <a href="#card-images" class="nav-link">
+              <span>Cutout Images</span>
+              <span class="nav-tag">/images</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        NASA Space Apps Challenge<br>
+        Planet X & SPHEREx Project<br>
+        <span style="color: var(--text-title); font-family: var(--font-mono)">v1.1.0 Modular Architecture</span>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content">
+
+      <!-- Hero Header -->
+      <section class="hero">
+        <div class="hero-badge">
+          <svg class="icon" viewBox="0 0 24 24" style="width: 12px; height: 12px;">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          Developer Console & Live Test Bench
+        </div>
+        <h2>Interactive API Documentation</h2>
+        <p>
+          Jelajahi dan uji langsung seluruh endpoint backend <strong>SPHEREx Cosmic Explorer</strong>. Console ini menghubungkan visualisasi inframerah SPHEREx, integrasi NASA Open APIs (APOD & Near-Earth Asteroid Feed), metadata biner FITS observasi asli, dan ensiklopedia astronomi untuk keperluan Frontend dan WebXR/AR.
+        </p>
+      </section>
+
+      <!-- 1. /api/status -->
+      <section class="endpoint-card" id="card-status">
+        <div class="card-head">
+          <div class="path-row">
+            <span class="badge-method">GET</span>
+            <span class="path-text">/api/status</span>
+          </div>
+          <span class="category-tag">System Health</span>
+        </div>
+        <p class="storytelling">
+          Pemeriksaan kesehatan sistem (health check) backend SPHEREx API, status koneksi data IRSA, serta kapabilitas engine astrofisika yang aktif.
+        </p>
+        <div class="action-row">
+          <button class="btn-action" onclick="executeApi('/api/status', 'term-status', 'stat-status')">
+            <span class="spinner-icon"></span>
+            <!-- Play icon -->
+            <svg class="icon play-icon" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            Execute Request
+          </button>
+        </div>
+        <div class="terminal-box">
+          <div class="terminal-header">
+            <div class="term-status-group">
+              <span class="status-badge" id="stat-status">Idle // Ready to transmit</span>
+            </div>
+            <div class="term-buttons">
+              <button class="btn-tool" onclick="copyTerminal('term-status', this)">
+                <svg class="icon" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                <span>Copy</span>
+              </button>
+              <button class="btn-tool" onclick="clearTerminal('term-status')">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+          <pre class="code-view"><code class="language-json" id="term-status">// Klik 'Execute Request' untuk menguji endpoint...</code></pre>
+        </div>
+      </section>
+
+      <!-- 2. /api/nasa/apod -->
+      <section class="endpoint-card" id="card-apod">
+        <div class="card-head">
+          <div class="path-row">
+            <span class="badge-method">GET</span>
+            <span class="path-text">/api/nasa/apod</span>
+          </div>
+          <span class="category-tag">NASA APOD</span>
+        </div>
+        <p class="storytelling">
+          Mengambil Astronomy Picture of the Day resmi dari NASA, dilengkapi sistem graceful degradation (fallback dummy JSON) otomatis jika server NASA sedang down.
+        </p>
+        <div class="action-row">
+          <button class="btn-action" onclick="executeApi('/api/nasa/apod', 'term-apod', 'stat-apod', handleApodPreview)">
+            <span class="spinner-icon"></span>
+            <svg class="icon play-icon" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            Fetch APOD
+          </button>
+        </div>
+        <div class="terminal-box">
+          <div class="terminal-header">
+            <div class="term-status-group">
+              <span class="status-badge" id="stat-apod">Idle // Ready to transmit</span>
+            </div>
+            <div class="term-buttons">
+              <button class="btn-tool" onclick="copyTerminal('term-apod', this)">
+                <svg class="icon" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                <span>Copy</span>
+              </button>
+              <button class="btn-tool" onclick="clearTerminal('term-apod')">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+          <pre class="code-view"><code class="language-json" id="term-apod">// Klik 'Fetch APOD' untuk memanggil endpoint...</code></pre>
+        </div>
+        <!-- APOD Thumbnail preview container -->
+        <div id="apod-preview-box" style="display: none;" class="image-showcase">
+          <div class="image-frame">
+            <img id="apod-preview-img" src="" alt="NASA APOD">
+          </div>
+          <div class="image-meta-bar">
+            <span id="apod-img-title">APOD Visual Telemetry</span>
+            <span>NASA SCIENCE</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. /api/nasa/neows -->
+      <section class="endpoint-card" id="card-neows">
+        <div class="card-head">
+          <div class="path-row">
+            <span class="badge-method">GET</span>
+            <span class="path-text">/api/nasa/neows</span>
+          </div>
+          <span class="category-tag">NASA NeoWs</span>
+        </div>
+        <p class="storytelling">
+          Menarik data 50+ asteroid dari NASA NeoWs feed, dinormalisasi ke dalam format JSON simpel, mengonversi jarak (km & rasio Bulan), serta mendeteksi potensi bahaya asteroid.
+        </p>
+        <div class="action-row">
+          <button class="btn-action" onclick="executeApi('/api/nasa/neows', 'term-neows', 'stat-neows')">
+            <span class="spinner-icon"></span>
+            <svg class="icon play-icon" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            Scan Asteroids
+          </button>
+        </div>
+        <div class="terminal-box">
+          <div class="terminal-header">
+            <div class="term-status-group">
+              <span class="status-badge" id="stat-neows">Idle // Ready to transmit</span>
+            </div>
+            <div class="term-buttons">
+              <button class="btn-tool" onclick="copyTerminal('term-neows', this)">
+                <svg class="icon" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                <span>Copy</span>
+              </button>
+              <button class="btn-tool" onclick="clearTerminal('term-neows')">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+          <pre class="code-view"><code class="language-json" id="term-neows">// Klik 'Scan Asteroids' untuk menarik data asteroid...</code></pre>
+        </div>
+      </section>
+
+      <!-- 4. /api/objects/{object_id} -->
+      <section class="endpoint-card" id="card-objects">
+        <div class="card-head">
+          <div class="path-row">
+            <span class="badge-method">GET</span>
+            <span class="path-text">/api/objects/{object_id}</span>
+          </div>
+          <span class="category-tag">Object Catalog</span>
+        </div>
+        <p class="storytelling">
+          Basis pengetahuan ensiklopedia objek langit untuk WebXR/AR dan Frontend, menyediakan koordinat hotspot fitur geologis dan fakta sains objek angkasa.
+        </p>
+        <div class="action-row">
+          <div class="input-wrapper">
+            <span class="input-prefix">id:</span>
+            <input type="text" id="input-object-id" class="param-field" value="mars" placeholder="mars">
+          </div>
+          <div class="chip-group">
+            <button class="chip" onclick="setObjectId('mars')">mars</button>
+            <button class="chip" onclick="setObjectId('halley')">halley</button>
+            <button class="chip" onclick="setObjectId('jupiter')">jupiter</button>
+          </div>
+          <button class="btn-action" onclick="executeObjectQuery()">
+            <span class="spinner-icon"></span>
+            <svg class="icon play-icon" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            Query Object
+          </button>
+        </div>
+        <div class="terminal-box">
+          <div class="terminal-header">
+            <div class="term-status-group">
+              <span class="status-badge" id="stat-objects">Idle // Ready to transmit</span>
+            </div>
+            <div class="term-buttons">
+              <button class="btn-tool" onclick="copyTerminal('term-objects', this)">
+                <svg class="icon" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                <span>Copy</span>
+              </button>
+              <button class="btn-tool" onclick="clearTerminal('term-objects')">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+          <pre class="code-view"><code class="language-json" id="term-objects">// Klik 'Query Object' untuk membaca database...</code></pre>
+        </div>
+      </section>
+
+      <!-- 5. /api/metadata/fits -->
+      <section class="endpoint-card" id="card-metadata">
+        <div class="card-head">
+          <div class="path-row">
+            <span class="badge-method">GET</span>
+            <span class="path-text">/api/metadata/fits</span>
+          </div>
+          <span class="category-tag">FITS Metadata</span>
+        </div>
+        <p class="storytelling">
+          Membaca metadata biner langsung dari file observasi ilmiah FITS teleskop SPHEREx (NASA IRSA Caltech), memvalidasi koordinat Right Ascension (RA) dan Declination (DEC).
+        </p>
+        <div class="action-row">
+          <button class="btn-action" onclick="executeApi('/api/metadata/fits', 'term-metadata', 'stat-metadata')">
+            <span class="spinner-icon"></span>
+            <svg class="icon play-icon" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            Parse FITS Header
+          </button>
+        </div>
+        <div class="terminal-box">
+          <div class="terminal-header">
+            <div class="term-status-group">
+              <span class="status-badge" id="stat-metadata">Idle // Ready to transmit</span>
+            </div>
+            <div class="term-buttons">
+              <button class="btn-tool" onclick="copyTerminal('term-metadata', this)">
+                <svg class="icon" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                <span>Copy</span>
+              </button>
+              <button class="btn-tool" onclick="clearTerminal('term-metadata')">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+          <pre class="code-view"><code class="language-json" id="term-metadata">// Klik 'Parse FITS Header' untuk membaca header FITS...</code></pre>
+        </div>
+      </section>
+
+      <!-- 6. /api/image/t1 and /api/image/t2 -->
+      <section class="endpoint-card" id="card-images">
+        <div class="card-head">
+          <div class="path-row">
+            <span class="badge-method">GET</span>
+            <span class="path-text">/api/image/t1 & /api/image/t2</span>
+          </div>
+          <span class="category-tag">Infrared Cutouts</span>
+        </div>
+        <p class="storytelling">
+          Menyajikan citra visual cutout inframerah hasil rekonstruksi file FITS mentah teleskop SPHEREx untuk visualisasi antarmuka dan 3D/WebXR viewer.
+        </p>
+        <div class="action-row">
+          <button class="btn-action" onclick="loadImage('/api/image/t1', 'Time 1')">
+            <svg class="icon" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+            Load Cutout T1
+          </button>
+          <button class="btn-action secondary" onclick="loadImage('/api/image/t2', 'Time 2')">
+            <svg class="icon" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+            Load Cutout T2
+          </button>
+        </div>
+
+        <div class="image-showcase">
+          <div class="image-frame">
+            <img id="main-image-display" src="/api/image/t1" alt="SPHEREx Cutout Preview">
+          </div>
+          <div class="image-meta-bar">
+            <span id="img-tag-info">Target: /api/image/t1 (Time 1)</span>
+            <span id="img-load-info">PNG Cutout // 3600s Cache</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // --- 1. Real-time UTC Clock ---
+    function updateClock() {
+      const now = new Date();
+      const utc = now.toUTCString().split(' ')[4] + ' UTC';
+      document.getElementById('utc-clock').textContent = utc;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // --- 2. Auto-fetch API status on page load ---
+    async function checkSystemHealth() {
+      const dot = document.getElementById('system-status-dot');
+      const text = document.getElementById('system-status-text');
+      const latencyElem = document.getElementById('meta-latency');
+      const engineElem = document.getElementById('meta-engine');
+
+      const startTime = performance.now();
+      try {
+        const resp = await fetch('/api/status');
+        const elapsed = Math.round(performance.now() - startTime);
+        latencyElem.textContent = `${elapsed} ms`;
+
+        if (resp.ok) {
+          const data = await resp.json();
+          dot.classList.remove('offline');
+          text.textContent = 'API Operational';
+          if (data.engine) engineElem.textContent = data.engine;
+        } else {
+          throw new Error('Status ' + resp.status);
+        }
+      } catch (err) {
+        dot.classList.add('offline');
+        text.textContent = 'Service Unreachable';
+        latencyElem.textContent = 'Err';
+      }
+    }
+    document.addEventListener('DOMContentLoaded', checkSystemHealth);
+
+    // --- 3. Generic API Requester ---
+    async function executeApi(endpoint, codeElemId, statElemId, extraCallback) {
+      const codeElem = document.getElementById(codeElemId);
+      const statElem = document.getElementById(statElemId);
+      const button = event ? event.currentTarget : null;
+
+      if (button) button.classList.add('loading');
+      statElem.className = 'status-badge';
+      statElem.textContent = 'Transmitting...';
+
+      const startTime = performance.now();
+      try {
+        const resp = await fetch(endpoint);
+        const elapsed = Math.round(performance.now() - startTime);
+        const data = await resp.json();
+
+        statElem.textContent = `HTTP ${resp.status} // ${elapsed}ms`;
+        if (resp.ok) {
+          statElem.classList.add('success');
+        } else {
+          statElem.classList.add('error');
+        }
+
+        const formattedJson = JSON.stringify(data, null, 2);
+        codeElem.textContent = formattedJson;
+        hljs.highlightElement(codeElem);
+
+        if (extraCallback) extraCallback(data);
+      } catch (err) {
+        const elapsed = Math.round(performance.now() - startTime);
+        statElem.textContent = `Fetch Failed // ${elapsed}ms`;
+        statElem.classList.add('error');
+        codeElem.textContent = JSON.stringify({ error: err.message }, null, 2);
+        hljs.highlightElement(codeElem);
+      } finally {
+        if (button) button.classList.remove('loading');
+      }
+    }
+
+    // --- 4. Custom Callback for APOD Preview ---
+    function handleApodPreview(data) {
+      const previewBox = document.getElementById('apod-preview-box');
+      const previewImg = document.getElementById('apod-preview-img');
+      const titleElem = document.getElementById('apod-img-title');
+
+      if (data && data.image_url) {
+        previewImg.src = data.image_url;
+        titleElem.textContent = `APOD: ${data.title || 'Untitled'} (${data.date || ''})`;
+        previewBox.style.display = 'flex';
+      } else {
+        previewBox.style.display = 'none';
+      }
+    }
+
+    // --- 5. Object Catalog Query Handler ---
+    function setObjectId(id) {
+      document.getElementById('input-object-id').value = id;
+    }
+
+    function executeObjectQuery() {
+      const id = document.getElementById('input-object-id').value.trim() || 'mars';
+      executeApi(`/api/objects/${encodeURIComponent(id)}`, 'term-objects', 'stat-objects');
+    }
+
+    // --- 6. Cutout Image Loader ---
+    function loadImage(url, label) {
+      const img = document.getElementById('main-image-display');
+      const tag = document.getElementById('img-tag-info');
+      const load = document.getElementById('img-load-info');
+
+      load.textContent = 'Transmitting image...';
+      img.style.opacity = '0.4';
+
+      const temp = new Image();
+      temp.onload = () => {
+        img.src = url;
+        img.style.opacity = '1';
+        tag.textContent = `Target: ${url} (${label})`;
+        load.textContent = `${temp.naturalWidth} × ${temp.naturalHeight}px // Cached`;
+      };
+      temp.onerror = () => {
+        img.style.opacity = '1';
+        load.textContent = 'Failed to load image';
+      };
+      temp.src = url;
+    }
+
+    // --- 7. Clipboard Copy Helper with Check Feedback ---
+    function copyTerminal(elemId, btn) {
+      const text = document.getElementById(elemId).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = `<svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>Copied!</span>`;
+        setTimeout(() => {
+          btn.innerHTML = originalHtml;
+        }, 1800);
+      }).catch(err => {
+        console.error('Copy failed', err);
+      });
+    }
+
+    function clearTerminal(elemId) {
+      const elem = document.getElementById(elemId);
+      elem.textContent = '// Output cleared.';
+      hljs.highlightElement(elem);
+    }
+  </script>
+</body>
+</html>
