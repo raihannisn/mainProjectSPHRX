@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+astropy
+matplotlib
+numpy
+astroquery
+httpx

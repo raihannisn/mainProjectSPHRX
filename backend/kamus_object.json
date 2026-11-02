@@ -1,0 +1,25 @@
+{
+  "mars": {
+    "name": "Mars",
+    "type": "Planet",
+    "description": "Planet keempat dari Matahari. Dikenal sebagai Planet Merah karena besi oksida di permukaannya.",
+    "hotspots": [
+      {"id": "olympus_mons", "name": "Olympus Mons", "fact": "Gunung berapi tertinggi di tata surya, tingginya 22 km!"},
+      {"id": "gale_crater", "name": "Gale Crater", "fact": "Lokasi pendaratan rover Curiosity."}
+    ]
+  },
+  "halley": {
+    "name": "1P/Halley",
+    "type": "Komet",
+    "description": "Komet paling terkenal yang bisa dilihat dari Bumi setiap 76 tahun sekali.",
+    "hotspots": [
+      {"id": "comet_core", "name": "Inti Komet", "fact": "Terdiri dari es, debu, dan batuan (dirty snowball)."}
+    ]
+  },
+  "jupiter": {
+    "name": "Jupiter",
+    "type": "Planet",
+    "description": "Planet terbesar di tata surya dengan Bintik Merah Raksasa.",
+    "hotspots": []
+  }
+}
