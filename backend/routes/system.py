@@ -9,15 +9,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MISSION_CONTROL_HTML = BASE_DIR / "templates" / "mission_control.html"
 
 
-@router.get("/")
-def root():
-    return {
-        "message": "Welcome to SPHEREx Cosmic Explorer API.",
-        "mission_control": "/mission-control",
-        "docs": "/docs"
-    }
-
-
 @router.get("/mission-control", response_class=FileResponse)
 def get_mission_control():
     """Mengembalikan halaman interaktif Mission Control & API Test Bench."""

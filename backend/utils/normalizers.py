@@ -84,7 +84,6 @@ def normalize_neows(data: dict) -> dict:
                 "nasa_jpl_url": item.get("nasa_jpl_url")
             })
 
-    # Urutkan asteroid berdasarkan tanggal pendekatan terdekat
     asteroids.sort(key=lambda x: x.get("close_approach_date") or "")
 
     return {

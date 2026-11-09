@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import sys
@@ -29,6 +30,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- ROOT REDIRECT KE MISSION CONTROL ---
+@app.get("/", tags=["System"], summary="Redirect to Mission Control Dashboard")
+def root_redirect():
+    """Mengalihkan secara otomatis ke antarmuka interaktif Mission Control."""
+    return RedirectResponse(url="/mission-control")
 
 # --- REGISTER ROUTERS ---
 app.include_router(images_router)
