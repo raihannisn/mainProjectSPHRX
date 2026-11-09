@@ -450,6 +450,14 @@
       color: var(--text-title);
     }
 
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+      width: 100%;
+    }
+
     /* Execute Button - SaaS Modern */
     .btn-action {
       background: var(--primary);
@@ -763,6 +771,12 @@
             </a>
           </li>
           <li>
+            <a href="#card-spherex" class="nav-link">
+              <span>SPHEREx Search</span>
+              <span class="nav-tag">/spherex</span>
+            </a>
+          </li>
+          <li>
             <a href="#card-images" class="nav-link">
               <span>Cutout Images</span>
               <span class="nav-tag">/images</span>
@@ -1010,7 +1024,82 @@
         </div>
       </section>
 
-      <!-- 6. /api/image/t1 and /api/image/t2 -->
+      <!-- 6. /api/spherex/observations -->
+      <section class="endpoint-card" id="card-spherex">
+        <div class="card-head">
+          <div class="path-row">
+            <span class="badge-method">GET</span>
+            <span class="path-text">/api/spherex/observations</span>
+          </div>
+          <span class="category-tag">IRSA SIA2 // SPHEREx</span>
+        </div>
+        <p class="storytelling">
+          Pencarian dinamis katalog observasi spektroskopi inframerah SPHEREx langsung ke NASA/IPAC Infrared Science Archive (IRSA) via protokol IVOA SIA2 (Simple Image Access v2). Mengembalikan link unduh file FITS ilmiah dan URL preview cutout astronomis berdasarkan koordinat langit (RA/DEC).
+        </p>
+        <div class="filter-grid">
+          <div class="input-wrapper">
+            <span class="input-prefix">ra:</span>
+            <input type="number" id="input-spx-ra" class="param-field" value="85.0556" step="0.0001" placeholder="RA deg">
+          </div>
+          <div class="input-wrapper">
+            <span class="input-prefix">dec:</span>
+            <input type="number" id="input-spx-dec" class="param-field" value="-5.6568" step="0.0001" placeholder="DEC deg">
+          </div>
+          <div class="input-wrapper">
+            <span class="input-prefix">radius:</span>
+            <input type="number" id="input-spx-radius" class="param-field" value="0.05" step="0.01" placeholder="Radius deg">
+          </div>
+          <div class="input-wrapper">
+            <span class="input-prefix">coll:</span>
+            <input type="text" id="input-spx-coll" class="param-field" value="spherex_qr3">
+          </div>
+          <div class="input-wrapper">
+            <span class="input-prefix">start:</span>
+            <input type="text" id="input-spx-start" class="param-field" placeholder="YYYY-MM-DD">
+          </div>
+          <div class="input-wrapper">
+            <span class="input-prefix">end:</span>
+            <input type="text" id="input-spx-end" class="param-field" placeholder="YYYY-MM-DD">
+          </div>
+          <div class="input-wrapper">
+            <span class="input-prefix">det:</span>
+            <input type="text" id="input-spx-det" class="param-field" placeholder="D1 (opt)">
+          </div>
+        </div>
+
+        <div class="action-row">
+          <div class="chip-group">
+            <button class="chip" onclick="setSpherexPreset(85.0556, -5.6568, 0.05, '')">Orion Field (All)</button>
+            <button class="chip" onclick="setSpherexPreset(85.0556, -5.6568, 0.05, 'D1')">Orion (Detector D1)</button>
+          </div>
+          <button class="btn-action" onclick="executeSpherexSearch()">
+            <span class="spinner-icon"></span>
+            <svg class="icon play-icon" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            Query IRSA Observations
+          </button>
+        </div>
+
+        <div class="terminal-box">
+          <div class="terminal-header">
+            <div class="term-status-group">
+              <span class="status-badge" id="stat-spherex">Idle // Ready to transmit</span>
+            </div>
+            <div class="term-buttons">
+              <button class="btn-tool" onclick="copyTerminal('term-spherex', this)">
+                <svg class="icon" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                <span>Copy</span>
+              </button>
+              <button class="btn-tool" onclick="clearTerminal('term-spherex')">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+          <pre class="code-view"><code class="language-json" id="term-spherex">// Klik 'Query IRSA Observations' untuk mencari katalog observasi...</code></pre>
+        </div>
+      </section>
+
+      <!-- 7. /api/image/t1 and /api/image/t2 -->
       <section class="endpoint-card" id="card-images">
         <div class="card-head">
           <div class="path-row">
@@ -1148,6 +1237,36 @@
     function executeObjectQuery() {
       const id = document.getElementById('input-object-id').value.trim() || 'mars';
       executeApi(`/api/objects/${encodeURIComponent(id)}`, 'term-objects', 'stat-objects');
+    }
+
+    // --- 5.1 SPHEREx IRSA Search Handler ---
+    function setSpherexPreset(ra, dec, radius, det) {
+      document.getElementById('input-spx-ra').value = ra;
+      document.getElementById('input-spx-dec').value = dec;
+      document.getElementById('input-spx-radius').value = radius;
+      document.getElementById('input-spx-det').value = det || '';
+    }
+
+    function executeSpherexSearch() {
+      const ra = document.getElementById('input-spx-ra').value.trim();
+      const dec = document.getElementById('input-spx-dec').value.trim();
+      const radius = document.getElementById('input-spx-radius').value.trim() || '0.05';
+      const coll = document.getElementById('input-spx-coll').value.trim() || 'spherex_qr3';
+      const start = document.getElementById('input-spx-start').value.trim();
+      const end = document.getElementById('input-spx-end').value.trim();
+      const det = document.getElementById('input-spx-det').value.trim();
+
+      if (!ra || !dec) {
+        alert('Parameter RA dan DEC wajib diisi!');
+        return;
+      }
+
+      let url = `/api/spherex/observations?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&radius=${encodeURIComponent(radius)}&collection=${encodeURIComponent(coll)}`;
+      if (start) url += `&start_date=${encodeURIComponent(start)}`;
+      if (end) url += `&end_date=${encodeURIComponent(end)}`;
+      if (det) url += `&detector=${encodeURIComponent(det)}`;
+
+      executeApi(url, 'term-spherex', 'stat-spherex');
     }
 
     // --- 6. Cutout Image Loader ---

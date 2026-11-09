@@ -41,6 +41,7 @@ def get_status():
             "JSON Database",
             "NASA APOD Integration",
             "NASA NeoWs Asteroid Tracker",
+            "SPHEREx Dynamic Observations Search (IRSA SIA2)",
             "Interactive Mission Control Dashboard"
         ],
         "message": "Backend siap melayani FE, AI, dan AR!"

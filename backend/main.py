@@ -13,12 +13,13 @@ from routes.images import router as images_router
 from routes.metadata import router as metadata_router
 from routes.objects import router as objects_router
 from routes.nasa import router as nasa_router
+from routes.spherex import router as spherex_router
 from routes.system import router as system_router
 
 app = FastAPI(
     title="SPHEREx Cosmic Explorer API",
     description="Backend engine untuk NASA Space Apps Challenge - Planet X & SPHEREx",
-    version="1.1.0"
+    version="1.2.0"
 )
 
 # --- CORS (Biar Vercel & WebXR bisa akses) ---
@@ -34,4 +35,5 @@ app.include_router(images_router)
 app.include_router(metadata_router)
 app.include_router(objects_router)
 app.include_router(nasa_router)
+app.include_router(spherex_router)
 app.include_router(system_router)
