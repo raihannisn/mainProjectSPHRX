@@ -1,0 +1,67 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/xr/assets/:path*", "destination": "/assets/:path*" },
+    { "source": "/xr/icons/:path*", "destination": "/icons/:path*" },
+    { "source": "/xr/models/:path*", "destination": "/models/:path*" },
+    { "source": "/xr/textures/:path*", "destination": "/textures/:path*" },
+    { "source": "/xr/terrain/:path*", "destination": "/terrain/:path*" },
+    { "source": "/xr/spherex/:path*", "destination": "/spherex/:path*" },
+    { "source": "/xr/sw.js", "destination": "/sw.js" },
+    { "source": "/xr/offline-manifest.json", "destination": "/offline-manifest.json" },
+    { "source": "/xr/manifest.webmanifest", "destination": "/manifest.webmanifest" },
+    { "source": "/xr", "destination": "/index.html" },
+    { "source": "/xr/", "destination": "/index.html" },
+    { "source": "/xr/body/:id", "destination": "/index.html" },
+    { "source": "/xr/surface/:siteId", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/xr/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/xr/"
+        }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/xr/"
+        }
+      ]
+    },
+    {
+      "source": "/xr/offline-manifest.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/offline-manifest.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    }
+  ]
+}

@@ -1,3 +1,8 @@
 .vercel
 __pycache__/
 *.fits
+
+# Environment variables — never commit credentials or API keys
+.env
+.env.*
+!.env.example

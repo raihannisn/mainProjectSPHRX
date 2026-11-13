@@ -1,0 +1,32 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "web": {
+      "root": "frontend/",
+      "buildCommand": "node build.mjs",
+      "outputDirectory": "dist"
+    },
+    "api": {
+      "root": "backend/",
+      "entrypoint": "main:app"
+    },
+    "xr": {
+      "root": "arvr/",
+      "buildCommand": "npm run build",
+      "outputDirectory": "dist"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": { "service": "api" } },
+    { "source": "/api", "destination": { "service": "api" } },
+    { "source": "/mission-control", "destination": { "service": "api" } },
+    { "source": "/docs", "destination": { "service": "api" } },
+    { "source": "/docs/:path*", "destination": { "service": "api" } },
+    { "source": "/openapi.json", "destination": { "service": "api" } },
+    { "source": "/redoc", "destination": { "service": "api" } },
+    { "source": "/xr", "destination": { "service": "xr" } },
+    { "source": "/xr/:path*", "destination": { "service": "xr" } },
+    { "source": "/", "destination": { "service": "web" } },
+    { "source": "/:path*", "destination": { "service": "web" } }
+  ]
+}
