@@ -362,6 +362,12 @@
       border: 1px solid rgba(16, 185, 129, 0.25);
     }
 
+    .badge-method.post {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
     .path-text {
       font-family: var(--font-mono);
       font-size: 1.05rem;
@@ -777,6 +783,12 @@
             </a>
           </li>
           <li>
+            <a href="#card-ai" class="nav-link">
+              <span>Cosmic Guide AI</span>
+              <span class="nav-tag">/ai/chat</span>
+            </a>
+          </li>
+          <li>
             <a href="#card-images" class="nav-link">
               <span>Cutout Images</span>
               <span class="nav-tag">/images</span>
@@ -1099,7 +1111,55 @@
         </div>
       </section>
 
-      <!-- 7. /api/image/t1 and /api/image/t2 -->
+      <!-- 7. /api/ai/chat -->
+      <section class="endpoint-card" id="card-ai">
+        <div class="card-head">
+          <div class="path-row">
+            <span class="badge-method post">POST</span>
+            <span class="path-text">/api/ai/chat</span>
+          </div>
+          <span class="category-tag">Cosmic Guide AI</span>
+        </div>
+        <p class="storytelling">
+          Tembak endpoint kecerdasan buatan berbasis <strong>Gemini 3.5 Flash</strong> sebagai Cosmic Guide. Endpoint ini menerima pertanyaan astronomi atau misi SPHEREx dari Frontend dan mengembalikan jawaban kontekstual interaktif.
+        </p>
+        <div class="action-row" style="flex-wrap: wrap; gap: 10px;">
+          <div class="input-wrapper" style="flex: 1; min-width: 280px;">
+            <span class="input-prefix">msg:</span>
+            <input type="text" id="input-ai-message" class="param-field" value="Apa misi utama dari teleskop luar angkasa SPHEREx?" placeholder="Tulis pertanyaanmu ke Cosmic Guide...">
+          </div>
+          <div class="chip-group">
+            <button class="chip" onclick="setAiPrompt('Apa misi utama dari teleskop luar angkasa SPHEREx?')">Misi SPHEREx</button>
+            <button class="chip" onclick="setAiPrompt('Bagaimana cara SPHEREx mencari air dan molekul organik di galaksi?')">Pencarian Air</button>
+            <button class="chip" onclick="setAiPrompt('Jelaskan apa itu Big Bang dan bagaimana SPHEREx menelitinya?')">Inflasi Kosmik</button>
+          </div>
+          <button class="btn-action" onclick="executeAiChat()">
+            <span class="spinner-icon"></span>
+            <svg class="icon play-icon" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            Send Prompt
+          </button>
+        </div>
+        <div class="terminal-box">
+          <div class="terminal-header">
+            <div class="term-status-group">
+              <span class="status-badge" id="stat-ai">Idle // Ready to transmit</span>
+            </div>
+            <div class="term-buttons">
+              <button class="btn-tool" onclick="copyTerminal('term-ai', this)">
+                <svg class="icon" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                <span>Copy</span>
+              </button>
+              <button class="btn-tool" onclick="clearTerminal('term-ai')">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+          <pre class="code-view"><code class="language-json" id="term-ai">// Klik 'Send Prompt' untuk berdialog dengan Cosmic Guide AI...</code></pre>
+        </div>
+      </section>
+
+      <!-- 8. /api/image/t1 and /api/image/t2 -->
       <section class="endpoint-card" id="card-images">
         <div class="card-head">
           <div class="path-row">
@@ -1267,6 +1327,53 @@
       if (det) url += `&detector=${encodeURIComponent(det)}`;
 
       executeApi(url, 'term-spherex', 'stat-spherex');
+    }
+
+    // --- 5.2 Cosmic Guide AI Chat Handler ---
+    function setAiPrompt(text) {
+      document.getElementById('input-ai-message').value = text;
+    }
+
+    async function executeAiChat() {
+      const inputElem = document.getElementById('input-ai-message');
+      const codeElem = document.getElementById('term-ai');
+      const statElem = document.getElementById('stat-ai');
+      const button = event ? event.currentTarget : null;
+      const message = inputElem.value.trim() || 'Apa misi utama dari teleskop luar angkasa SPHEREx?';
+
+      if (button) button.classList.add('loading');
+      statElem.className = 'status-badge';
+      statElem.textContent = 'Transmitting to Gemini 3.5 Flash...';
+
+      const startTime = performance.now();
+      try {
+        const resp = await fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: message })
+        });
+        const elapsed = Math.round(performance.now() - startTime);
+        const data = await resp.json();
+
+        statElem.textContent = `HTTP ${resp.status} // ${elapsed}ms`;
+        if (resp.ok) {
+          statElem.classList.add('success');
+        } else {
+          statElem.classList.add('error');
+        }
+
+        const formattedJson = JSON.stringify(data, null, 2);
+        codeElem.textContent = formattedJson;
+        hljs.highlightElement(codeElem);
+      } catch (err) {
+        const elapsed = Math.round(performance.now() - startTime);
+        statElem.textContent = `Fetch Failed // ${elapsed}ms`;
+        statElem.classList.add('error');
+        codeElem.textContent = JSON.stringify({ error: err.message }, null, 2);
+        hljs.highlightElement(codeElem);
+      } finally {
+        if (button) button.classList.remove('loading');
+      }
     }
 
     // --- 6. Cutout Image Loader ---

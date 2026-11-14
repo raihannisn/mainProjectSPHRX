@@ -33,6 +33,7 @@ def get_status():
             "NASA APOD Integration",
             "NASA NeoWs Asteroid Tracker",
             "SPHEREx Dynamic Observations Search (IRSA SIA2)",
+            "Cosmic Guide AI (Gemini 3.5 Flash)",
             "Interactive Mission Control Dashboard"
         ],
         "message": "Backend siap melayani FE, AI, dan AR!"
