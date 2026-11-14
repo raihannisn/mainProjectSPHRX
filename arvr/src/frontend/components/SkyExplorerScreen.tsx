@@ -3,7 +3,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchObjectInfo, searchSpherexObservations, type ObjectInfo, type SpherexObservation } from '../api'
 import { TopBar } from './TopBar'
 import { ParticleField } from './ParticleField'
+import { WormholePulse } from './WormholeOverlay'
+import { originOf, runWormhole } from '../wormhole'
 import { cacheObservations, useXRApp } from '../../xr/store'
+import { BotIcon } from '../guide/BotIcon'
+import { SkyScene3D } from './SkyScene3D'
 
 type MarkerId = 'rcw-36' | 'candidate-02' | 'demo-tile-01'
 
@@ -38,6 +42,7 @@ export function SkyExplorerScreen() {
   const [scale, setScale] = useState(1)
   const [toast, setToast] = useState<string | null>(null)
   const [audioOn, setAudioOn] = useState(false)
+  const lang = useXRApp((s) => s.settings.lang)
   const [target, setTarget] = useState<ObjectInfo | null>(null)
   const [targetLoading, setTargetLoading] = useState(true)
   const [targetError, setTargetError] = useState<string | null>(null)
@@ -55,6 +60,12 @@ export function SkyExplorerScreen() {
     selectedId === 'rcw-36'
       ? target?.description || 'Load the verified object catalog entry to see target details.'
       : illustrative?.description || 'Illustrative content only.'
+  const targetTag =
+    selectedId === 'rcw-36'
+      ? { label: '● CATALOG', tone: 'fact' }
+      : selectedId === 'candidate-02'
+        ? { label: '● CANDIDATE', tone: 'candidate' }
+        : { label: '● ILLUSTRATION', tone: 'demo' }
 
   useEffect(() => {
     let active = true
@@ -137,7 +148,17 @@ export function SkyExplorerScreen() {
     }))
   }
 
-  const handleAskGuide = () => navigate(`/guide/${selectedId}`)
+  const handleAskGuide = () => {
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      navigate(`/guide/${selectedId}`)
+      return
+    }
+    window.dispatchEvent(
+      new CustomEvent('cosmic:open-guide', {
+        detail: { objectId: selectedId, objectName: currentName },
+      }),
+    )
+  }
   const handleCompare = () => {
     if (selectedId !== 'rcw-36') {
       notify('Comparison requires catalog-backed observation records. Switch to RCW 36 to compare.')
@@ -147,9 +168,10 @@ export function SkyExplorerScreen() {
     if (chosenObservation) params.set('obs', chosenObservation.observation_id)
     navigate(`/comparison?${params}`)
   }
-  const handleEnterXR = () => {
+  const handleEnterXR = (event?: React.MouseEvent<HTMLButtonElement>) => {
+    const origin = originOf(event?.currentTarget ?? null)
     if (selectedId !== 'rcw-36') {
-      navigate('/xr/body/spherex')
+      void runWormhole({ origin }, () => navigate('/xr/body/spherex'))
       return
     }
     const params = new URLSearchParams({ target: selectedId })
@@ -159,7 +181,7 @@ export function SkyExplorerScreen() {
       if (wavelength) params.set('band', wavelength)
       useXRApp.getState().setObservationData(chosenObservation, null)
     }
-    navigate(`/xr/body/spherex?${params}`)
+    void runWormhole({ origin }, () => navigate(`/xr/body/spherex?${params}`))
   }
 
   return (
@@ -180,17 +202,7 @@ export function SkyExplorerScreen() {
           }}
           onWheel={(event) => setScale((value) => Math.max(0.75, Math.min(1.35, value - event.deltaY * 0.0006)))}
         >
-          <div className="fe-starfield" />
-          <div className="fe-nebula" />
-          <div
-            className="fe-sky-disc"
-            style={{
-              transform: `translate(-50%, -50%) rotateX(${rotation.x}deg) rotate(${rotation.y}deg) scale(${scale})`,
-            }}
-          >
-            <i className="fe-axis" />
-            <i className="fe-horizon" />
-          </div>
+          <SkyScene3D selectedId={selectedId} onSelect={selectTarget} rotation={rotation} scale={scale} />
           <div className="fe-sky-title">
             <div className="fe-eyebrow">All-sky explorer · IRSA SPHEREx field</div>
             <h2>{selectedId === 'rcw-36' ? 'Vela Molecular Ridge' : currentName}</h2>
@@ -224,38 +236,30 @@ export function SkyExplorerScreen() {
             >
               ♫
             </button>
+            <button
+              className="fe-icon-btn cg-fab"
+              onClick={handleAskGuide}
+              aria-label={lang === 'id' ? 'Buka Cosmic Guide' : 'Open Cosmic Guide'}
+              title="Cosmic Guide"
+            >
+              <BotIcon />
+            </button>
           </div>
-          <button
-            className={`fe-marker fact ${selectedId === 'rcw-36' ? 'active' : ''}`}
-            onClick={() => selectTarget('rcw-36')}
-            aria-label="RCW 36 Emission Nebula (catalog target)"
-          >
-            <span className="fe-marker-label">RCW 36</span>
-          </button>
-          <button
-            className={`fe-marker candidate ${selectedId === 'candidate-02' ? 'active' : ''}`}
-            onClick={() => selectTarget('candidate-02')}
-            aria-label="Illustrative candidate marker"
-          >
-            <span className="fe-marker-label">Candidate · illustrative</span>
-          </button>
-          <button
-            className={`fe-marker demo ${selectedId === 'demo-tile-01' ? 'active' : ''}`}
-            onClick={() => selectTarget('demo-tile-01')}
-            aria-label="Illustrative tile marker"
-          >
-            <span className="fe-marker-label">Sample · illustrative</span>
-          </button>
           <div className="fe-view-hint">DRAG TO ROTATE SKY · SCROLL TO ZOOM</div>
+        </div>
+
+        <div className="fe-target-chip">
+          <span className="fe-eyebrow">Target selected</span>
+          {(targetLoading || observationsLoading) && <WormholePulse decorative />}
+          <span className={`fe-tag ${targetTag.tone}`}>{targetTag.label}</span>
         </div>
 
         <aside className="fe-hud" aria-live="polite">
           <div className="fe-hud-card fe-hud-object">
             <div className="fe-hud-head">
               <span className="fe-eyebrow">Target selected</span>
-              <span className={`fe-tag ${selectedId === 'rcw-36' ? 'fact' : selectedId === 'candidate-02' ? 'candidate' : 'demo'}`}>
-                {selectedId === 'rcw-36' ? '● CATALOG' : selectedId === 'candidate-02' ? '● CANDIDATE' : '● ILLUSTRATION'}
-              </span>
+              {(targetLoading || observationsLoading) && <WormholePulse decorative />}
+              <span className={`fe-tag ${targetTag.tone}`}>{targetTag.label}</span>
             </div>
             <h2>{targetLoading ? 'Loading catalog…' : currentName}</h2>
             <p>{targetLoading ? 'Fetching target information from the object catalog.' : currentDescription}</p>
@@ -285,18 +289,6 @@ export function SkyExplorerScreen() {
                 {observations.length > 1 ? (
                   <select
                     className="fe-obs-select"
-                    style={{
-                      background: 'rgba(11,24,32,0.9)',
-                      color: '#4fe3d6',
-                      border: '1px solid rgba(79,227,214,0.3)',
-                      borderRadius: '3px',
-                      padding: '2px 4px',
-                      fontSize: '0.78rem',
-                      fontFamily: 'monospace',
-                      width: '100%',
-                      maxWidth: '180px',
-                      cursor: 'pointer',
-                    }}
                     value={chosenObservation?.observation_id || ''}
                     onChange={(e) => {
                       const next = new URLSearchParams(searchParams)
@@ -344,9 +336,17 @@ export function SkyExplorerScreen() {
 
           <div className="fe-dock">
             <button onClick={() => navigate('/')}>Exit to Gateway</button>
-            <button onClick={() => navigate('/xr')}>Solar System Hub</button>
+            <button
+              onClick={(event) => {
+                const origin = originOf(event.currentTarget)
+                void runWormhole({ origin }, () => navigate('/xr'))
+              }}
+            >
+              Solar System Hub
+            </button>
           </div>
         </aside>
+
       </main>
 
       {toast && <div className="fe-toast" role="status">{toast}</div>}

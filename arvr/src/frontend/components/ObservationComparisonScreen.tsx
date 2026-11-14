@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchObjectInfo, searchSpherexObservations, type ObjectInfo, type SpherexObservation } from '../api'
 import { TopBar } from './TopBar'
 import { ParticleField } from './ParticleField'
+import { WormholePulse } from './WormholeOverlay'
+import { originOf, runWormhole } from '../wormhole'
 import { cacheObservations, useXRApp } from '../../xr/store'
 
 type CompareMode = 'blink' | 'side' | 'wipe'
@@ -92,7 +94,8 @@ export function ObservationComparisonScreen() {
 
   const pair = choosePair(observations, searchParams.get('obs'))
   const activeObservation = pair ? pair[blinkEpoch === 'A' ? 0 : 1] : null
-  const enterXR = () => {
+  const enterXR = (event?: React.MouseEvent<HTMLButtonElement>) => {
+    const origin = originOf(event?.currentTarget ?? null)
     const params = new URLSearchParams({ target: targetId })
     if (pair) {
       params.set('obs', pair[0].observation_id)
@@ -100,7 +103,7 @@ export function ObservationComparisonScreen() {
       if (pair[0].effective_wavelength_at_target) params.set('band', pair[0].effective_wavelength_at_target)
       useXRApp.getState().setObservationData(pair[0], pair[1])
     }
-    navigate(`/xr/body/spherex?${params}`)
+    void runWormhole({ origin }, () => navigate(`/xr/body/spherex?${params}`))
   }
 
   const markImageError = (observation: SpherexObservation) => {
@@ -143,7 +146,11 @@ export function ObservationComparisonScreen() {
           </div>
         </div>
 
-        {loading && <div className="fe-data-message" role="status">Searching the IRSA SPHEREx archive…</div>}
+        {loading && (
+          <div className="fe-data-message" role="status">
+            <WormholePulse decorative /> Searching the IRSA SPHEREx archive…
+          </div>
+        )}
         {error && <div className="fe-data-message fe-data-error" role="alert">{error}</div>}
         {!loading && !error && !pair && (
           <div className="fe-data-message" role="status">
@@ -249,15 +256,15 @@ export function ObservationComparisonScreen() {
               ))}
             </div>
 
-            <div className="fe-scientific-notes" style={{ margin: '18px 0 0', padding: '14px 18px', background: 'rgba(7,11,31,0.7)', border: '1px solid rgba(79,227,214,0.2)', borderRadius: '4px', fontSize: '0.82rem', color: '#c7cde6', lineHeight: 1.55 }}>
-              <strong style={{ color: '#4fe3d6', display: 'block', marginBottom: '6px' }}>Scientific Integrity Disclosures</strong>
-              <p style={{ margin: '0 0 6px' }}>
+            <div className="fe-sci-notes">
+              <strong className="fe-sci-notes-title">Scientific Integrity Disclosures</strong>
+              <p>
                 • <strong>Photometric Notice</strong>: Visual preview only; not calibrated for quantitative photometry. Validated astrophysical variability or proper motion requires PSF aperture photometry on unresampled Level 2 images.
               </p>
-              <p style={{ margin: '0 0 6px' }}>
+              <p>
                 • <strong>Bandpass Overlap</strong>: Geometric bandpass overlap is derived from authoritative CWAVE/CBAND parameters (75.8% narrower filter, 54.6% IoU). WCS-WAVE serves as visualization fallback (74.6% narrower filter, 52.6% IoU).
               </p>
-              <p style={{ margin: 0 }}>
+              <p>
                 • <strong>Quality Flag</strong>: Level 2 quality flag status applies to the sampled pixel only. Bit 21 (SOURCE) indicates detected source presence without asserting detector-wide flag absence.
               </p>
             </div>

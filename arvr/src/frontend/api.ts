@@ -261,3 +261,61 @@ export function searchSpherexObservations(ra: number, dec: number, radius = 0.05
 export function fetchApod() {
   return getJson('/api/nasa/apod', 20000, parseApod)
 }
+
+/* ------------------------------------------------------------------ *
+ * Cosmic Guide (floating chat)
+ *
+ * The guide is intentionally knowledge-free in the client: answers come from
+ * an external LLM service. Until that service is provisioned the UI reports it
+ * honestly instead of inventing an answer.
+ * ------------------------------------------------------------------ */
+
+export interface GuideReplyRequest {
+  objectId: string
+  objectName: string
+  question: string
+  lang: 'en' | 'id'
+}
+
+export type GuideReply = { ok: true; text: string } | { ok: false; error: string }
+
+const GUIDE_ENDPOINT: string = (import.meta.env.VITE_GUIDE_ENDPOINT as string | undefined)?.trim() || ''
+
+/** True once `VITE_GUIDE_ENDPOINT` points at the LLM service. */
+export const GUIDE_SERVICE_READY = GUIDE_ENDPOINT.length > 0
+
+export async function requestGuideReply(payload: GuideReplyRequest): Promise<GuideReply> {
+  if (!GUIDE_SERVICE_READY) return { ok: false, error: 'not-configured' }
+
+  try {
+    const response = await fetch(GUIDE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        object_id: payload.objectId,
+        object_name: payload.objectName,
+        question: payload.question,
+        lang: payload.lang,
+      }),
+      signal: AbortSignal.timeout(30000),
+    })
+    if (!response.ok) return { ok: false, error: `HTTP ${response.status}` }
+
+    const body: unknown = await response.json()
+    if (isRecord(body)) {
+      const answer =
+        typeof body.answer === 'string'
+          ? body.answer
+          : typeof body.text === 'string'
+            ? body.text
+            : typeof body.reply === 'string'
+              ? body.reply
+              : ''
+      if (answer.trim()) return { ok: true, text: answer.trim() }
+    }
+    return { ok: false, error: 'Empty guide reply' }
+  } catch (error: unknown) {
+    return { ok: false, error: error instanceof Error ? error.message : String(error) }
+  }
+}
+

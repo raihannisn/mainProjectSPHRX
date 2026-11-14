@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useLocation } from 'react-router-dom'
 import { useXRApp } from './store'
 import { BODY_BY_ID } from './bodies'
 import { useSiteContent, useSitesForBody } from './content'
@@ -171,13 +172,18 @@ export function ModePicker({ caps, onClose }: { caps: DeviceCaps; onClose: () =>
 /** Header button + the picker, open by default on a first visit to the Solar System. */
 export function ModePickerToggle({ caps }: { caps: DeviceCaps }) {
   const atHub = useXRApp((s) => !s.bodyId && !s.siteId)
+  const { search } = useLocation()
+  const intent = new URLSearchParams(search).get('intent')
   const [open, setOpen] = useState(() => {
     try {
-      return atHub && !sessionStorage.getItem(SEEN_KEY)
+      return atHub && ((intent === 'ar' || intent === 'vr') || !sessionStorage.getItem(SEEN_KEY))
     } catch {
       return atHub
     }
   })
+  useEffect(() => {
+    if (atHub && (intent === 'ar' || intent === 'vr')) setOpen(true)
+  }, [atHub, intent])
   // right after the intro, let the camera's flight in finish before the choices appear
   const [held, setHeld] = useState(() => useIntro.getState().open || cameraMotion.request === 'intro')
   useEffect(() => {
