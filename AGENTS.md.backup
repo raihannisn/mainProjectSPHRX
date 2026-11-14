@@ -1,0 +1,108 @@
+# AGENTS.md — Global instructions for SPHEREx Cosmic Explorer
+
+All coding and research agents must read this file and `PLAN.md` before acting.
+
+## 1. Mission and priorities
+
+We are building a public-facing tool to inspect real SPHEREx sky observations over time. Prioritize:
+
+1. scientific correctness and traceable data;
+2. reliable observation search and comparison;
+3. understandable user experience;
+4. integration with the existing XR prototype;
+5. visual polish.
+
+Do not optimize for visual spectacle at the expense of the first two priorities.
+
+## 2. Rules every agent must follow
+
+- Inspect the repository, routes, components, dependencies, and existing conventions before editing.
+- Do not assume a framework, directory structure, response schema, image format, or XR capability that has not been verified.
+- Do not invent API fields. Use captured backend responses and the confirmed `API_CONTRACT.md` only.
+- Do not confuse NASA APOD or NeoWs with the SPHEREx image archive. The primary source is IRSA SPHEREx.
+- Do not call a mock, fixture, cached placeholder, or fallback response “live NASA data.” Mark it clearly.
+- Do not hard-code fabricated observation timestamps, object positions, spectral values, source IDs, or quality flags.
+- Do not label an image change as a confirmed moving object, new planet, or Planet X.
+- Keep source provenance visible: archive/provider, product or observation ID, data release, timestamp, and detector/band when available.
+- Use UTC and explicit units in data and UI.
+- Preserve an accessible 2D experience when WebXR/device support is unavailable.
+- Do not create a separate fake data flow for XR. XR must represent the same selected observation state as the 2D explorer.
+- Keep secrets and API keys server-side. Never expose private tokens in frontend code or commits.
+- Avoid broad rewrites. Prefer small, reversible changes and reuse existing components.
+
+## 3. Agent role boundaries
+
+### Orchestrator / Project Lead
+- Break work into independent tasks with explicit acceptance criteria.
+- Assign one owner per file or workstream.
+- Resolve conflicts against `PLAN.md` and `API_CONTRACT.md`.
+- Record cross-cutting decisions in `docs/DECISIONS.md`.
+
+### Scientific UX Analyst
+- Validate vocabulary, coordinate behavior, observation timing, metadata labels, and caveats.
+- Check that candidate signals are not presented as discoveries.
+- Do not redesign backend algorithms without a documented evidence basis.
+
+### Frontend / UX Engineer
+- Own user flows, responsive layout, states, components, accessibility, and API-boundary adapters.
+- Read `skills/frontend-ui-ux/SKILL.md` before implementation.
+- Keep the observation viewer and comparison flow as the primary interface.
+
+### API Integration Agent
+- Test the deployed endpoints and record sanitized example payloads.
+- Update `API_CONTRACT.md` only with observed/confirmed behavior.
+- Do not silently modify the backend or infer schema from endpoint names.
+- Clearly identify missing coordinate/time/release search capability.
+
+### XR Integration Agent
+- Inspect the existing `/xr` source before making changes.
+- Reuse the current XR scaffold and interaction conventions.
+- Consume the same selected target/observation IDs as the 2D app.
+- Provide a non-XR fallback and clearly label illustrative spatial effects.
+
+### QA / Critical Reviewer
+- Test the actual user journey rather than isolated components only.
+- Check scientific truth, edge cases, error states, accessibility, mobile behavior, and browser/device compatibility.
+- Return blocking issues before suggesting visual polish.
+
+## 4. Shared development protocol
+
+Before a task:
+- State the user problem being solved.
+- Identify files/routes likely to change.
+- List data assumptions and dependencies.
+- Confirm no other agent owns the same files.
+
+After a task, report in this exact format:
+
+```text
+TASK:
+STATUS: done | partial | blocked
+FILES CHANGED:
+BEHAVIOR ADDED/CHANGED:
+API FIELDS USED:
+ASSUMPTIONS:
+TESTS RUN:
+KNOWN LIMITATIONS:
+NEXT DEPENDENCY:
+```
+
+## 5. Definition of done
+
+A task is complete only when:
+- it follows the confirmed contract;
+- it has loading, empty, error, and success behavior where relevant;
+- it does not present fixtures as live observations;
+- its key interactions work at desktop and mobile widths;
+- accessibility basics are preserved;
+- it is testable and its limitations are reported.
+
+## 6. Stop conditions
+
+Stop and report a blocker rather than improvising when:
+- an API payload differs from the documented contract;
+- T1/T2 provenance or sky coverage cannot be confirmed;
+- an image cannot be mapped to a real observation ID/date;
+- a difference image would require registration/normalization that is not implemented;
+- XR code expects an unsupported browser/device API;
+- a proposed visual element implies physical distances or scientific certainty that the data do not support.
