@@ -1,6 +1,28 @@
 import { create } from 'zustand'
 import type { GuideRequest, ViewMode } from './types'
 import { detectTier, type QualitySetting, type Tier } from './quality'
+import type { SpherexObservation } from '../frontend/api'
+
+export function cacheObservations(obs: SpherexObservation[]) {
+  try {
+    const existing = JSON.parse(sessionStorage.getItem('spherex_obs_cache') || '{}')
+    for (const o of obs) {
+      existing[o.observation_id] = o
+    }
+    sessionStorage.setItem('spherex_obs_cache', JSON.stringify(existing))
+  } catch {
+    /* private mode / quota exceeded */
+  }
+}
+
+export function getCachedObservation(id: string): SpherexObservation | null {
+  try {
+    const existing = JSON.parse(sessionStorage.getItem('spherex_obs_cache') || '{}')
+    return existing[id] || null
+  } catch {
+    return null
+  }
+}
 
 /** User settings from the wrist menu (VR/AR) and the on-screen ⚙ menu. */
 export interface XRSettings {
@@ -53,10 +75,18 @@ export interface XRAppState {
   bodyId: string | null
   /** Surface site being stood on (content/sites/<id>.json); bodyId is then that site's body. */
   siteId: string | null
+  /** Selected celestial target (e.g. 'rcw-36') */
+  target: string | null
   /** Spectral band selected in the web viewer (e.g. a SPHEREx band); passed through for now. */
   band: string | null
   /** Observation / source-image id selected in the web viewer; passed through for now. */
   observation: string | null
+  /** Second observation id for comparison. */
+  observationB: string | null
+  /** Resolved scientific metadata for Observation A. */
+  observationDataA: SpherexObservation | null
+  /** Resolved scientific metadata for Observation B. */
+  observationDataB: SpherexObservation | null
 
   hotspotId: string | null
   hoveredId: string | null
@@ -97,8 +127,12 @@ export interface XRAppState {
   setMissionCard: (c: XRAppState['missionCard']) => void
 
   selectBody: (id: string | null) => void
+  setTarget: (target: string | null) => void
   setBand: (band: string | null) => void
   setObservation: (obs: string | null) => void
+  setObservationB: (obs: string | null) => void
+  setObservationData: (a: SpherexObservation | null, b?: SpherexObservation | null) => void
+  clearObservations: () => void
   selectSite: (id: string, body: string) => void
   selectHotspot: (id: string | null) => void
   requestGoTo: (p: { x: number; z: number; exact?: boolean } | null) => void
@@ -171,8 +205,12 @@ export const useXRApp = create<XRAppState>((set) => ({
     set({ goalsDone: {} })
   },
   setMissionCard: (missionCard) => set({ missionCard }),
+  target: null,
   band: null,
   observation: null,
+  observationB: null,
+  observationDataA: null,
+  observationDataB: null,
   hotspotId: null,
   hoveredId: null,
   mode: 'desktop',
@@ -197,8 +235,18 @@ export const useXRApp = create<XRAppState>((set) => ({
       return { settings }
     }),
   setMenuOpen: (menuOpen) => set({ menuOpen }),
+  setTarget: (target) => set({ target }),
   setBand: (band) => set({ band }),
   setObservation: (observation) => set({ observation }),
+  setObservationB: (observationB) => set({ observationB }),
+  setObservationData: (observationDataA, observationDataB = null) => set({ observationDataA, observationDataB }),
+  clearObservations: () =>
+    set({
+      observation: null,
+      observationB: null,
+      observationDataA: null,
+      observationDataB: null,
+    }),
   selectHotspot: (hotspotId) => set({ hotspotId }),
   setHovered: (hoveredId) => set({ hoveredId }),
   setMode: (mode) => set({ mode }),

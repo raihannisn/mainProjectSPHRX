@@ -1,9 +1,9 @@
-import { Suspense, useEffect, useMemo, useRef } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { Text, useTexture } from '@react-three/drei'
-import { SRGBColorSpace, type Group, type Mesh } from 'three'
+import { SRGBColorSpace, Texture, TextureLoader, type Group, type Mesh } from 'three'
 import { useXRApp } from './store'
-import { FONT, FONT_BOLD } from './font'
+import { FONT_BOLD } from './font'
 import { t } from './i18n'
 import { Button, Choice3D, GlassPanel, Label, UI, roundedFrame, roundedRect, uiMat } from './ui3d'
 import { backToSource } from './events'
@@ -26,14 +26,9 @@ export const SPHEREX_IMAGES = () => IMAGES
  * SPHEREx on a table, laid out like a photographic plate (on a virtual table in VR / on screen, on your real
  * table in AR).
  *
- * "Spot what moved" is a real blink comparator: two real SPHEREx exposures of the same patch of sky taken
- * 1.8 hours apart (31 Dec 2025, IRSA), reprojected onto one sky grid by scripts/build-blink.mjs so the stars
- * line up. The plate flips between them; anything that jumps is moving. Visitors tap what they think moved,
- * then "Reveal" shows the known object there: asteroid 15 Eunomia, at the positions JPL Horizons gives for
- * the two exposure times. Flags near it count as found; every other flag stays "unverified" — we never
- * present a visitor's guess as a discovery.
- *
- * The other two views are NASA's released SPHEREx images to browse; only RCW 36 is marked (from NASA's caption).
+ * Supports two distinct experiences:
+ * MODE A: Curated educational SPHEREx experience (Blink comparator with asteroid 15 Eunomia, Vela Molecular Ridge, First Light)
+ * MODE B: Live SPHEREx observation experience (Live FITS preview textures from NASA IRSA SIA2 archive, Single Obs & Comparison A/B)
  */
 interface SkyImage {
   id: string
@@ -63,17 +58,53 @@ const IMAGES: SkyImage[] = [
 ]
 const W = 3
 
-
-
-
 export function SpherexTable({ mode }: { mode: ViewMode }) {
   useXRApp((s) => s.settings.lang)
-  const { view, blinking, frame, flags, revealed, meta, setView, setBlinking, flip, addFlag, reset } = useSpherex()
+  const {
+    view,
+    blinking,
+    frame,
+    flags,
+    revealed,
+    meta,
+    liveFrame,
+    liveBlinking,
+    setView,
+    setBlinking,
+    flip,
+    flipLive,
+    setLiveBlinking,
+    addFlag,
+    reset,
+  } = useSpherex()
+
+  const obsIdA = useXRApp((s) => s.observation)
+  const obsIdB = useXRApp((s) => s.observationB)
+  const obsDataA = useXRApp((s) => s.observationDataA)
+  const obsDataB = useXRApp((s) => s.observationDataB)
+  const target = useXRApp((s) => s.target)
+  const band = useXRApp((s) => s.band)
+
+  const initialized = useRef(false)
+  useEffect(() => {
+    if (initialized.current) return
+    if (obsIdB) {
+      setView('live-compare')
+      initialized.current = true
+    } else if (obsIdA) {
+      setView('live-obs')
+      initialized.current = true
+    }
+  }, [obsIdA, obsIdB, setView])
+
   useEffect(() => void loadBlinkMeta(), [])
+
   // phones held upright: the console moves into an on-screen panel (SpherexPanel) where text stays readable
   const narrow = useThree((st) => st.size.width < 640 && st.size.width < st.size.height)
   const consoleIn3D = mode !== 'desktop' || !narrow
   const image = IMAGES.find((i) => i.id === view)
+  const isLive = view === 'live-obs' || view === 'live-compare'
+
   // the square blink plate is a little smaller so the plate + console still fit the view
   const PW = image ? W : 2.3
   const H = image ? W * image.aspect : PW
@@ -81,17 +112,25 @@ export function SpherexTable({ mode }: { mode: ViewMode }) {
   const tilt = mode === 'ar' ? -Math.PI / 2 : -Math.PI / 2 + 0.42
   const toPlate = (p: { u: number; v: number }): [number, number, number] => [(p.u - 0.5) * PW, (0.5 - p.v) * H, 0.006]
 
-  // blink comparator state
+  // blink comparator state for both curated and live
   const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
   const last = useRef(0)
+  const lastLive = useRef(0)
+
   useFrame(({ clock }) => {
-    if (view !== 'blink' || !blinking) return
-    // a calm 0.7 s flip (1.2 s with reduced motion), the classic blink-comparator rhythm
-    if (clock.elapsedTime - last.current > (reduced ? 1.2 : 0.7)) {
-      last.current = clock.elapsedTime
-      flip()
+    if (view === 'blink' && blinking) {
+      if (clock.elapsedTime - last.current > (reduced ? 1.2 : 0.7)) {
+        last.current = clock.elapsedTime
+        flip()
+      }
+    } else if (view === 'live-compare' && liveBlinking) {
+      if (clock.elapsedTime - lastLive.current > (reduced ? 1.3 : 0.85)) {
+        lastLive.current = clock.elapsedTime
+        flipLive()
+      }
     }
   })
+
   const found = meta ? flags.some((f) => isHit(f, meta)) : false
   const moved = meta ? movedArcsec(meta) : 0
 
@@ -103,22 +142,95 @@ export function SpherexTable({ mode }: { mode: ViewMode }) {
   }
   const reveal = revealBlink
 
+  const handleReturnTo2D = () => {
+    if (view === 'live-compare') {
+      const sp = new URLSearchParams()
+      if (target) sp.set('target', target)
+      if (obsIdA) sp.set('obs', obsIdA)
+      if (obsIdB) sp.set('obs2', obsIdB)
+      if (band) sp.set('band', band)
+      window.location.href = `/comparison?${sp}`
+    } else if (view === 'live-obs') {
+      const sp = new URLSearchParams()
+      if (target) sp.set('target', target)
+      if (obsIdA) sp.set('obs', obsIdA)
+      if (band) sp.set('band', band)
+      window.location.href = `/explorer?${sp}`
+    } else {
+      backToSource('spherex', view)
+    }
+  }
+
+  // Build choice options with clear distinction between Live Archive and Curated Local
+  const choiceOptions = useMemo(() => {
+    const list: { value: string; label: string }[] = []
+    if (obsIdB) {
+      list.push({ value: 'live-compare', label: `● ${t('Live Comparison (A / B)')}` })
+    }
+    if (obsIdA) {
+      list.push({ value: 'live-obs', label: `● ${t('Live Obs')}: ${obsIdA.slice(0, 12)}` })
+    }
+    list.push({ value: 'blink', label: `${t('Spot what moved')} (Curated)` })
+    for (const img of IMAGES) {
+      list.push({ value: img.id, label: `${t(img.label)} (Curated)` })
+    }
+    return list
+  }, [obsIdA, obsIdB])
+
+  const liveActiveObs = liveFrame === 0 ? obsDataA : obsDataB
+  const liveActiveId = liveFrame === 0 ? obsIdA : obsIdB
+
   return (
     <group position={[0, y, 0]}>
       {mode !== 'ar' && <TableTop />}
       <group rotation={[tilt, 0, 0]} position={[0, mode === 'ar' ? 0.01 : (H / 2 + 0.1) * Math.sin(0.42) + 0.04, 0]}>
         <mesh geometry={roundedRect(PW + 0.16, H + 0.16, 0.06)} material={uiMat('#0b1820')} position={[0, 0, -0.004]} />
-        <mesh geometry={roundedFrame(PW + 0.16, H + 0.16, 0.06, 0.018)} material={uiMat(UI.rim, 0.5)} position={[0, 0, -0.002]} />
+        <mesh geometry={roundedFrame(PW + 0.16, H + 0.16, 0.06, 0.018)} material={uiMat(isLive ? '#4fe3d6' : UI.rim, 0.5)} position={[0, 0, -0.002]} />
         <Suspense fallback={null}>
           {view === 'blink' ? (
             <>
               <Plate url="/spherex/blink-a.png" w={PW} h={H} visible={frame === 0} onClick={onPlate} />
               <Plate url="/spherex/blink-b.png" w={PW} h={H} visible={frame === 1} onClick={onPlate} />
             </>
+          ) : view === 'live-obs' ? (
+            <LivePlate url={obsDataA?.preview_url} w={PW} h={H} />
+          ) : view === 'live-compare' ? (
+            <>
+              <LivePlate url={obsDataA?.preview_url} w={PW} h={H} visible={liveFrame === 0} />
+              <LivePlate url={obsDataB?.preview_url} w={PW} h={H} visible={liveFrame === 1} />
+            </>
           ) : (
             image && <Plate url={image.url} w={W} h={H} />
           )}
         </Suspense>
+
+        {/* Live Observation Plate Header Overlay */}
+        {view === 'live-obs' && (
+          <>
+            <Text font={FONT_BOLD} position={[-PW / 2 + 0.08, H / 2 - 0.08, 0.006]} fontSize={0.085} color="#4fe3d6" outlineWidth={0.005} outlineColor="#000" anchorX="left" anchorY="top">
+              {`● LIVE NASA ARCHIVE · ${obsDataA?.observation_id || obsIdA || 'SPHEREx'}`}
+            </Text>
+            <Text font={FONT_BOLD} position={[PW / 2 - 0.08, H / 2 - 0.08, 0.006]} fontSize={0.08} color="#b18cff" outlineWidth={0.005} outlineColor="#000" anchorX="right" anchorY="top">
+              {obsDataA?.effective_wavelength_at_target || band || ''}
+            </Text>
+          </>
+        )}
+
+        {/* Live Comparison Plate Header Overlay */}
+        {view === 'live-compare' && (
+          <>
+            <Text font={FONT_BOLD} position={[-PW / 2 + 0.08, H / 2 - 0.08, 0.006]} fontSize={0.085} color={liveFrame === 0 ? '#4fe3d6' : '#f5ae43'} outlineWidth={0.005} outlineColor="#000" anchorX="left" anchorY="top">
+              {liveFrame === 0
+                ? `● LIVE A · ${obsDataA?.observation_id || obsIdA || 'Epoch 1'}`
+                : `● LIVE B · ${obsDataB?.observation_id || obsIdB || 'Epoch 2'}`}
+            </Text>
+            <Text font={FONT_BOLD} position={[PW / 2 - 0.08, H / 2 - 0.08, 0.006]} fontSize={0.08} color="#b18cff" outlineWidth={0.005} outlineColor="#000" anchorX="right" anchorY="top">
+              {liveFrame === 0 ? obsDataA?.effective_wavelength_at_target || '' : obsDataB?.effective_wavelength_at_target || ''}
+            </Text>
+          </>
+        )}
+
+        {/* Curated Mode A Overlay */}
         {view === 'blink' && meta && (
           <>
             <Text font={FONT_BOLD} position={[-PW / 2 + 0.08, H / 2 - 0.08, 0.006]} fontSize={0.09} color="#ffffff" outlineWidth={0.006} outlineColor="#000" anchorX="left" anchorY="top">
@@ -150,49 +262,95 @@ export function SpherexTable({ mode }: { mode: ViewMode }) {
         ))}
       </group>
 
-      {/* control panel in front of the plate */}
+      {/* Control panel in front of the plate */}
       {consoleIn3D && (
-      <group
-        position={mode === 'vr' ? [0, 0.3, H / 2 + 0.5] : mode === 'ar' ? [0, 0.02, H / 2 + 0.55] : [0, -0.1, H / 2 + 0.78]}
-        rotation={[mode === 'vr' ? -0.5 : -Math.PI / 2 + (mode === 'ar' ? 0 : 0.35), 0, 0]}
-        scale={mode === 'vr' ? 0.34 : 0.42}
-      >
-        <GlassPanel width={5.6} height={2.7} radius={0.16} />
-        <Label text={view === 'blink' ? t('Spot what moved') : t('SPHEREx sky on your table')} position={[-2.6, 1.1, 0.005]} size={UI.type.title} bold />
-        {view === 'blink' ? (
-          <>
-            <Label
-              text={
-                revealed
-                  ? found
-                    ? t('You found it! That dot is asteroid {x}: it moved {n}″ in {h} hours.', { x: meta?.target.name ?? '', n: Math.round(moved), h: meta?.gapHours ?? '' })
-                    : t('The moving dot is asteroid {x} (known, from NASA JPL). Your other flags stay unverified.', { x: meta?.target.name ?? '' })
-                  : t('Two real SPHEREx images of the same sky, 1.8 hours apart. Stars stay put. Tap the dot that jumps.')
-              }
-              position={[-2.6, 0.78, 0.005]}
-              size={UI.type.small}
-              color={revealed && found ? UI.good : '#d6e4ea'}
-              maxWidth={5.2}
-            />
-            <Button label={blinking ? t('Pause blink') : t('Blink')} icon={blinking ? 'pause' : 'play'} onPress={() => setBlinking(!blinking)} position={[-1.95, 0.25, 0]} width={1.5} height={0.32} />
-            <Button label={t('Reveal')} icon="check" tone="accent" disabled={revealed} onPress={reveal} position={[-0.3, 0.25, 0]} width={1.5} height={0.32} />
-            <Button label={t('Start over')} icon="refresh" onPress={reset} position={[1.35, 0.25, 0]} width={1.5} height={0.32} />
-          </>
-        ) : (
-          <Label text={t('NASA’s released SPHEREx images to explore. Only NASA-identified objects are marked.')} position={[-2.6, 0.78, 0.005]} size={UI.type.small} color="#d6e4ea" maxWidth={5.2} />
-        )}
-        <Choice3D
-          label={t('NASA image')}
-          value={view}
-          options={[{ value: 'blink', label: t('Spot what moved') }, ...IMAGES.map((i) => ({ value: i.id, label: t(i.label) }))]}
-          onChange={setView}
-          position={[-0.7, -0.38, 0]}
-          width={3.9}
-        />
-        <Button label={t('Back to source image')} icon="back" onPress={() => backToSource('spherex', view)} position={[2.05, -0.46, 0]} width={1.0} height={0.3} />
-        <Legend position={[-2.6, -0.92, 0.005]} />
-        <Label text={t(view === 'blink' ? (meta?.credit ?? '') : (image?.credit ?? ''))} position={[-2.6, -1.14, 0.005]} size={UI.type.tiny} color={UI.muted} maxWidth={5.2} />
-      </group>
+        <group
+          position={mode === 'vr' ? [0, 0.3, H / 2 + 0.5] : mode === 'ar' ? [0, 0.02, H / 2 + 0.55] : [0, -0.1, H / 2 + 0.78]}
+          rotation={[mode === 'vr' ? -0.5 : -Math.PI / 2 + (mode === 'ar' ? 0 : 0.35), 0, 0]}
+          scale={mode === 'vr' ? 0.34 : 0.42}
+        >
+          <GlassPanel width={5.6} height={2.7} radius={0.16} />
+
+          {/* Mode headers & dynamic readouts */}
+          {view === 'blink' ? (
+            <>
+              <Label text={t('Spot what moved')} position={[-2.6, 1.1, 0.005]} size={UI.type.title} bold />
+              <Label
+                text={
+                  revealed
+                    ? found
+                      ? t('You found it! That dot is asteroid {x}: it moved {n}″ in {h} hours.', { x: meta?.target.name ?? '', n: Math.round(moved), h: meta?.gapHours ?? '' })
+                      : t('The moving dot is asteroid {x} (known, from NASA JPL). Your other flags stay unverified.', { x: meta?.target.name ?? '' })
+                    : t('Two real SPHEREx images of the same sky, 1.8 hours apart. Stars stay put. Tap the dot that jumps.')
+                }
+                position={[-2.6, 0.78, 0.005]}
+                size={UI.type.small}
+                color={revealed && found ? UI.good : '#d6e4ea'}
+                maxWidth={5.2}
+              />
+              <Button label={blinking ? t('Pause blink') : t('Blink')} icon={blinking ? 'pause' : 'play'} onPress={() => setBlinking(!blinking)} position={[-1.95, 0.25, 0]} width={1.5} height={0.32} />
+              <Button label={t('Reveal')} icon="check" tone="accent" disabled={revealed} onPress={reveal} position={[-0.3, 0.25, 0]} width={1.5} height={0.32} />
+              <Button label={t('Start over')} icon="refresh" onPress={reset} position={[1.35, 0.25, 0]} width={1.5} height={0.32} />
+            </>
+          ) : view === 'live-compare' ? (
+            <>
+              <Label text={t('Live SPHEREx Comparison')} position={[-2.6, 1.1, 0.005]} size={UI.type.title} bold color="#f5ae43" />
+              <Label
+                text={`Epoch ${liveFrame === 0 ? 'A' : 'B'}: ${liveActiveId || 'Obs'} · ${liveActiveObs?.detector || 'Detector'} · ${liveActiveObs?.observed_at_utc?.slice(0, 10) || 'UTC'} · ${liveActiveObs?.effective_wavelength_at_target || ''}`}
+                position={[-2.6, 0.78, 0.005]}
+                size={UI.type.small}
+                color="#d6e4ea"
+                maxWidth={5.2}
+              />
+              <Button label={liveBlinking ? t('Pause blink') : t('Blink')} icon={liveBlinking ? 'pause' : 'play'} onPress={() => setLiveBlinking(!liveBlinking)} position={[-1.95, 0.25, 0]} width={1.5} height={0.32} />
+              <Button label={`Flip (${liveFrame === 0 ? 'A' : 'B'})`} icon="refresh" tone="accent" onPress={flipLive} position={[-0.3, 0.25, 0]} width={1.5} height={0.32} />
+              <Button label={t('Comparison (2D)')} icon="back" onPress={handleReturnTo2D} position={[1.35, 0.25, 0]} width={1.5} height={0.32} />
+            </>
+          ) : view === 'live-obs' ? (
+            <>
+              <Label text={t('Live SPHEREx Observation')} position={[-2.6, 1.1, 0.005]} size={UI.type.title} bold color="#4fe3d6" />
+              <Label
+                text={`${obsDataA?.observation_id || obsIdA || 'Observation'} · ${obsDataA?.detector || 'Detector'} · ${obsDataA?.observed_at_utc?.slice(0, 19).replace('T', ' ') || 'UTC'} UTC`}
+                position={[-2.6, 0.78, 0.005]}
+                size={UI.type.small}
+                color="#d6e4ea"
+                maxWidth={5.2}
+              />
+              <Label
+                text={`Band: ${obsDataA?.effective_wavelength_at_target || band || 'Nominal'} · Quality: ${obsDataA?.quality_flag_meaning || 'Unflagged (0)'} · Source: IRSA SIA2`}
+                position={[-2.6, 0.48, 0.005]}
+                size={UI.type.tiny}
+                color="#9ba8bf"
+                maxWidth={5.2}
+              />
+              <Button label={t('2D Explorer')} icon="back" onPress={handleReturnTo2D} position={[-1.95, 0.12, 0]} width={1.5} height={0.32} />
+            </>
+          ) : (
+            <Label text={t('NASA’s released SPHEREx images to explore. Only NASA-identified objects are marked.')} position={[-2.6, 0.78, 0.005]} size={UI.type.small} color="#d6e4ea" maxWidth={5.2} />
+          )}
+
+          <Choice3D
+            label={t('Experience mode')}
+            value={view}
+            options={choiceOptions}
+            onChange={setView}
+            position={[-0.7, -0.38, 0]}
+            width={3.9}
+          />
+          <Button label={t('Back to source image')} icon="back" onPress={handleReturnTo2D} position={[2.05, -0.46, 0]} width={1.0} height={0.3} />
+          <Legend position={[-2.6, -0.92, 0.005]} />
+          <Label
+            text={
+              isLive
+                ? t('NASA/JPL-Caltech/IPAC SPHEREx archive preview · Visual preview only; not for quantitative photometry.')
+                : t(view === 'blink' ? (meta?.credit ?? '') : (image?.credit ?? ''))
+            }
+            position={[-2.6, -1.14, 0.005]}
+            size={UI.type.tiny}
+            color={UI.muted}
+            maxWidth={5.2}
+          />
+        </group>
       )}
       <SceneReady />
     </group>
@@ -210,12 +368,162 @@ function TableTop() {
 
 function Plate({ url, w, h, visible = true, onClick }: { url: string; w: number; h: number; visible?: boolean; onClick?: (e: ThreeEvent<MouseEvent>) => void }) {
   const map = useTexture(url)
+  const maxAnisotropy = useThree((s) => s.gl.capabilities.getMaxAnisotropy())
   map.colorSpace = SRGBColorSpace
-  map.anisotropy = 8
+  map.anisotropy = Math.max(1, Math.min(8, maxAnisotropy || 1))
   return (
     <mesh visible={visible} onClick={visible ? onClick : undefined}>
       <planeGeometry args={[w, h]} />
       <meshBasicMaterial map={map} toneMapped={false} />
+    </mesh>
+  )
+}
+
+/**
+ * Three.js texture renderer for dynamic live backend preview PNGs.
+ * Ensures GPU anisotropy clamping, aspect-ratio preservation, SRGBColorSpace,
+ * deterministic texture lifecycle management, and error recovery.
+ */
+function LivePlate({
+  url,
+  w,
+  h,
+  visible = true,
+  onClick,
+}: {
+  url: string | null | undefined
+  w: number
+  h: number
+  visible?: boolean
+  onClick?: (e: ThreeEvent<MouseEvent>) => void
+}) {
+  const [texture, setTexture] = useState<Texture | null>(null)
+  const [error, setError] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  // Read maximum supported anisotropy from WebGL renderer capabilities
+  const maxAnisotropy = useThree((s) => s.gl.capabilities.getMaxAnisotropy())
+  const activeTextureRef = useRef<Texture | null>(null)
+
+  useEffect(() => {
+    // If no URL is provided, dispose any previous texture and show error/unavailable
+    if (!url) {
+      if (activeTextureRef.current) {
+        activeTextureRef.current.dispose()
+        activeTextureRef.current = null
+      }
+      setTexture(null)
+      setLoading(false)
+      setError(true)
+      return
+    }
+
+    // Immediately clear stale texture state when URL changes to avoid showing older observation
+    if (activeTextureRef.current) {
+      activeTextureRef.current.dispose()
+      activeTextureRef.current = null
+    }
+    setTexture(null)
+    setLoading(true)
+    setError(false)
+
+    let cancelled = false
+    const loader = new TextureLoader()
+
+    loader.load(
+      url,
+      (tex) => {
+        if (cancelled) {
+          // Dispose textures returned by cancelled loader callbacks
+          tex.dispose()
+          return
+        }
+        tex.colorSpace = SRGBColorSpace
+        const clampedAnisotropy = Math.max(1, Math.min(8, maxAnisotropy || 1))
+        tex.anisotropy = clampedAnisotropy
+        tex.needsUpdate = true
+
+        // Clean up previously active texture if distinct
+        if (activeTextureRef.current && activeTextureRef.current !== tex) {
+          activeTextureRef.current.dispose()
+        }
+        activeTextureRef.current = tex
+        setTexture(tex)
+        setLoading(false)
+        setError(false)
+      },
+      undefined,
+      () => {
+        if (cancelled) return
+        if (activeTextureRef.current) {
+          activeTextureRef.current.dispose()
+          activeTextureRef.current = null
+        }
+        setTexture(null)
+        setError(true)
+        setLoading(false)
+      }
+    )
+
+    return () => {
+      cancelled = true
+      if (activeTextureRef.current) {
+        activeTextureRef.current.dispose()
+        activeTextureRef.current = null
+      }
+    }
+  }, [url, maxAnisotropy])
+
+  if (!visible) return null
+
+  if (error || !url) {
+    return (
+      <group>
+        <mesh>
+          <planeGeometry args={[w, h]} />
+          <meshBasicMaterial color="#1a0d18" toneMapped={false} />
+        </mesh>
+        <Text
+          font={FONT_BOLD}
+          position={[0, 0, 0.01]}
+          fontSize={0.08}
+          color="#ff7b88"
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={w * 0.85}
+        >
+          {t('Live preview unavailable')}
+        </Text>
+      </group>
+    )
+  }
+
+  if (loading || !texture) {
+    return (
+      <group>
+        <mesh>
+          <planeGeometry args={[w, h]} />
+          <meshBasicMaterial color="#0c1d28" toneMapped={false} />
+        </mesh>
+        <Text
+          font={FONT_BOLD}
+          position={[0, 0, 0.01]}
+          fontSize={0.075}
+          color="#4fe3d6"
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={w * 0.85}
+        >
+          {t('Loading live FITS preview from IRSA…')}
+        </Text>
+      </group>
+    )
+  }
+
+  return (
+    <mesh onClick={onClick}>
+      <planeGeometry args={[w, h]} />
+      <meshBasicMaterial map={texture} toneMapped={false} />
     </mesh>
   )
 }

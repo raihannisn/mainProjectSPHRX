@@ -35,12 +35,23 @@ export interface ObjectInfo {
 export interface SpherexObservation {
   observation_id: string
   release?: string
-  observed_at_utc?: string | null
+  release_doi?: string
+  collection?: string
+  processing_version?: string
+  calib_level?: number
   detector?: string
+  observed_at_utc?: string | null
   effective_wavelength_at_target?: string
   bandwidth_at_target?: string
+  visualization_wavelength?: string
+  visualization_bandwidth?: string
+  spectral_calibration_source?: string
+  quality_flag?: number | string | null
+  quality_flag_meaning?: string | null
+  provenance_badge?: string
   preview_url: string
   fits_url: string
+  cutout_fits_url?: string
 }
 
 export interface SpherexObservationsResponse {
@@ -158,13 +169,28 @@ function parseObservations(value: unknown): SpherexObservationsResponse {
     return {
       observation_id: requiredString(item.observation_id, `observations[${index}].observation_id`),
       release: typeof item.release === 'string' ? item.release : undefined,
-      observed_at_utc: typeof item.observed_at_utc === 'string' ? item.observed_at_utc : null,
+      release_doi: typeof item.release_doi === 'string' ? item.release_doi : undefined,
+      collection: typeof item.collection === 'string' ? item.collection : undefined,
+      processing_version: typeof item.processing_version === 'string' ? item.processing_version : undefined,
+      calib_level: typeof item.calib_level === 'number' ? item.calib_level : undefined,
       detector: typeof item.detector === 'string' ? item.detector : undefined,
+      observed_at_utc: typeof item.observed_at_utc === 'string' ? item.observed_at_utc : null,
       effective_wavelength_at_target:
         typeof item.effective_wavelength_at_target === 'string' ? item.effective_wavelength_at_target : undefined,
       bandwidth_at_target: typeof item.bandwidth_at_target === 'string' ? item.bandwidth_at_target : undefined,
+      visualization_wavelength:
+        typeof item.visualization_wavelength === 'string' ? item.visualization_wavelength : undefined,
+      visualization_bandwidth:
+        typeof item.visualization_bandwidth === 'string' ? item.visualization_bandwidth : undefined,
+      spectral_calibration_source:
+        typeof item.spectral_calibration_source === 'string' ? item.spectral_calibration_source : undefined,
+      quality_flag:
+        typeof item.quality_flag === 'number' || typeof item.quality_flag === 'string' ? item.quality_flag : null,
+      quality_flag_meaning: typeof item.quality_flag_meaning === 'string' ? item.quality_flag_meaning : null,
+      provenance_badge: typeof item.provenance_badge === 'string' ? item.provenance_badge : undefined,
       preview_url: requiredString(item.preview_url, `observations[${index}].preview_url`),
       fits_url: requiredString(item.fits_url, `observations[${index}].fits_url`),
+      cutout_fits_url: typeof item.cutout_fits_url === 'string' ? item.cutout_fits_url : undefined,
     }
   })
   const totalResults = value.total_results ?? value.total_products

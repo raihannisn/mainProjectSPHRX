@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchObjectInfo, searchSpherexObservations, type ObjectInfo, type SpherexObservation } from '../api'
 import { TopBar } from './TopBar'
 import { ParticleField } from './ParticleField'
+import { cacheObservations, useXRApp } from '../../xr/store'
 
 type MarkerId = 'rcw-36' | 'candidate-02' | 'demo-tile-01'
 
@@ -91,6 +92,7 @@ export function SkyExplorerScreen() {
         if (!active) return
         setObservationsLoading(false)
         if (observationsResult.ok) {
+          cacheObservations(observationsResult.data.observations)
           setObservations(observationsResult.data.observations)
           setObservationsError(null)
         } else {
@@ -137,17 +139,27 @@ export function SkyExplorerScreen() {
 
   const handleAskGuide = () => navigate(`/guide/${selectedId}`)
   const handleCompare = () => {
+    if (selectedId !== 'rcw-36') {
+      notify('Comparison requires catalog-backed observation records. Switch to RCW 36 to compare.')
+      return
+    }
     const params = new URLSearchParams({ target: selectedId })
     if (chosenObservation) params.set('obs', chosenObservation.observation_id)
     navigate(`/comparison?${params}`)
   }
   const handleEnterXR = () => {
-    const params = new URLSearchParams()
-    if (chosenObservation) params.set('obs', chosenObservation.observation_id)
-    const wavelength = chosenObservation?.effective_wavelength_at_target
-    if (wavelength) params.set('band', wavelength)
-    const query = params.size > 0 ? `?${params}` : ''
-    navigate(`/xr/body/spherex${query}`)
+    if (selectedId !== 'rcw-36') {
+      navigate('/xr/body/spherex')
+      return
+    }
+    const params = new URLSearchParams({ target: selectedId })
+    if (chosenObservation) {
+      params.set('obs', chosenObservation.observation_id)
+      const wavelength = chosenObservation.effective_wavelength_at_target
+      if (wavelength) params.set('band', wavelength)
+      useXRApp.getState().setObservationData(chosenObservation, null)
+    }
+    navigate(`/xr/body/spherex?${params}`)
   }
 
   return (
@@ -270,7 +282,38 @@ export function SkyExplorerScreen() {
               </div>
               <div className="fe-datum">
                 <span>Observation</span>
-                <strong>{observationsLoading ? 'Loading…' : chosenObservation?.observation_id || 'No record selected'}</strong>
+                {observations.length > 1 ? (
+                  <select
+                    className="fe-obs-select"
+                    style={{
+                      background: 'rgba(11,24,32,0.9)',
+                      color: '#4fe3d6',
+                      border: '1px solid rgba(79,227,214,0.3)',
+                      borderRadius: '3px',
+                      padding: '2px 4px',
+                      fontSize: '0.78rem',
+                      fontFamily: 'monospace',
+                      width: '100%',
+                      maxWidth: '180px',
+                      cursor: 'pointer',
+                    }}
+                    value={chosenObservation?.observation_id || ''}
+                    onChange={(e) => {
+                      const next = new URLSearchParams(searchParams)
+                      next.set('obs', e.target.value)
+                      setSearchParams(next)
+                    }}
+                    aria-label="Select SPHEREx observation"
+                  >
+                    {observations.slice(0, 50).map((obs) => (
+                      <option key={obs.observation_id} value={obs.observation_id}>
+                        {obs.observation_id} ({obs.detector || 'D'})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <strong>{observationsLoading ? 'Loading…' : chosenObservation?.observation_id || 'No record selected'}</strong>
+                )}
               </div>
               <div className="fe-datum">
                 <span>Observed at (UTC)</span>

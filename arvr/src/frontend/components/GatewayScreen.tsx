@@ -44,8 +44,7 @@ export function GatewayScreen() {
   }
 
   const handleCapabilities = () => {
-    document.getElementById('capabilities')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    notify('Desktop 3D is available. Immersive modes depend on device and browser support.')
+    notify('Desktop 3D is available. Immersive modes (WebXR VR/AR) activate automatically on supported headsets and mobile devices.')
   }
 
   const openApod = async () => {
@@ -116,21 +115,6 @@ export function GatewayScreen() {
             <button className="fe-btn-text" onClick={openApod} title="Astronomy Picture of the Day from NASA">
               NASA APOD Highlight ✦
             </button>
-          </div>
-
-          <div className="fe-capabilities" id="capabilities">
-            <div className="fe-cap">
-              <b>Desktop 3D</b>
-              <small>AVAILABLE</small>
-            </div>
-            <div className="fe-cap">
-              <b>WebXR AR</b>
-              <small>{caps.ar ? 'READY' : 'DEVICE CHECK'}</small>
-            </div>
-            <div className="fe-cap">
-              <b>WebXR VR</b>
-              <small>{caps.vr ? 'READY' : 'DEVICE CHECK'}</small>
-            </div>
           </div>
         </div>
 
