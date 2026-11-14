@@ -34,7 +34,9 @@ def get_status():
             "NASA NeoWs Asteroid Tracker",
             "SPHEREx Dynamic Observations Search (IRSA SIA2)",
             "Cosmic Guide AI (Gemini 3.5 Flash)",
-            "Interactive Mission Control Dashboard"
+            "Interactive Mission Control Dashboard",
+            "Bilingual Gemini Mission Agent",
+            "Gemini Text-to-Speech Voice-over"
         ],
         "message": "Backend siap melayani FE, AI, dan AR!"
     }

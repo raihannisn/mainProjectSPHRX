@@ -1,5 +1,9 @@
 .vercel
 __pycache__/
 *.fits
+
+# Environment variables and credentials
 .env
 *.env
+.env.*
+!.env.example

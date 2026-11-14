@@ -1,0 +1,161 @@
+# AR Cosmic Expedition (XR module)
+
+The AR/VR part of the team's NASA Space Apps 2026 entry (Planet X / SPHEREx challenge). It's a React + Vite + TypeScript application hosting both the migrated SPHEREx frontend screens and the existing AR/VR experiences. The frontend design reference remains `../frontend/spherex-expedition.html`; all application screens use the router in `src/App.tsx`.
+
+Stack: three.js via `@react-three/fiber`, `@react-three/xr` (WebXR), `@react-three/drei` and `zustand`.
+
+## Run
+
+Start the FastAPI backend from `backend/` on port 8000 in a separate terminal (`python -m uvicorn main:app --reload --port 8000`) so the Vite `/api/*` proxy can reach it. Then start the app:
+
+```sh
+set npm_config_cache=D:\npm-cache   # keep npm on D:
+npm install
+npm run dev        # Gateway: https://<LAN-IP>:5173/ (self-signed cert: accept the warning on each device)
+npm run build      # content check + type-check + production build
+npm run check:content
+```
+
+The Gateway links to `/explorer`, `/comparison`, `/guide/:objectId`, and `/xr`. Vite proxies local `/api/*` requests to `http://127.0.0.1:8000`.
+
+Phones and headsets need HTTPS for WebXR and motion sensors, so the dev server uses `@vitejs/plugin-basic-ssl` with `--host`. `XR_HTTP=1 npx vite --port 5174` serves plain HTTP for localhost-only testing.
+
+## Testing in VR
+
+1. **No headset (laptop):** open `https://localhost:5173/xr?emulate`.
+   - It installs a simulated Meta Quest 3 (Meta's IWER emulator), and **Enter VR** / **Enter AR** appear.
+   - The on-screen panels move the headset and controllers, and have buttons for trigger and sticks.
+2. **Meta Quest (standalone):**
+   - Put the headset on the same Wi-Fi as the laptop.
+   - In Quest Browser, open `https://<laptop-LAN-IP>:5173/xr` and accept the certificate warning (Advanced → Proceed).
+   - Tap **Enter VR**.
+3. **PC VR** (Quest Link / Air Link / SteamVR): open `https://localhost:5173/xr` in Chrome or Edge on the PC, then press **Enter VR**.
+
+Use **`npm run vr`** for headset testing. It builds and serves the optimized production bundle on `https://<LAN-IP>:4173`. The dev server (`npm run dev`, port 5173) runs unminified React and three.js in dev mode, which is noticeably slower in a headset.
+
+Add **`?perf`** to any URL to show fps / target Hz / CPU ms / draw calls / triangles, including inside VR. The Quest should hold 72 fps at 72 Hz. The app requests 72 Hz with maximum foveation (`src/xr/xrStore.ts`).
+
+If the headset can't reach the laptop (e.g. campus Wi-Fi that isolates devices), connect the Quest by USB and run `adb reverse tcp:4173 tcp:4173`. Then open `https://localhost:4173/xr` in Quest Browser.
+
+VR controls:
+- Point the controller ray and press trigger to select, or look at a pin for 1.5 s (gaze dwell).
+- On the surface: left stick walks, right stick snap-turns, and pushing the right stick forward aims a teleport arc.
+
+## What picks which experience (`XRRoot`)
+
+1. If `navigator.xr.isSessionSupported('immersive-vr')` → **Enter VR**. Controllers and hand rays, plus 1.5 s gaze dwell. The info card is drawn in 3D.
+2. If `immersive-ar` is supported (Android Chrome + ARCore) → **Enter AR**. Hit-test tabletop placement: a reticle appears, tap to place it, and "Move model" places it again. The info card uses the WebXR DOM overlay.
+3. On a touch device with orientation sensors → **Look around (motion)**. This is gyro look-around and asks for permission on iOS. Tap pins, or hold the centre dot on one.
+4. Otherwise → desktop OrbitControls with mouse hover and click.
+
+## Stand on the surface (`src/xr/surface/`)
+
+From the Mars globe, pick **Stand on the surface → Victoria Crater / Gale Crater floor**, or press **Stand here** on the Gale Crater hotspot. You land at human scale on terrain built from NASA elevation models.
+
+- **Victoria Crater** (Meridiani Planum): you stand on the rim next to NASA's Opportunity rover model, looking down into the ~800 m crater.
+- **Gale Crater floor**: Mount Sharp rises about 5 km, roughly 40 km away.
+
+How you move depends on the device:
+
+| Device | Moving around |
+| --- | --- |
+| Desktop | `W A S D` / arrows to walk, `Shift` to run, `Space` to jump (Mars gravity is 3.71 m/s², so jumps last much longer), drag to look |
+| Phone | "Look around (motion)" turns your view with the phone; hold **▲ Walk** to walk where you look; **Jump** button |
+| VR | Real scale. Left stick walks, right stick snap-turns; push the right stick forward to aim a teleport arc. A "suit computer" panel follows below your gaze |
+| AR | A 60 cm tabletop diorama of the whole site, with heights exaggerated and labelled |
+
+Other features:
+- **Astronaut HUD:** visor vignette, compass, suit readout (gravity, air, temperature, day length, from NASA Mars Facts), and distance from the landing spot.
+- **Beacons:** glowing markers that stay readable at any distance. "Walk there" moves you next to one.
+
+### How it's built
+- **Heightmaps:** `scripts/stl-to-heightmap.mjs` rasterises NASA's 3D-print terrain STLs into 16-bit heightmaps in `public/terrain/*.bin`.
+- **Real-world scales:** set per site in `content/sites/<id>.json`:
+  - Victoria is scaled to its ~800 m width.
+  - Gale is scaled so Mount Sharp is ~5 km tall.
+  - Gale's flat 3D-print label tab (top-right corner) was masked out.
+- **Terrain mesh:** a radial "clipmap" that's dense at your feet and reaches the horizon. It rebuilds in ~20 ms after you walk 40 m. Procedural fine relief, rocks, colours and the dusty sky are artistic, and an "illustration" beacon in each site says so.
+- **Site schema:** `{ id, body, name, region, terrain{…scales}, spawn{x,z,lookAt}, sun, fogDensity, rover?, conditions[], hotspots[] }`. Hotspots use `anchor: { "type": "site", "x", "z", "y"? }` in metres (x east, z south of the terrain centre).
+- **Linking from orbit:** a body hotspot can link to a site with `"site": "<id>"`.
+- **Approximate placement:** the STLs' compass orientation isn't documented, so site-hotspot positions (e.g. Cape Verde) and the Gale spawn are approximate and are described that way in the text.
+
+## Routes and shared store
+
+- `/xr` is the Solar System hub. It's labelled "not to scale".
+- `/xr/body/:id?band=…&obs=…` is the body explorer. The web viewer can deep-link here.
+- `/xr/surface/:siteId` stands you on a surface site (`victoria`, `gale`).
+- `useXRApp` (zustand, `src/xr/store.ts`) holds `bodyId`, `band`, `observation`, `hotspotId`, `mode`, etc. In dev builds it is also available as `window.__xrApp`.
+
+## Events for other modules
+
+- `cosmic:ask-guide` fires on `window` with detail `{ body, hotspotId, guidePrompt }`. This is for the AI guide team; subscribe with `onAskGuide()`.
+- `cosmic:back-to-source` fires with detail `{ body, hotspotId, observation }`. It's a stub for the web viewer.
+
+## Content
+
+`content/bodies/<id>.json` has the schema `{ id, name, type, texture?, model?, hotspots[] }`. Each hotspot looks like this:
+
+```json
+{ "id": "...", "body": "mars",
+  "anchor": { "type": "latlon", "lat": 18.65, "lon": -133.8 }   // or { "type": "mesh", "point": [x,y,z] }
+  "title": "...", "short": "≤25 words", "detail": "≤80 words",
+  "kind": "fact | illustration | candidate",
+  "source": { "label": "...", "url": "https://..." }, "guidePrompt": "..." }
+```
+
+- A `mesh` anchor is a direction from the body centre in model space (north = +Y), and it gets snapped onto the mesh surface at runtime.
+- `scripts/check-content.mjs` fails the build if any hotspot lacks a source or breaks these limits.
+
+## Assets
+
+| File | Origin |
+| --- | --- |
+| `public/textures/mars.jpg` | NASA 3D Resources, `Images and Textures/Mars/Mars.jpg` (public domain, 1440×720 equirectangular, centred on 0° lon) |
+| `public/terrain/victoria.bin`, `gale.bin` | NASA 3D Resources, `3D Printing/Mars - Victoria Crater` and `3D Printing/Curiosity Landing Site` STLs, rasterised with `scripts/stl-to-heightmap.mjs` |
+| `public/models/opportunity.glb` | NASA 3D Resources, `3D Models/Mars Exploration Rover - Opportunity (MER-B)` |
+| `public/models/bennu.glb` | NASA 3D Resources, `3D Printing/Asteroid 101955 Bennu` STL, converted with `scripts/stl-to-glb.mjs` (centred, unit radius, STL +Z → +Y) |
+
+If an asteroid's model file is missing, the explorer shows a procedural lumpy rock labelled "illustration".
+
+Bennu's mesh-anchor directions are approximate. The STL's axis convention isn't documented, so check them against OSIRIS-REx maps before the demo.
+
+## Graphics quality (Auto / Low / Medium / High / Ultra)
+
+Set it in the wrist menu or ⚙ Menu → Visuals.
+- **Auto** picks a level from the device: Quest/headsets → Medium, phones → Low/Medium, laptops by GPU → Medium/High/Ultra.
+- Auto steps down one level if fps stays under ~80% of the target for 4 s (`src/xr/QualityGovernor.tsx`).
+- Levels are defined in `src/xr/quality.ts`.
+
+| | Low | Medium | High | Ultra |
+|---|---|---|---|---|
+| Ground textures (PBR) | procedural | 512 | 1K | 2K |
+| Rocks | 250 | 600 | 900 | 1400 |
+| Sun shadows | – | – | 1024 | 2048 |
+| Dust particles / dust devils | – | 600 / 1 | 2000 / 2 | 6000 / 3 |
+| Star map / Mars relief | 1K / – | 2K / 1K | 4K / 2K | 4K / 2K |
+| Desktop effects | – | – | bloom, SMAA, vignette | + ambient occlusion |
+
+**VR caps:** in a headset the screen effects are off and shadows are 1024 at most. Particles and terrain are reduced, because every frame is drawn twice at a fixed 72 Hz.
+
+Measured CPU per frame in the emulated Quest at Victoria (on a laptop): Low 1.6 ms, Medium 1.9 ms, High 3.7 ms.
+
+### Visual features
+- **Mars surface:**
+  - PBR ground blended from gravel, dust and rock by slope and patches, with baked ambient occlusion.
+  - Scanned-rock material on the rocks, and sun shadows that follow you.
+  - Time-of-day sky (Visuals → Time of day), including the blue Martian sunset.
+- **Particles:**
+  - Wind-blown dust and sunlit motes, and dust devils.
+  - Footstep and landing dust puffs; desktop/phone arrival is a descent from 250 m.
+  - Bennu pebble ejections, as seen by OSIRIS-REx.
+- **Space:** the real Milky Way star map, Mars relief from MOLA topography with an atmosphere rim, and an animated Sun with corona.
+- **Polish:**
+  - Fade-through-black between scenes (VR-safe), teal glowing tracked hands, controller haptics.
+  - Synthesised sound (Mars wind, space hum, footsteps, clicks), off by default; Comfort → Sound turns it on.
+
+### Asset sources (rebuild with `node scripts/build-assets.mjs <sourceDir>`)
+| Output | Source |
+|---|---|
+| `public/textures/ground/*` | Poly Haven CC0: `rock_ground_02`, `red_sand`, `rock_boulder_dry` (greyscale detail, tinted in shader) |
+| `public/textures/space/starmap_*.jpg` | NASA SVS Deep Star Maps 2020, `starmap_2020_4k.exr` (public domain), tone-mapped |
+| `public/textures/mars_normal_*.png` | NASA PDS MGS MOLA MEGDR `megt90n000cb` (4 px/deg topography), ×12 relief |
