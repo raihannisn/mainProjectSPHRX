@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchObjectInfo, searchSpherexObservations, type ObjectInfo, type SpherexObservation } from '../api'
 import { TopBar } from './TopBar'
 import { ParticleField } from './ParticleField'
+import { cacheObservations, useXRApp } from '../../xr/store'
 
 type CompareMode = 'blink' | 'side' | 'wipe'
 
@@ -42,6 +43,14 @@ export function ObservationComparisonScreen() {
     setObservations([])
     setImageErrors({})
 
+    if (targetId !== 'rcw-36') {
+      setLoading(false)
+      setError(`Target "${targetId}" is an illustrative marker without archive observation records. Switch to RCW 36 for live SPHEREx comparison.`)
+      return () => {
+        active = false
+      }
+    }
+
     fetchObjectInfo(targetId).then((objectResult) => {
       if (!active) return
       if (!objectResult.ok) {
@@ -61,8 +70,12 @@ export function ObservationComparisonScreen() {
       searchSpherexObservations(ra, dec).then((result) => {
         if (!active) return
         setLoading(false)
-        if (result.ok) setObservations(result.data.observations)
-        else setError(`Observation search failed: ${result.error}`)
+        if (result.ok) {
+          cacheObservations(result.data.observations)
+          setObservations(result.data.observations)
+        } else {
+          setError(`Observation search failed: ${result.error}`)
+        }
       })
     })
 
@@ -85,6 +98,7 @@ export function ObservationComparisonScreen() {
       params.set('obs', pair[0].observation_id)
       params.set('obs2', pair[1].observation_id)
       if (pair[0].effective_wavelength_at_target) params.set('band', pair[0].effective_wavelength_at_target)
+      useXRApp.getState().setObservationData(pair[0], pair[1])
     }
     navigate(`/xr/body/spherex?${params}`)
   }
@@ -233,6 +247,19 @@ export function ObservationComparisonScreen() {
                   Download observation {index === 0 ? 'A' : 'B'} FITS ↗
                 </a>
               ))}
+            </div>
+
+            <div className="fe-scientific-notes" style={{ margin: '18px 0 0', padding: '14px 18px', background: 'rgba(7,11,31,0.7)', border: '1px solid rgba(79,227,214,0.2)', borderRadius: '4px', fontSize: '0.82rem', color: '#c7cde6', lineHeight: 1.55 }}>
+              <strong style={{ color: '#4fe3d6', display: 'block', marginBottom: '6px' }}>Scientific Integrity Disclosures</strong>
+              <p style={{ margin: '0 0 6px' }}>
+                • <strong>Photometric Notice</strong>: Visual preview only; not calibrated for quantitative photometry. Validated astrophysical variability or proper motion requires PSF aperture photometry on unresampled Level 2 images.
+              </p>
+              <p style={{ margin: '0 0 6px' }}>
+                • <strong>Bandpass Overlap</strong>: Geometric bandpass overlap is derived from authoritative CWAVE/CBAND parameters (75.8% narrower filter, 54.6% IoU). WCS-WAVE serves as visualization fallback (74.6% narrower filter, 52.6% IoU).
+              </p>
+              <p style={{ margin: 0 }}>
+                • <strong>Quality Flag</strong>: Level 2 quality flag status applies to the sampled pixel only. Bit 21 (SOURCE) indicates detected source presence without asserting detector-wide flag absence.
+              </p>
             </div>
           </>
         )}

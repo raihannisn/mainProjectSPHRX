@@ -24,9 +24,13 @@ interface SpherexState {
   flags: Flag[]
   revealed: boolean
   meta: BlinkMeta | null
+  liveFrame: 0 | 1
+  liveBlinking: boolean
   setView: (v: string) => void
   setBlinking: (b: boolean) => void
   flip: () => void
+  flipLive: () => void
+  setLiveBlinking: (b: boolean) => void
   addFlag: (f: Flag) => void
   reveal: () => void
   reset: () => void
@@ -38,9 +42,13 @@ export const useSpherex = create<SpherexState>((set) => ({
   flags: [],
   revealed: false,
   meta: null,
-  setView: (view) => set({ view, flags: [], revealed: false }),
+  liveFrame: 0,
+  liveBlinking: true,
+  setView: (view) => set({ view }),
   setBlinking: (blinking) => set({ blinking }),
   flip: () => set((s) => ({ frame: s.frame ? 0 : 1 })),
+  flipLive: () => set((s) => ({ liveFrame: s.liveFrame ? 0 : 1 })),
+  setLiveBlinking: (liveBlinking) => set({ liveBlinking }),
   addFlag: (f) => set((s) => ({ flags: [...s.flags.slice(-(MAX_FLAGS - 1)), f] })),
   reveal: () => set({ revealed: true }),
   reset: () => set({ flags: [], revealed: false }),
@@ -62,3 +70,5 @@ export function loadBlinkMeta() {
 export const isHit = (f: Flag, m: BlinkMeta) => [m.a, m.b].some((p) => Math.hypot(f.u - p.u, f.v - p.v) < HIT_RADIUS)
 export const movedArcsec = (m: BlinkMeta) => Math.hypot(m.b.u - m.a.u, m.b.v - m.a.v) * m.fieldDeg * 3600
 export const utcOf = (mjd: number) => new Date((mjd - 40587) * 86400000).toISOString().replace('T', ' ').slice(0, 16) + ' UTC'
+
+if (import.meta.env.DEV) (window as unknown as { __spherex: typeof useSpherex }).__spherex = useSpherex

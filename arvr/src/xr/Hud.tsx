@@ -29,6 +29,10 @@ export function Hud({ inAR = false }: { inAR?: boolean }) {
   const session = useStore(xrStore, (s) => s.session)
   const bodyId = useXRApp((s) => s.bodyId)
   const siteId = useXRApp((s) => s.siteId)
+  const target = useXRApp((s) => s.target)
+  const band = useXRApp((s) => s.band)
+  const obsIdA = useXRApp((s) => s.observation)
+  const obsIdB = useXRApp((s) => s.observationB)
   const mode = useXRApp((s) => s.mode)
   const gyroEnabled = useXRApp((s) => s.gyroEnabled)
   const placed = useXRApp((s) => s.arAnchor !== null)
@@ -80,12 +84,18 @@ export function Hud({ inAR = false }: { inAR?: boolean }) {
         <div className="hud__modes">
           {!session && !inAR && (
             <a
-              href={bodyId === 'spherex' ? '/comparison' : '/explorer'}
+              href={
+                bodyId === 'spherex'
+                  ? obsIdB
+                    ? `/comparison?${new URLSearchParams({ ...(target ? { target } : {}), ...(obsIdA ? { obs: obsIdA } : {}), obs2: obsIdB, ...(band ? { band } : {}) })}`
+                    : `/explorer?${new URLSearchParams({ ...(target ? { target } : {}), ...(obsIdA ? { obs: obsIdA } : {}), ...(band ? { band } : {}) })}`
+                  : '/explorer'
+              }
               className="btn btn--ghost"
               style={{ textDecoration: 'none' }}
-              title={bodyId === 'spherex' ? 'Open 2D Comparison' : 'Back to 2D Sky Explorer'}
+              title={bodyId === 'spherex' ? (obsIdB ? 'Open 2D Comparison' : 'Back to 2D Sky Explorer') : 'Back to 2D Sky Explorer'}
             >
-              ◂ {t(bodyId === 'spherex' ? 'Comparison (2D)' : '2D Explorer')}
+              ◂ {t(bodyId === 'spherex' ? (obsIdB ? 'Comparison (2D)' : '2D Explorer') : '2D Explorer')}
             </a>
           )}
           {!session && !inAR && <TourButton />}

@@ -1799,9 +1799,171 @@
   color: #ffd184;
 }
 
+/* ── Phase 6.3 Mobile UI/UX & Touch Accessibility Hardening ── */
+.fe-lang, .fe-lang-btn {
+  min-height: 36px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+/* Touchscreens: Meets WCAG 2.1 SC 2.5.5 Level AAA (≥ 44×44px) */
+@media (pointer: coarse) {
+  .fe-lang, .fe-lang-btn { min-height: 44px !important; min-width: 44px !important; padding: 8px 12px !important; }
+  .fe-tabs .fe-tab { min-height: 44px !important; }
+  .fe-back { min-height: 44px !important; min-width: 44px !important; }
+  .fe-toolbar .fe-icon-btn { min-width: 44px !important; min-height: 44px !important; }
+  .fe-hud-actions button { min-height: 44px !important; }
+  .fe-dock button { min-height: 44px !important; }
+  .fe-btn-primary, .fe-btn-text { min-height: 44px !important; }
+  .fe-marker { min-width: 44px !important; min-height: 44px !important; }
+}
+
+/* Mobile Handheld Viewports (≤ 767px) */
+@media (max-width: 767px) {
+  .fe-topbar .fe-lang, .fe-topbar .fe-lang-btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 4px 10px !important;
+    font-size: 0.68rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fe-hud {
+    max-width: calc(100% - 24px);
+  }
+}
+
+/* Tablet 768–1023: Fix collisions & responsive hud layout */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .fe-hud-head {
+    max-width: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+  }
+  .fe-hud {
+    max-width: min(340px, calc(100% - 40px));
+  }
+}
+
+/* Small Viewports (320px - 360px) */
+@media (max-width: 360px) {
+  .fe-topbar {
+    padding: 0 8px !important;
+  }
+  .fe-brand {
+    font-size: 0.68rem !important;
+    gap: 6px !important;
+  }
+  .fe-brand-mark {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  .fe-hero-copy h1 {
+    font-size: clamp(2.1rem, 11vw, 2.8rem) !important;
+  }
+  .fe-button-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .fe-btn-primary, .fe-btn-text {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fe-gw-curve path {
     animation: none !important;
+  }
+}
+
+/* ── Phase 6.3 Mobile UI/UX & Touch Accessibility Hardening ── */
+.fe-lang, .fe-lang-btn {
+  min-height: 36px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+/* Touchscreens: Meets WCAG 2.1 SC 2.5.5 Level AAA (≥ 44×44px) */
+@media (pointer: coarse) {
+  .fe-lang, .fe-lang-btn { min-height: 44px !important; min-width: 44px !important; padding: 8px 12px !important; }
+  .fe-tabs .fe-tab { min-height: 44px !important; }
+  .fe-back { min-height: 44px !important; min-width: 44px !important; }
+  .fe-toolbar .fe-icon-btn { min-width: 44px !important; min-height: 44px !important; }
+  .fe-hud-actions button { min-height: 44px !important; }
+  .fe-dock button { min-height: 44px !important; }
+  .fe-btn-primary, .fe-btn-text { min-height: 44px !important; }
+  .fe-marker { min-width: 44px !important; min-height: 44px !important; }
+}
+
+/* Mobile Handheld Viewports (≤ 767px) */
+@media (max-width: 767px) {
+  .fe-topbar .fe-lang, .fe-topbar .fe-lang-btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 4px 10px !important;
+    font-size: 0.68rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fe-hud {
+    max-width: calc(100% - 24px);
+  }
+}
+
+/* Tablet 768–1023: Fix collisions & responsive hud layout */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .fe-hud-head {
+    max-width: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+  }
+  .fe-hud {
+    max-width: min(340px, calc(100% - 40px));
+  }
+}
+
+/* Small Viewports (320px - 360px) */
+@media (max-width: 360px) {
+  .fe-topbar {
+    padding: 0 8px !important;
+  }
+  .fe-brand {
+    font-size: 0.68rem !important;
+    gap: 6px !important;
+  }
+  .fe-brand-mark {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  .fe-hero-copy h1 {
+    font-size: clamp(2.1rem, 11vw, 2.8rem) !important;
+  }
+  .fe-button-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .fe-btn-primary, .fe-btn-text {
+    width: 100%;
+    justify-content: center;
   }
 }
 
