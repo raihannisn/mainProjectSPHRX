@@ -883,13 +883,17 @@
   left: 32px;
   top: -4px;
   white-space: nowrap;
+  max-width: min(160px, 45vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--soft);
   font: 0.68rem var(--mono);
   text-shadow: 0 2px 6px #000;
-  background: rgba(7, 11, 31, 0.8);
+  background: rgba(7, 11, 31, 0.85);
   padding: 2px 6px;
   border-radius: 4px;
   border: 1px solid rgba(79, 227, 214, 0.2);
+  box-sizing: border-box;
 }
 
 .fe-view-hint {
@@ -1000,6 +1004,27 @@
   overflow-wrap: anywhere;
 }
 
+.fe-obs-select {
+  width: 100%;
+  max-width: 180px;
+  box-sizing: border-box;
+  background: rgba(11, 24, 32, 0.9);
+  color: #4fe3d6;
+  border: 1px solid rgba(79, 227, 214, 0.3);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font: 0.74rem var(--mono);
+  cursor: pointer;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.fe-obs-select option {
+  background: #0b1820;
+  color: #fff;
+}
+
 .fe-source-line {
   position: absolute;
   z-index: 4;
@@ -1105,7 +1130,15 @@
 
 .fe-inline-error {
   margin: 12px 0 0;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: #ffd184;
+  background: rgba(245, 174, 67, 0.08);
+  border: 1px solid rgba(245, 174, 67, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  word-break: break-word;
 }
 
 .fe-compare-single,
@@ -1669,6 +1702,10 @@
     position: relative;
     height: 52vh;
     min-height: 360px;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
   }
   .fe-sky-disc {
     width: min(88vw, 480px);
@@ -1676,33 +1713,146 @@
   .fe-sky-title {
     top: 14px;
     left: 14px;
+    right: auto;
+    max-width: calc(100% - 150px);
     padding: 8px 12px;
-    max-width: calc(100% - 110px);
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  .fe-sky-title .fe-eyebrow {
+    font-size: 0.58rem;
+    line-height: 1.25;
+    letter-spacing: 0.08em;
+    white-space: normal;
+    word-break: break-word;
   }
   .fe-sky-title h2 {
     font-size: 0.95rem;
+    line-height: 1.2;
+    margin: 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fe-sky-title p {
+    font-size: 0.66rem;
+    line-height: 1.3;
+    margin: 0;
+    white-space: normal;
+    word-break: break-word;
+  }
+  .fe-view-hint {
+    left: 14px;
+    right: 14px;
+    bottom: 12px;
+    max-width: calc(100% - 28px);
+    box-sizing: border-box;
+    text-align: center;
+    font-size: 0.62rem;
+    padding: 6px 10px;
+  }
+  .fe-marker.demo .fe-marker-label {
+    left: auto;
+    right: 32px;
+  }
+  .fe-hud {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 16px 14px 28px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  .fe-hud-actions {
+    position: relative;
+    inset: auto;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 14px 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    box-sizing: border-box;
+  }
+  .fe-hud-actions button,
+  .fe-hud-actions a {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.76rem;
+    box-sizing: border-box;
+  }
+  .fe-hud-actions .fe-btn-gold {
+    grid-column: 1 / -1;
   }
   .fe-hud-object,
   .fe-hud-telemetry,
-  .fe-source-line,
-  .fe-hud-actions,
+  .fe-source-line {
+    position: relative;
+    inset: auto;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 14px 0;
+    box-sizing: border-box;
+  }
   .fe-dock {
     position: relative;
     inset: auto;
     transform: none;
-    width: auto;
-    max-width: none;
-    margin: 8px 14px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    box-sizing: border-box;
+    padding: 8px;
+    border-radius: 999px;
   }
-  .fe-hud-actions {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-  .fe-hud-actions button,
-  .fe-hud-actions a {
-    flex: 1;
-    min-width: 140px;
+  .fe-dock button {
+    width: 100%;
+    min-height: 44px;
     justify-content: center;
+    font-size: 0.72rem;
+    padding: 8px 12px;
+  }
+  .fe-data-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 14px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .fe-datum {
+    min-width: 0;
+  }
+  .fe-datum span {
+    display: block;
+    color: var(--muted);
+    font: 0.62rem var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .fe-datum strong {
+    font: 0.72rem var(--mono);
+    font-weight: 500;
+    color: var(--white);
+    line-height: 1.35;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    display: block;
+  }
+  .fe-obs-select {
+    max-width: 100%;
+    font-size: 0.72rem;
+    padding: 6px 8px;
   }
   .fe-epoch-row {
     grid-template-columns: 1fr;
@@ -1819,6 +1969,7 @@
   .fe-dock button { min-height: 44px !important; }
   .fe-btn-primary, .fe-btn-text { min-height: 44px !important; }
   .fe-marker { min-width: 44px !important; min-height: 44px !important; }
+  .fe-obs-select { min-height: 44px !important; }
 }
 
 /* Mobile Handheld Viewports (≤ 767px) */
@@ -1833,7 +1984,12 @@
     justify-content: center;
   }
   .fe-hud {
-    max-width: calc(100% - 24px);
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 16px 14px 24px;
+    box-sizing: border-box;
   }
 }
 
@@ -1877,6 +2033,18 @@
   .fe-btn-primary, .fe-btn-text {
     width: 100%;
     justify-content: center;
+  }
+  .fe-hud-actions {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .fe-hud-actions .fe-btn-gold {
+    grid-column: auto;
+  }
+  .fe-data-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
   }
 }
 
@@ -1884,90 +2052,6 @@
   .fe-gw-curve path {
     animation: none !important;
   }
-}
-
-/* ── Phase 6.3 Mobile UI/UX & Touch Accessibility Hardening ── */
-.fe-lang, .fe-lang-btn {
-  min-height: 36px;
-  min-width: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  touch-action: manipulation;
-}
-
-/* Touchscreens: Meets WCAG 2.1 SC 2.5.5 Level AAA (≥ 44×44px) */
-@media (pointer: coarse) {
-  .fe-lang, .fe-lang-btn { min-height: 44px !important; min-width: 44px !important; padding: 8px 12px !important; }
-  .fe-tabs .fe-tab { min-height: 44px !important; }
-  .fe-back { min-height: 44px !important; min-width: 44px !important; }
-  .fe-toolbar .fe-icon-btn { min-width: 44px !important; min-height: 44px !important; }
-  .fe-hud-actions button { min-height: 44px !important; }
-  .fe-dock button { min-height: 44px !important; }
-  .fe-btn-primary, .fe-btn-text { min-height: 44px !important; }
-  .fe-marker { min-width: 44px !important; min-height: 44px !important; }
-}
-
-/* Mobile Handheld Viewports (≤ 767px) */
-@media (max-width: 767px) {
-  .fe-topbar .fe-lang, .fe-topbar .fe-lang-btn {
-    min-width: 44px !important;
-    min-height: 44px !important;
-    padding: 4px 10px !important;
-    font-size: 0.68rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .fe-hud {
-    max-width: calc(100% - 24px);
-  }
-}
-
-/* Tablet 768–1023: Fix collisions & responsive hud layout */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .fe-hud-head {
-    max-width: 100%;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    box-sizing: border-box;
-  }
-  .fe-hud {
-    max-width: min(340px, calc(100% - 40px));
-  }
-}
-
-/* Small Viewports (320px - 360px) */
-@media (max-width: 360px) {
-  .fe-topbar {
-    padding: 0 8px !important;
-  }
-  .fe-brand {
-    font-size: 0.68rem !important;
-    gap: 6px !important;
-  }
-  .fe-brand-mark {
-    width: 22px !important;
-    height: 22px !important;
-  }
-  .fe-hero-copy h1 {
-    font-size: clamp(2.1rem, 11vw, 2.8rem) !important;
-  }
-  .fe-button-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .fe-btn-primary, .fe-btn-text {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
   .fe-particle-field {
     display: none;
   }

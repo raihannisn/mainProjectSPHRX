@@ -29,6 +29,24 @@ function queryValue(value: number | undefined, precision = 4) {
   return value === undefined ? '—' : value.toFixed(precision)
 }
 
+function formatUtc(val?: string | null): string {
+  if (!val || typeof val !== 'string' || val.trim() === '') return 'Not available'
+  const match = val.trim().match(/^(\d{4}-\d{2}-\d{2})[T\s](\d{2}:\d{2})/)
+  if (match) {
+    return `${match[1]} ${match[2]} UTC`
+  }
+  return val
+}
+
+function formatErrorMessage(err?: string | null): string {
+  if (!err) return ''
+  if (/502|503|504|Proxy Error|Bad Gateway|upstream server|timeout|IRSA|query/i.test(err)) {
+    return 'NASA IRSA is temporarily unavailable. Please try again.'
+  }
+  const clean = err.replace(/<[^>]*>/g, '').trim()
+  return clean.length > 80 ? 'NASA IRSA is temporarily unavailable. Please try again.' : clean
+}
+
 export function SkyExplorerScreen() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -250,6 +268,18 @@ export function SkyExplorerScreen() {
         </div>
 
         <aside className="fe-hud" aria-live="polite">
+          <div className="fe-hud-actions">
+            <button className="fe-btn-primary" onClick={handleAskGuide}>
+              <span>Ask the Guide</span><span aria-hidden="true">↗</span>
+            </button>
+            <button className="fe-btn-text" onClick={handleCompare}>
+              <span>Compare observations</span><span aria-hidden="true">→</span>
+            </button>
+            <button className="fe-btn-text fe-btn-gold" onClick={handleEnterXR}>
+              <span>Enter 3D Table (XR)</span><span aria-hidden="true">↗</span>
+            </button>
+          </div>
+
           <div className="fe-hud-card fe-hud-object">
             <div className="fe-hud-head">
               <span className="fe-eyebrow">Target selected</span>
@@ -285,18 +315,6 @@ export function SkyExplorerScreen() {
                 {observations.length > 1 ? (
                   <select
                     className="fe-obs-select"
-                    style={{
-                      background: 'rgba(11,24,32,0.9)',
-                      color: '#4fe3d6',
-                      border: '1px solid rgba(79,227,214,0.3)',
-                      borderRadius: '3px',
-                      padding: '2px 4px',
-                      fontSize: '0.78rem',
-                      fontFamily: 'monospace',
-                      width: '100%',
-                      maxWidth: '180px',
-                      cursor: 'pointer',
-                    }}
                     value={chosenObservation?.observation_id || ''}
                     onChange={(e) => {
                       const next = new URLSearchParams(searchParams)
@@ -317,10 +335,14 @@ export function SkyExplorerScreen() {
               </div>
               <div className="fe-datum">
                 <span>Observed at (UTC)</span>
-                <strong>{chosenObservation?.observed_at_utc || 'Not available'}</strong>
+                <strong>{formatUtc(chosenObservation?.observed_at_utc)}</strong>
               </div>
             </div>
-            {observationsError && <p className="fe-inline-error" role="alert">Observation search failed: {observationsError}</p>}
+            {observationsError && (
+              <p className="fe-inline-error" role="alert">
+                {formatErrorMessage(observationsError)}
+              </p>
+            )}
             {!observationsLoading && !observationsError && selectedId === 'rcw-36' && observations.length === 0 && (
               <p className="fe-muted" role="status">No SPHEREx observation records were returned for this search.</p>
             )}
@@ -328,18 +350,6 @@ export function SkyExplorerScreen() {
 
           <div className="fe-hud-card fe-source-line">
             Source: {selectedId === 'rcw-36' ? target?.source || 'Object catalog and IRSA SIA2' : 'Illustrative interface marker; no catalog source'}
-          </div>
-
-          <div className="fe-hud-actions">
-            <button className="fe-btn-primary" onClick={handleAskGuide}>
-              <span>Ask the Guide</span><span aria-hidden="true">↗</span>
-            </button>
-            <button className="fe-btn-text" onClick={handleCompare}>
-              <span>Compare observations</span><span aria-hidden="true">→</span>
-            </button>
-            <button className="fe-btn-text fe-btn-gold" onClick={handleEnterXR}>
-              <span>Enter 3D Table (XR)</span><span aria-hidden="true">↗</span>
-            </button>
           </div>
 
           <div className="fe-dock">

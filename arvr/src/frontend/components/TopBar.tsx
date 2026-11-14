@@ -44,9 +44,6 @@ export function TopBar() {
           <NavLink to="/" end className={({ isActive }) => `fe-nav-link ${isActive ? 'active' : ''}`}>
             Gateway
           </NavLink>
-          <NavLink to="/explorer" className={({ isActive }) => `fe-nav-link ${isActive ? 'active' : ''}`}>
-            Sky Explorer
-          </NavLink>
           <NavLink to="/comparison" className={({ isActive }) => `fe-nav-link ${isActive ? 'active' : ''}`}>
             Comparison
           </NavLink>

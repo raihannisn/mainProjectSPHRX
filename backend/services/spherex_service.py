@@ -258,12 +258,12 @@ def _query_via_http_sia2(ra: float, dec: float, radius: float, collection: str, 
         with httpx.Client(timeout=35.0) as client:
             resp = client.get(url, headers=headers)
             if resp.status_code != 200:
-                raise Exception(f"IRSA HTTP error {resp.status_code}: {resp.text[:200]}")
+                raise Exception(f"IRSA returned HTTP {resp.status_code}")
             csv_text = resp.text
     else:
         resp = requests.get(url, headers=headers, timeout=35.0)
         if resp.status_code != 200:
-            raise Exception(f"IRSA HTTP error {resp.status_code}: {resp.text[:200]}")
+            raise Exception(f"IRSA returned HTTP {resp.status_code}")
         csv_text = resp.text
 
     reader = csv.DictReader(io.StringIO(csv_text))
@@ -334,7 +334,7 @@ async def query_spherex_observations(
     except Exception as exc:
         raise HTTPException(
             status_code=502,
-            detail=f"Gagal melakukan query ke layanan NASA IRSA: {str(exc)}",
+            detail="NASA IRSA is temporarily unavailable. Please try again.",
         )
 
     # 4. Normalisasi, filtering, dan deduplikasi data observasi

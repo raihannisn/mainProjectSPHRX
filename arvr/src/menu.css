@@ -2,7 +2,7 @@
    Expedition menu: glass side panel (desktop/tablet) · bottom sheet (phones),
    plus the phone layout of the whole on-screen HUD. Uses the motion tokens from styles.css.
    ========================================================================================= */
-html, body, #root, .xr-root { height: 100dvh; }
+html.xr-locked, body.xr-locked, html.xr-locked #root, body.xr-locked #root, .xr-root { height: 100dvh; }
 .ui-icon { flex: none; display: block; }
 
 .menu-fab {
