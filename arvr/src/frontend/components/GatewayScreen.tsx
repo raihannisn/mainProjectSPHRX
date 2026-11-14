@@ -1,0 +1,199 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { fetchApod, type ApodData } from '../api'
+import { TopBar } from './TopBar'
+import { ParticleField } from './ParticleField'
+
+type DeviceCaps = { ar: boolean; vr: boolean }
+
+export function GatewayScreen() {
+  const navigate = useNavigate()
+  const [caps, setCaps] = useState<DeviceCaps>({ ar: false, vr: false })
+  const [toast, setToast] = useState<string | null>(null)
+  const [apodOpen, setApodOpen] = useState(false)
+  const [apodLoading, setApodLoading] = useState(false)
+  const [apod, setApod] = useState<ApodData | null>(null)
+  const [apodError, setApodError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+    const xrNavigator = navigator as Navigator & {
+      xr?: { isSessionSupported: (mode: 'immersive-vr' | 'immersive-ar') => Promise<boolean> }
+    }
+
+    if (!xrNavigator.xr) return
+    Promise.all([
+      xrNavigator.xr.isSessionSupported('immersive-ar'),
+      xrNavigator.xr.isSessionSupported('immersive-vr'),
+    ])
+      .then(([ar, vr]) => {
+        if (active) setCaps({ ar, vr })
+      })
+      .catch(() => {
+        if (active) setCaps({ ar: false, vr: false })
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const notify = (message: string) => {
+    setToast(message)
+    window.setTimeout(() => setToast(null), 3000)
+  }
+
+  const handleCapabilities = () => {
+    notify('Desktop 3D is available. Immersive modes (WebXR VR/AR) activate automatically on supported headsets and mobile devices.')
+  }
+
+  const openApod = async () => {
+    setApodOpen(true)
+    setApodLoading(true)
+    setApod(null)
+    setApodError(null)
+    const result = await fetchApod()
+    setApodLoading(false)
+    if (!result.ok) {
+      setApodError(result.error)
+      return
+    }
+    if (result.data.status !== 'ok' || result.data.fallback) {
+      setApodError(result.data.message || 'NASA APOD is currently unavailable.')
+      return
+    }
+    setApod(result.data)
+  }
+
+  return (
+    <div className="fe-app">
+      <ParticleField />
+      <TopBar />
+
+      <main className="fe-screen fe-gateway" aria-label="Cosmic Gateway">
+        <div className="fe-hero-copy">
+          <svg className="fe-gw-curve" viewBox="0 0 1000 500" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="fe-gw-grad-1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#4fe3d6" stopOpacity=".9" />
+                <stop offset="50%" stopColor="#38bdf8" stopOpacity=".85" />
+                <stop offset="100%" stopColor="#b18cff" stopOpacity=".8" />
+              </linearGradient>
+              <linearGradient id="fe-gw-grad-2" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#b18cff" stopOpacity=".75" />
+                <stop offset="45%" stopColor="#4fe3d6" stopOpacity=".8" />
+                <stop offset="100%" stopColor="#38bdf8" stopOpacity=".7" />
+              </linearGradient>
+              <linearGradient id="fe-gw-grad-3" x1="0%" y1="50%" x2="100%" y2="50%">
+                <stop offset="0%" stopColor="#38bdf8" stopOpacity=".5" />
+                <stop offset="60%" stopColor="#b18cff" stopOpacity=".6" />
+                <stop offset="100%" stopColor="#4fe3d6" stopOpacity=".5" />
+              </linearGradient>
+            </defs>
+            <path className="fe-gw-glow" d="M 0 220 C 200 140, 340 380, 560 260 S 820 180, 1000 320" />
+            <path className="fe-gw-core fe-gw-flow-1" d="M 0 220 C 200 140, 340 380, 560 260 S 820 180, 1000 320" />
+            <path className="fe-gw-secondary fe-gw-flow-2" d="M 0 380 C 160 460, 360 210, 620 340 S 860 440, 1000 220" />
+            <path className="fe-gw-fine fe-gw-flow-1" d="M 0 160 C 220 280, 410 120, 680 230 S 900 360, 1000 180" />
+          </svg>
+
+          <div className="fe-eyebrow">NASA · Infrared sky survey</div>
+          <h1>
+            Journey through <span>96</span> infrared colors.
+          </h1>
+          <p className="fe-lead">
+            Explore the changing infrared sky through SPHEREx observations. Navigate a celestial field, inspect targets,
+            and compare distinct observation records.
+          </p>
+
+          <div className="fe-button-row">
+            <button className="fe-btn-primary" onClick={() => navigate('/explorer')}>
+              Enter expedition <span aria-hidden="true">↗</span>
+            </button>
+            <button className="fe-btn-text" onClick={handleCapabilities}>
+              Explore capabilities
+            </button>
+            <button className="fe-btn-text" onClick={openApod} title="Astronomy Picture of the Day from NASA">
+              NASA APOD Highlight ✦
+            </button>
+          </div>
+        </div>
+
+        <div className="fe-sky-art" aria-label="Illustrative solar system with planets orbiting a glowing sun">
+          <div className="fe-solar-system" aria-hidden="true">
+            <div className="fe-solar-dust" />
+            <div className="fe-planet-orbit one">
+              <i className="fe-planet" />
+            </div>
+            <div className="fe-planet-orbit two">
+              <i className="fe-planet" />
+            </div>
+            <div className="fe-planet-orbit three">
+              <i className="fe-planet" />
+            </div>
+            <div className="fe-sun" />
+          </div>
+        </div>
+
+        <div className="fe-steps">
+          <div className="fe-step">
+            <em>01</em>
+            <b>Navigate sky</b>
+            <span>Find a region of interest</span>
+          </div>
+          <div className="fe-step">
+            <em>02</em>
+            <b>Select observation</b>
+            <span>Inspect a catalog target</span>
+          </div>
+          <div className="fe-step">
+            <em>03</em>
+            <b>Compare records</b>
+            <span>Review distinct observations</span>
+          </div>
+        </div>
+      </main>
+
+      {toast && (
+        <div className="fe-toast" role="status">
+          {toast}
+        </div>
+      )}
+
+      {apodOpen && (
+        <div className="fe-apod-backdrop" onClick={() => setApodOpen(false)}>
+          <section
+            className="fe-apod-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fe-apod-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button className="fe-modal-close" onClick={() => setApodOpen(false)} aria-label="Close APOD dialog">
+              ×
+            </button>
+            <div className="fe-eyebrow">NASA · Astronomy Picture of the Day</div>
+            <h2 id="fe-apod-title">{apodLoading ? 'Loading NASA APOD…' : apod?.title || 'NASA APOD Highlight'}</h2>
+            {apodLoading && <p role="status">Fetching the latest feature from NASA…</p>}
+            {apodError && <p className="fe-apod-error" role="alert">{apodError}</p>}
+            {apod && (
+              <>
+                <div className="fe-apod-meta">
+                  {apod.date && <span>{apod.date}</span>}
+                  <span>{apod.media_type === 'video' ? 'NASA video' : 'NASA image'}</span>
+                </div>
+                {apod.image_url && <img className="fe-apod-image" src={apod.image_url} alt={apod.alt || apod.title || 'NASA APOD'} />}
+                <p className="fe-apod-explanation">{apod.explanation}</p>
+                <p className="fe-apod-credit">Credit: {apod.credit || apod.copyright || 'NASA'}</p>
+                {apod.article_url && (
+                  <a className="fe-btn-primary" href={apod.article_url} target="_blank" rel="noopener noreferrer">
+                    Read on NASA Science ↗
+                  </a>
+                )}
+              </>
+            )}
+          </section>
+        </div>
+      )}
+    </div>
+  )
+}

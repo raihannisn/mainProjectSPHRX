@@ -21,5 +21,130 @@
     "type": "Planet",
     "description": "Planet terbesar di tata surya dengan Bintik Merah Raksasa.",
     "hotspots": []
+  },
+  "rcw-36": {
+    "id": "rcw-36",
+    "name": "RCW 36 Emission Nebula",
+    "type": "Emission Nebula / H II Region",
+    "ra": 134.8708,
+    "dec": -43.7533,
+    "ra_hms": "08h 59m 29s",
+    "dec_dms": "-43°45′12″",
+    "coordinate_provenance": "query_center",
+    "coordinate_notes": "Coordinates RA 134.8708°, DEC -43.7533° (08h 59m 29s, -43° 45′ 12″) represent the project-selected IRSA SIA2 query center matching the Explorer sky tile and yielding 70 SPHEREx QR3 observation records. The SIMBAD catalog reference position for the central ionizing cluster of Gum 20 / RCW 36 is RA 134.7538°, DEC -43.7361° (08h 59m 00.9s, -43° 44′ 10″).",
+    "query_center": {
+      "ra": 134.8708,
+      "dec": -43.7533,
+      "ra_hms": "08h 59m 29s",
+      "dec_dms": "-43°45′12″",
+      "role": "query_center",
+      "purpose": "SPHEREx QR3 SIA2 archive search center (70 observation records)"
+    },
+    "simbad_reference": {
+      "ra": 134.7538,
+      "dec": -43.7361,
+      "ra_hms": "08h 59m 00.9s",
+      "dec_dms": "-43°44′10″",
+      "role": "catalog_centroid",
+      "source": "SIMBAD Astronomical Database (NAME RCW 36 / Gum 20)"
+    },
+    "distance": "~700 pc (2,300 light-years)",
+    "constellation": "Vela",
+    "description": "A compact star-forming H II emission nebula situated within Cloud C of the Vela Molecular Ridge. Ionized by massive embedded O/B stars and observed by SPHEREx across 96 infrared spectral channels.",
+    "hotspots": [
+      {"id": "rcw36_cluster", "name": "Embedded Stellar Cluster", "fact": "Contains over 350 young stellar objects and protostars ionizing surrounding molecular gas."},
+      {"id": "rcw36_ring", "name": "Bipolar Molecular Outflow", "fact": "Dense molecular gas cavity carved out by stellar winds from central massive stars."}
+    ],
+    "source": "NASA ADS / SIMBAD Gum 20 / IPAC IRSA SPHEREx QR3 Catalog"
+  },
+  "rcw": {
+    "id": "rcw-36",
+    "name": "RCW 36 Emission Nebula",
+    "type": "Emission Nebula / H II Region",
+    "ra": 134.8708,
+    "dec": -43.7533,
+    "ra_hms": "08h 59m 29s",
+    "dec_dms": "-43°45′12″",
+    "coordinate_provenance": "query_center",
+    "coordinate_notes": "Coordinates RA 134.8708°, DEC -43.7533° (08h 59m 29s, -43° 45′ 12″) represent the project-selected IRSA SIA2 query center matching the Explorer sky tile and yielding 70 SPHEREx QR3 observation records. The SIMBAD catalog reference position for the central ionizing cluster of Gum 20 / RCW 36 is RA 134.7538°, DEC -43.7361° (08h 59m 00.9s, -43° 44′ 10″).",
+    "query_center": {
+      "ra": 134.8708,
+      "dec": -43.7533,
+      "ra_hms": "08h 59m 29s",
+      "dec_dms": "-43°45′12″",
+      "role": "query_center",
+      "purpose": "SPHEREx QR3 SIA2 archive search center (70 observation records)"
+    },
+    "simbad_reference": {
+      "ra": 134.7538,
+      "dec": -43.7361,
+      "ra_hms": "08h 59m 00.9s",
+      "dec_dms": "-43°44′10″",
+      "role": "catalog_centroid",
+      "source": "SIMBAD Astronomical Database (NAME RCW 36 / Gum 20)"
+    },
+    "distance": "~700 pc (2,300 light-years)",
+    "constellation": "Vela",
+    "description": "A compact star-forming H II emission nebula situated within Cloud C of the Vela Molecular Ridge. Ionized by massive embedded O/B stars and observed by SPHEREx across 96 infrared spectral channels.",
+    "hotspots": [
+      {"id": "rcw36_cluster", "name": "Embedded Stellar Cluster", "fact": "Contains over 350 young stellar objects and protostars ionizing surrounding molecular gas."},
+      {"id": "rcw36_ring", "name": "Bipolar Molecular Outflow", "fact": "Dense molecular gas cavity carved out by stellar winds from central massive stars."}
+    ],
+    "source": "NASA ADS / SIMBAD Gum 20 / IPAC IRSA SPHEREx QR3 Catalog"
+  },
+  "vela-ridge": {
+    "id": "vela-ridge",
+    "name": "Vela Molecular Ridge",
+    "type": "Giant Molecular Cloud Complex",
+    "ra": 133.7500,
+    "dec": -44.0000,
+    "ra_hms": "08h 55m 00s",
+    "dec_dms": "-44°00′00″",
+    "coordinate_provenance": "project_search_position",
+    "coordinate_notes": "Coordinates RA 133.7500°, DEC -44.0000° (08h 55m 00s, -44° 00′ 00″) represent a project-selected nominal search position for interface exploration. The Vela Molecular Ridge is an extended giant molecular cloud complex spanning over 10° x 4° across the galactic plane; it has no single physical centroid.",
+    "search_position": {
+      "ra": 133.7500,
+      "dec": -44.0000,
+      "ra_hms": "08h 55m 00s",
+      "dec_dms": "-44°00′00″",
+      "role": "nominal_search_position",
+      "search_radius_deg": 0.05,
+      "search_radius_notes": "A 0.05° search radius (~3 arcmin) samples a localized pointing within the complex; full complex coverage requires a mosaic or wide-field catalog query."
+    },
+    "distance": "Clouds A, C, D: ~700–1,000 pc (~2,300–3,260 ly); Cloud B: ~2,000 pc (~6,520 ly)",
+    "cloud_components": {
+      "VMR_A": {
+        "name": "Vela Cloud A",
+        "distance": "~700–1,000 pc",
+        "description": "Houses the RCW 38 young embedded cluster with active massive star formation.",
+        "reference": "Liseau et al. (1992) A&A 265, 577"
+      },
+      "VMR_B": {
+        "name": "Vela Cloud B",
+        "distance": "~2,000 pc",
+        "description": "Distant background giant molecular cloud along the line of sight, distinct from the closer A, C, D group.",
+        "reference": "Liseau et al. (1992) A&A 265, 577"
+      },
+      "VMR_C": {
+        "name": "Vela Cloud C",
+        "distance": "~700 pc",
+        "description": "Site of active intermediate and massive star formation, including the compact RCW 36 H II region.",
+        "reference": "Murphy & May (1991) A&A 247, 202; Baba et al. (2004) ApJ 614, 818"
+      },
+      "VMR_D": {
+        "name": "Vela Cloud D",
+        "distance": "~700–1,000 pc",
+        "description": "Houses extensive populations of low-to-intermediate mass young stellar objects.",
+        "reference": "Liseau et al. (1992) A&A 265, 577; Elia et al. (2007) A&A 467, 759"
+      }
+    },
+    "constellation": "Vela",
+    "description": "A massive interstellar molecular cloud complex in the southern sky, segmented into Clouds A, B, C, and D. Clouds A, C, and D form a coherent physical group at ~700–1,000 pc, whereas Cloud B is a separate background GMC at ~2,000 pc.",
+    "hotspots": [
+      {"id": "vmr_cloud_c", "name": "VMR Cloud C (d ~700 pc)", "fact": "Site of active cluster formation housing the compact RCW 36 H II region."},
+      {"id": "vmr_cloud_d", "name": "VMR Cloud D (d ~700-1000 pc)", "fact": "Contains rich populations of low-to-intermediate mass young stellar objects."},
+      {"id": "vmr_cloud_b", "name": "VMR Cloud B (d ~2000 pc)", "fact": "Distant background molecular cloud at ~2 kpc, not co-distant with Clouds A, C, D."}
+    ],
+    "source": "Murphy & May (1991) A&A 247, 202; Liseau et al. (1992) A&A 265, 577; NASA IRSA"
   }
 }

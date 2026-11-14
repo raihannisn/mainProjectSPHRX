@@ -1,6 +1,13 @@
-# --- DATA DUMMY / FALLBACK JIKA SERVER NASA DOWN ---
+import re
+
+# ---------------------------------------------------------------------------
+# FALLBACK — returned when NASA APOD is unreachable or returns an error.
+# 'status': 'error' distinguishes this from a live response ('status': 'ok').
+# Frontend must check this field before rendering as live NASA content.
+# ---------------------------------------------------------------------------
 DUMMY_APOD = {
     "status": "error",
+    "fallback": True,
     "message": "NASA APOD sedang tidak tersedia, silakan coba lagi nanti",
     "source": "NASA Astronomy Picture of the Day (APOD)",
     "title": "NASA APOD Unavailable",
@@ -8,27 +15,81 @@ DUMMY_APOD = {
     "explanation": "NASA APOD sedang tidak tersedia, silakan coba lagi nanti",
     "media_type": "image",
     "image_url": None,
+    "article_url": None,
     "thumbnail_url": None,
-    "copyright": "NASA"
+    "alt": None,
+    "credit": None,
+    "copyright": "NASA",
 }
 
 
+def _strip_html(text: str | None) -> str | None:
+    """Remove HTML tags from a string without adding a dependency.
+
+    The NASA WordPress APOD endpoint returns `explanation` and `credit` fields
+    with embedded anchor tags and formatting HTML. This strips them to plain
+    text suitable for JSON API responses.
+    """
+    if not text:
+        return text
+    return re.sub(r"<[^>]+>", "", text).strip()
+
+
 def normalize_apod(data: dict) -> dict:
-    """Mengubah payload NASA APOD menjadi format JSON yang simpel dan konsisten."""
+    """Normalize a single entry from the NASA WordPress APOD REST API.
+
+    Endpoint: https://science.nasa.gov/wp-json/wp/v2/apod-basic
+    The endpoint returns a JSON array; callers must pass a single entry dict.
+
+    Key schema differences from the retired legacy api.nasa.gov endpoint:
+    - `url`       : article permalink (NOT the image asset URL).
+    - `permalink` : same as `url`.
+    - `hdurl`     : actual image asset URL (use for image_url).
+    - `credit`    : attribution HTML (stripped to plain text here).
+    - `alt`       : image alt text (new field, not in legacy API).
+    - `explanation`: contains HTML markup (stripped here).
+    - No API key required for this endpoint.
+
+    Response contract (maintained for frontend compatibility):
+    - `image_url`    : hdurl for image entries, None for video/iframe.
+    - `thumbnail_url`: hdurl for image entries, None otherwise.
+    - `article_url`  : WordPress article permalink (new field).
+    - `thumbnail_url`: was previously data['url'] in legacy API (which was the
+                       image URL). Now correctly maps to hdurl.
+    """
+    media_type = data.get("media_type", "image")
+    is_image = media_type == "image"
+
+    # hdurl is the actual image asset; url is the article permalink.
+    hdurl = data.get("hdurl") or None
+    article_url = data.get("url") or data.get("permalink") or None
+
     return {
+        "status": "ok",
+        "fallback": False,
+        # message is None for live responses; non-None only in DUMMY_APOD error responses.
+        "message": None,
         "source": "NASA Astronomy Picture of the Day (APOD)",
         "title": data.get("title"),
         "date": data.get("date"),
-        "explanation": data.get("explanation"),
-        "media_type": data.get("media_type", "image"),
-        "image_url": data.get("hdurl") or data.get("url"),
-        "thumbnail_url": data.get("url"),
-        "copyright": data.get("copyright", "Public Domain")
+        "explanation": _strip_html(data.get("explanation")),
+        "media_type": media_type,
+        # image_url: the full-resolution asset URL for image entries.
+        # For video/iframe entries this is None; frontend should use article_url.
+        "image_url": hdurl if is_image else None,
+        # article_url: the NASA Science article permalink for this APOD entry.
+        "article_url": article_url,
+        # thumbnail_url preserved for backward compat; maps to hdurl for images.
+        "thumbnail_url": hdurl if is_image else None,
+        "alt": data.get("alt"),
+        # credit may contain HTML links; strip to plain text.
+        "credit": _strip_html(data.get("credit")),
+        "copyright": data.get("copyright") or "NASA",
     }
 
 
 def safe_float(val, round_digits=2):
-    """Helper untuk parsing float yang aman dengan pembulatan."""
+    """Safe float parsing helper with rounding."""
     if val is None:
         return None
     try:
@@ -38,7 +99,7 @@ def safe_float(val, round_digits=2):
 
 
 def normalize_neows(data: dict) -> dict:
-    """Mengubah format kompleks NASA NeoWs menjadi array asteroid yang bersih dan terurut."""
+    """Normalize NASA NeoWs feed response into a clean sorted asteroid array."""
     near_earth_objects = data.get("near_earth_objects", {})
     total_count = data.get("element_count", 0)
     asteroids = []

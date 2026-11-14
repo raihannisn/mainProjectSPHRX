@@ -1,0 +1,76 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "api": {
+      "root": "backend/",
+      "entrypoint": "main:app"
+    },
+    "xr": {
+      "root": "arvr/",
+      "framework": "vite",
+      "buildCommand": "npm run build",
+      "outputDirectory": "dist",
+      "rewrites": [
+        { "source": "/", "destination": "/index.html" },
+        { "source": "/explorer", "destination": "/index.html" },
+        { "source": "/comparison", "destination": "/index.html" },
+        { "source": "/guide", "destination": "/index.html" },
+        { "source": "/guide/:objectId", "destination": "/index.html" },
+        { "source": "/xr/assets/:path*", "destination": "/assets/:path*" },
+        { "source": "/xr/icons/:path*", "destination": "/icons/:path*" },
+        { "source": "/xr/models/:path*", "destination": "/models/:path*" },
+        { "source": "/xr/textures/:path*", "destination": "/textures/:path*" },
+        { "source": "/xr/terrain/:path*", "destination": "/terrain/:path*" },
+        { "source": "/xr/spherex/:path*", "destination": "/spherex/:path*" },
+        { "source": "/xr/sw.js", "destination": "/sw.js" },
+        { "source": "/xr/offline-manifest.json", "destination": "/offline-manifest.json" },
+        { "source": "/xr/manifest.webmanifest", "destination": "/manifest.webmanifest" },
+        { "source": "/xr", "destination": "/index.html" },
+        { "source": "/xr/", "destination": "/index.html" },
+        { "source": "/xr/body/:id", "destination": "/index.html" },
+        { "source": "/xr/surface/:siteId", "destination": "/index.html" }
+      ],
+      "headers": [
+        {
+          "source": "/xr/sw.js",
+          "headers": [
+            { "key": "Cache-Control", "value": "no-cache" },
+            { "key": "Service-Worker-Allowed", "value": "/xr/" }
+          ]
+        },
+        {
+          "source": "/sw.js",
+          "headers": [
+            { "key": "Cache-Control", "value": "no-cache" },
+            { "key": "Service-Worker-Allowed", "value": "/xr/" }
+          ]
+        },
+        {
+          "source": "/xr/offline-manifest.json",
+          "headers": [
+            { "key": "Cache-Control", "value": "no-cache" }
+          ]
+        },
+        {
+          "source": "/offline-manifest.json",
+          "headers": [
+            { "key": "Cache-Control", "value": "no-cache" }
+          ]
+        }
+      ]
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": { "service": "api" } },
+    { "source": "/api", "destination": { "service": "api" } },
+    { "source": "/mission-control", "destination": { "service": "api" } },
+    { "source": "/docs", "destination": { "service": "api" } },
+    { "source": "/docs/:path*", "destination": { "service": "api" } },
+    { "source": "/openapi.json", "destination": { "service": "api" } },
+    { "source": "/redoc", "destination": { "service": "api" } },
+    { "source": "/xr", "destination": { "service": "xr" } },
+    { "source": "/xr/:path*", "destination": { "service": "xr" } },
+    { "source": "/", "destination": { "service": "xr" } },
+    { "source": "/:path*", "destination": { "service": "xr" } }
+  ]
+}

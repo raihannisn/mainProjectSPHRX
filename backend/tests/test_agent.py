@@ -79,12 +79,50 @@ class GeminiAgentProviderTests(unittest.TestCase):
 
         self.assertEqual(error.exception.status_code, 503)
 
+    def test_generate_text_handles_quota_exhausted(self):
+        mock_response = unittest.mock.Mock()
+        mock_response.is_error = True
+        mock_response.status_code = 429
+        mock_response.json.return_value = {"error": {"status": "RESOURCE_EXHAUSTED", "message": "Quota exceeded"}}
+
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "fake-key"}):
+            with patch("services.gemini_agent_provider.httpx.Client") as client_class:
+                client_class.return_value.__enter__.return_value.post.return_value = mock_response
+                with self.assertRaises(HTTPException) as error:
+                    generate_text("Prompt", "Instructions")
+
+        self.assertEqual(error.exception.status_code, 429)
+
+    def test_generate_text_handles_timeout(self):
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "fake-key"}):
+            with patch("services.gemini_agent_provider.httpx.Client") as client_class:
+                client_class.return_value.__enter__.return_value.post.side_effect = httpx.TimeoutException("Timeout")
+                with self.assertRaises(HTTPException) as error:
+                    generate_text("Prompt", "Instructions")
+
+        self.assertEqual(error.exception.status_code, 504)
+
+    def test_generate_text_handles_upstream_failure(self):
+        mock_response = unittest.mock.Mock()
+        mock_response.is_error = True
+        mock_response.status_code = 500
+        mock_response.json.return_value = {"error": {"status": "INTERNAL", "message": "Internal error"}}
+
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "fake-key"}):
+            with patch("services.gemini_agent_provider.httpx.Client") as client_class:
+                client_class.return_value.__enter__.return_value.post.return_value = mock_response
+                with self.assertRaises(HTTPException) as error:
+                    generate_text("Prompt", "Instructions")
+
+        self.assertEqual(error.exception.status_code, 502)
+
 
 class AgentServiceTests(unittest.TestCase):
     def test_object_service_reads_catalog_and_rejects_unknown_ids(self):
         self.assertEqual(get_object_record("MARS")["name"], "Mars")
+        self.assertEqual(get_object_record("rcw-36")["name"], "RCW 36 Emission Nebula")
         with self.assertRaises(ObjectRecordNotFound):
-            get_object_record("rcw-36")
+            get_object_record("unknown-object-404")
 
     def test_conversation_prompt_uses_backend_catalog_record(self):
         prompt = build_conversation_prompt(
@@ -107,7 +145,7 @@ class AgentServiceTests(unittest.TestCase):
         prompt = build_conversation_prompt(
             [{"role": "user", "content": "Apa objek ini?"}],
             "id",
-            "rcw-36",
+            "unknown-object-404",
         )
 
         self.assertIn("tidak ditemukan di katalog backend", prompt)
@@ -125,7 +163,7 @@ class AgentServiceTests(unittest.TestCase):
         messages = [{"role": "user", "content": "How does SPHEREx observe it?"}]
 
         with patch("services.agent_service.generate_text", return_value="Answer") as generate:
-            generate_agent_response(messages, "en", "rcw-36")
+            generate_agent_response(messages, "en", "unknown-object-404")
 
         instructions = generate.call_args.args[1]
         self.assertIn("cannot confirm a target-specific observation", instructions)
