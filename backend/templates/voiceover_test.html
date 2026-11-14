@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SPHEREx Voice-over Test</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #080d18;
+      color: #e7edf7;
+    }
+    body {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 20px;
+    }
+    main {
+      padding: 28px;
+      border: 1px solid #26344c;
+      border-radius: 14px;
+      background: #101827;
+    }
+    h1 { margin-top: 0; }
+    p { color: #aab8cc; line-height: 1.55; }
+    label { display: block; margin: 18px 0 7px; font-weight: 600; }
+    select, button {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid #34445e;
+      border-radius: 8px;
+      background: #0b1220;
+      color: inherit;
+      font: inherit;
+    }
+    button {
+      margin-top: 22px;
+      border: 0;
+      background: #3574e8;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: wait; }
+    #scriptText {
+      min-height: 56px;
+      margin: 18px 0;
+      padding: 14px;
+      border-left: 3px solid #5b91f0;
+      background: #0b1220;
+    }
+    #status { min-height: 24px; }
+    #status[data-error="true"] { color: #ff9a9a; }
+    audio { display: block; width: 100%; margin-top: 18px; }
+    details { margin-top: 28px; color: #aab8cc; }
+    code { color: #d7e4ff; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>SPHEREx Voice-over Test</h1>
+    <p>
+      Halaman uji terpisah untuk mengirim naskah yang disediakan backend ke Gemini TTS.
+      API key tetap berada di backend dan tidak dikirim ke browser.
+    </p>
+
+    <form id="voiceoverForm">
+      <label for="language">Bahasa</label>
+      <select id="language" name="language">
+        <option value="id">Bahasa Indonesia</option>
+        <option value="en">English</option>
+      </select>
+
+      <label for="scriptId">Naskah</label>
+      <select id="scriptId" name="scriptId"></select>
+      <p id="scriptText" aria-live="polite"></p>
+
+      <label for="voicePreset">Preset suara</label>
+      <select id="voicePreset" name="voicePreset">
+        <option value="mission-liaison">Mission Liaison (Rasalgethi)</option>
+        <option value="warm-guide">Warm Guide (Sulafat)</option>
+      </select>
+
+      <button id="generateButton" type="submit">Buat audio</button>
+    </form>
+
+    <p id="status" role="status" aria-live="polite"></p>
+    <audio id="audioPlayer" controls hidden></audio>
+    <button id="stopButton" type="button" hidden>Hentikan audio</button>
+
+    <details>
+      <summary>Menjalankan demo lokal</summary>
+      <p>
+        Atur <code>GEMINI_API_KEY</code> di environment backend, jalankan
+        <code>uvicorn main:app --reload --port 8000</code> dari folder
+        <code>backend</code>, lalu buka <code>http://localhost:8000/voiceover-test</code>.
+        Jangan menaruh API key di halaman ini atau commit ke Git.
+      </p>
+    </details>
+  </main>
+
+  <script>
+    const form = document.getElementById("voiceoverForm");
+    const languageSelect = document.getElementById("language");
+    const scriptSelect = document.getElementById("scriptId");
+    const scriptText = document.getElementById("scriptText");
+    const status = document.getElementById("status");
+    const generateButton = document.getElementById("generateButton");
+    const audioPlayer = document.getElementById("audioPlayer");
+    const stopButton = document.getElementById("stopButton");
+    let activeAudioUrl = null;
+    let currentScripts = [];
+
+    function setStatus(message, isError = false) {
+      status.textContent = message;
+      status.dataset.error = String(isError);
+    }
+
+    function releaseAudio() {
+      audioPlayer.pause();
+      audioPlayer.removeAttribute("src");
+      audioPlayer.hidden = true;
+      stopButton.hidden = true;
+      if (activeAudioUrl) {
+        URL.revokeObjectURL(activeAudioUrl);
+        activeAudioUrl = null;
+      }
+    }
+
+    function updateScriptText() {
+      const selected = currentScripts.find((item) => item.id === scriptSelect.value);
+      scriptText.textContent = selected ? selected.text : "";
+    }
+
+    async function loadScripts() {
+      const response = await fetch(
+        `/api/agent/voiceover/scripts?language=${encodeURIComponent(languageSelect.value)}`
+      );
+      if (!response.ok) {
+        throw new Error("Daftar naskah tidak dapat dimuat dari backend.");
+      }
+      const result = await response.json();
+      currentScripts = result.data.scripts;
+      const previousId = scriptSelect.value;
+      scriptSelect.replaceChildren(...currentScripts.map((item) => {
+        const option = document.createElement("option");
+        option.value = item.id;
+        option.textContent = item.label;
+        return option;
+      }));
+      if (currentScripts.some((item) => item.id === previousId)) {
+        scriptSelect.value = previousId;
+      }
+      updateScriptText();
+    }
+
+    languageSelect.addEventListener("change", async () => {
+      try {
+        await loadScripts();
+        releaseAudio();
+        setStatus("");
+      } catch (error) {
+        setStatus(error.message, true);
+      }
+    });
+
+    scriptSelect.addEventListener("change", updateScriptText);
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      releaseAudio();
+      generateButton.disabled = true;
+      setStatus("Sedang membuat audio...");
+      try {
+        const response = await fetch("/api/agent/voiceover", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            scriptId: scriptSelect.value,
+            language: languageSelect.value,
+            voicePreset: document.getElementById("voicePreset").value
+          })
+        });
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.detail || `Permintaan gagal (${response.status}).`);
+        }
+        const audioBlob = await response.blob();
+        if (!audioBlob.type.includes("audio/wav")) {
+          throw new Error("Backend tidak mengembalikan audio WAV.");
+        }
+        activeAudioUrl = URL.createObjectURL(audioBlob);
+        audioPlayer.src = activeAudioUrl;
+        audioPlayer.hidden = false;
+        stopButton.hidden = false;
+        setStatus("Audio siap. Gunakan kontrol pemutar untuk mendengarkan.");
+      } catch (error) {
+        setStatus(error.message, true);
+      } finally {
+        generateButton.disabled = false;
+      }
+    });
+
+    stopButton.addEventListener("click", () => {
+      audioPlayer.pause();
+      audioPlayer.currentTime = 0;
+      setStatus("Pemutaran dihentikan.");
+    });
+
+    window.addEventListener("beforeunload", releaseAudio);
+
+    loadScripts().catch((error) => setStatus(error.message, true));
+  </script>
+</body>
+</html>

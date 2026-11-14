@@ -10,7 +10,7 @@ except ImportError:
 
 from utils.normalizers import normalize_apod, normalize_neows, DUMMY_APOD
 
-NASA_API_KEY = os.getenv("NASA_API_KEY", "LJTHndTBTkjWpBkFbRQpzWTFPhBKFpnnh8zDtBcD")
+NASA_API_KEY = os.getenv("NASA_API_KEY", "DEMO_KEY")
 NASA_APOD_URL = f"https://api.nasa.gov/planetary/apod?api_key={NASA_API_KEY}"
 NASA_NEOWS_URL = f"https://api.nasa.gov/neo/rest/v1/feed?api_key={NASA_API_KEY}"
 

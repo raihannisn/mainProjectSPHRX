@@ -16,6 +16,8 @@ from routes.objects import router as objects_router
 from routes.nasa import router as nasa_router
 from routes.spherex import router as spherex_router
 from routes.system import router as system_router
+from routes.agent import demo_router as agent_demo_router
+from routes.agent import router as agent_router
 
 app = FastAPI(
     title="SPHEREx Cosmic Explorer API",
@@ -44,3 +46,5 @@ app.include_router(objects_router)
 app.include_router(nasa_router)
 app.include_router(spherex_router)
 app.include_router(system_router)
+app.include_router(agent_router)
+app.include_router(agent_demo_router)
