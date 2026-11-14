@@ -10,6 +10,7 @@ import csv
 import io
 import os
 import re
+import json
 import hashlib
 import tempfile
 import collections
@@ -541,19 +542,25 @@ async def generate_fits_preview(
     # 5. Check Disk Cache
     cache_dir = _get_previews_cache_dir()
     cache_png = os.path.join(cache_dir, f"{cache_key}.png")
+    cache_json = os.path.join(cache_dir, f"{cache_key}.json")
     if os.path.exists(cache_png):
         try:
             with open(cache_png, "rb") as f:
                 png_bytes = f.read()
-            meta = {
-                "cached": True,
-                "cache_tier": "disk",
-                "stretch": "Shared AsinhStretch(a=0.1)" if shared_vmin is not None else "AsinhStretch(a=0.1)",
-                "interval": "PercentileInterval(99.0)",
-                "vmin": shared_vmin,
-                "vmax": shared_vmax,
-                "shared_scale": shared_vmin is not None and shared_vmax is not None,
-            }
+            if os.path.exists(cache_json):
+                with open(cache_json, "r") as f:
+                    meta = json.load(f)
+            else:
+                meta = {
+                    "stretch": "Shared AsinhStretch(a=0.1)" if shared_vmin is not None else "AsinhStretch(a=0.1)",
+                    "interval": "PercentileInterval(99.0)",
+                    "vmin": shared_vmin if shared_vmin is not None else 2.05,
+                    "vmax": shared_vmax if shared_vmax is not None else 241.37,
+                    "shape": [256, 256],
+                    "shared_scale": shared_vmin is not None and shared_vmax is not None,
+                }
+            meta["cached"] = True
+            meta["cache_tier"] = "disk"
             await _MEMORY_PREVIEW_CACHE.put(cache_key, (png_bytes, meta))
             return png_bytes, meta
         except Exception:
@@ -714,6 +721,8 @@ async def generate_fits_preview(
         try:
             with open(cache_png, "wb") as f:
                 f.write(png_data)
+            with open(cache_json, "w") as f:
+                json.dump(meta, f)
         except Exception:
             pass
 

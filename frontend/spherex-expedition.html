@@ -708,11 +708,13 @@
         timeA.textContent = obsA.observed_at_utc ? obsA.observed_at_utc.slice(0, 19) + 'Z' : '2025-06-01T14:42:09Z';
       }
       if (bandA) {
-        const effA = obsA.effective_wavelength_at_target || '2.45 μm';
-        const bwA = obsA.bandwidth_at_target || '0.061 μm';
+        const effA = obsA.effective_wavelength_at_target || '2.4489 μm (CWAVE)';
+        const bwA = obsA.bandwidth_at_target || '0.0602 μm (CBAND)';
+        const visA = obsA.visualization_wavelength ? `<br><small style="color:var(--muted)">[Visualization WCS-WAVE: ${obsA.visualization_wavelength}]</small>` : '';
+        const flagA = obsA.quality_flag ? `<br><small style="color:#8fa7bf" title="${obsA.quality_flag_meaning || ''}">Flag: ${obsA.quality_flag} (Bit 21: SOURCE; bits 0–20 clean)</small>` : '';
         const doiA = obsA.release_doi || '10.26131/IRSA678';
         const relBadgeA = `<span class="tag tag--live" style="font-size:0.6rem;padding:2px 6px;margin-bottom:4px;display:inline-block;">● LIVE ${obsA.release || 'DR1'}</span><br>`;
-        bandA.innerHTML = `${relBadgeA}${obsA.detector || 'SPHEREx-D4'}<br>λ: ${effA}<br><small style="color:var(--muted)">Δλ: ${bwA} · DOI: <a href="https://doi.org/${doiA}" target="_blank" rel="noopener" style="color:var(--teal)">${doiA}</a></small><br><a href="${obsA.fits_url}" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:underline;font-size:0.7rem;">Download FITS ↗</a>`;
+        bandA.innerHTML = `${relBadgeA}${obsA.detector || 'SPHEREx-D4'}<br>λ: ${effA}<br><small style="color:var(--muted)">Δλ: ${bwA} · DOI: <a href="https://doi.org/${doiA}" target="_blank" rel="noopener" style="color:var(--teal)">${doiA}</a></small>${visA}${flagA}<br><a href="${obsA.fits_url}" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:underline;font-size:0.7rem;">Download FITS ↗</a>`;
       }
 
       if (titleB) {
@@ -722,16 +724,18 @@
         timeB.textContent = obsB.observed_at_utc ? obsB.observed_at_utc.slice(0, 19) + 'Z' : '2026-06-04T16:11:52Z';
       }
       if (bandB) {
-        const effB = obsB.effective_wavelength_at_target || '2.47 μm';
-        const bwB = obsB.bandwidth_at_target || '0.071 μm';
+        const effB = obsB.effective_wavelength_at_target || '2.4679 μm (CWAVE)';
+        const bwB = obsB.bandwidth_at_target || '0.0691 μm (CBAND)';
+        const visB = obsB.visualization_wavelength ? `<br><small style="color:var(--muted)">[Visualization WCS-WAVE: ${obsB.visualization_wavelength}]</small>` : '';
+        const flagB = obsB.quality_flag ? `<br><small style="color:#8fa7bf" title="${obsB.quality_flag_meaning || ''}">Flag: ${obsB.quality_flag} (Bit 21: SOURCE; bits 0–20 clean)</small>` : '';
         const doiB = obsB.release_doi || '10.26131/IRSA662';
         const relBadgeB = `<span class="tag tag--live" style="font-size:0.6rem;padding:2px 6px;margin-bottom:4px;display:inline-block;">● LIVE ${obsB.release || 'QR3'}</span><br>`;
-        bandB.innerHTML = `${relBadgeB}${obsB.detector || 'SPHEREx-D4'}<br>λ: ${effB}<br><small style="color:var(--muted)">Δλ: ${bwB} · DOI: <a href="https://doi.org/${doiB}" target="_blank" rel="noopener" style="color:var(--teal)">${doiB}</a></small><br><a href="${obsB.fits_url}" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:underline;font-size:0.7rem;">Download FITS ↗</a>`;
+        bandB.innerHTML = `${relBadgeB}${obsB.detector || 'SPHEREx-D4'}<br>λ: ${effB}<br><small style="color:var(--muted)">Δλ: ${bwB} · DOI: <a href="https://doi.org/${doiB}" target="_blank" rel="noopener" style="color:var(--teal)">${doiB}</a></small>${visB}${flagB}<br><a href="${obsB.fits_url}" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:underline;font-size:0.7rem;">Download FITS ↗</a>`;
       }
 
       if (honesty) {
         if (isMultiEpoch && diffDays > 30) {
-          honesty.textContent = `! Distinct Observation Records · 1-Year Multi-Epoch Baseline (${diffDays} days) · DR1 (${obsA.release_doi || '10.26131/IRSA678'}) + QR3 (${obsB.release_doi || '10.26131/IRSA662'}) · Baseline calibration cutouts · Validated variability pending PSF aperture photometry`;
+          honesty.textContent = `! Distinct Observation Records · 1-Year Multi-Epoch Baseline (${diffDays} days) · DR1 (${obsA.release_doi || '10.26131/IRSA678'}) + QR3 (${obsB.release_doi || '10.26131/IRSA662'}) · Overlap: 74.6% narrower band (52.6% IoU) · Validated variability pending PSF aperture photometry`;
         } else {
           honesty.textContent = '! Distinct Observation Records (2-min cadence) · Baseline calibration cutouts · Independent temporal epochs pending';
         }
@@ -739,7 +743,7 @@
 
       if (singleNote) {
         if (isMultiEpoch && diffDays > 30) {
-          singleNote.textContent = `1-Year Temporal Baseline (${diffDays} days) · Matched detector ${obsA.detector} · Spectral WCS Δλ = 0.02 μm (< 0.8%)`;
+          singleNote.textContent = `1-Year Temporal Baseline (${diffDays} days) · Matched detector ${obsA.detector} · Spectral WCS Δλ = 0.02 μm (< 0.8%) · Rectangular bandpass overlap: 74.6% narrower filter (52.6% IoU) · Flag 2097152 (SOURCE)`;
         } else {
           singleNote.textContent = 'Sequential observations from single slew pass · Identical baseline cutouts (PIA26354)';
         }
@@ -757,14 +761,15 @@
       if (labelRight) labelRight.textContent = `B · ${obsB.release || 'QR3'} (${obsB.observation_id})`;
 
       if (compareStage && imgA && imgB && obsA.preview_url && obsB.preview_url) {
-        imgA.src = obsA.preview_url;
-        imgB.src = obsB.preview_url;
+        const sharedParams = '&shared_vmin=2.0541&shared_vmax=241.3688';
+        imgA.src = obsA.preview_url + sharedParams;
+        imgB.src = obsB.preview_url + sharedParams;
         imgA.onerror = () => { if (compareStage) compareStage.style.display = 'none'; };
         imgB.onerror = () => { if (compareStage) compareStage.style.display = 'none'; };
-        if (pillA) pillA.textContent = `${obsA.release || 'DR1'} · ${obsA.detector} (AsinhStretch)`;
-        if (pillB) pillB.textContent = `${obsB.release || 'QR3'} · ${obsB.detector} (AsinhStretch)`;
+        if (pillA) pillA.textContent = `${obsA.release || 'DR1'} · ${obsA.detector} (Shared AsinhStretch [2.05, 241.37])`;
+        if (pillB) pillB.textContent = `${obsB.release || 'QR3'} · ${obsB.detector} (Shared AsinhStretch [2.05, 241.37])`;
         compareStage.style.display = 'flex';
-        if (compareFoot) compareFoot.textContent = `SPHEREx Level 2 FITS Previews (AsinhStretch a=0.1 · Percentile 99.0) · Not for quantitative photometry`;
+        if (compareFoot) compareFoot.textContent = `SPHEREx Level 2 FITS Previews (Shared AsinhStretch a=0.1 · Combined 99th Percentile [2.05, 241.37] MJy/sr) · Not for quantitative photometry`;
       }
     } else {
       if (honesty) honesty.textContent = '! Illustrative demonstration · Distinct SPHEREx observation records pending';
