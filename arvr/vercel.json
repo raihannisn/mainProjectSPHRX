@@ -4,6 +4,11 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/explorer", "destination": "/index.html" },
+    { "source": "/comparison", "destination": "/index.html" },
+    { "source": "/guide", "destination": "/index.html" },
+    { "source": "/guide/:objectId", "destination": "/index.html" },
     { "source": "/xr/assets/:path*", "destination": "/assets/:path*" },
     { "source": "/xr/icons/:path*", "destination": "/icons/:path*" },
     { "source": "/xr/models/:path*", "destination": "/models/:path*" },

@@ -19,7 +19,7 @@ export function RouteSync() {
   // URL → store
   useEffect(() => {
     if (!loc.pathname.startsWith('/xr')) {
-      navigate('/xr' + loc.search, { replace: true })
+      ready.current = false
       return
     }
     const body = matchPath('/xr/body/:id', loc.pathname)
@@ -34,16 +34,18 @@ export function RouteSync() {
           if (site && useXRApp.getState().siteId === sid) useXRApp.setState({ bodyId: site.body })
         })
       }
-    } else s.selectBody(body?.params.id ?? null)
+    } else {
+      s.selectBody(body?.params.id ?? null)
+    }
     s.setBand(sp.get('band'))
     s.setObservation(sp.get('obs'))
     ready.current = true
   }, [loc.pathname, loc.search, navigate])
 
-  // store → URL (e.g. picking a body inside VR). Reads the live store value: on first mount the
-  // effect above has just set it from the URL, and the rendered values are still the stale defaults.
+  // store → URL (e.g. picking a body inside VR).
   useEffect(() => {
     if (!ready.current) return
+    if (!loc.pathname.startsWith('/xr')) return
     const { bodyId: id, siteId: site } = useXRApp.getState()
     const target = site ? `/xr/surface/${encodeURIComponent(site)}` : id ? `/xr/body/${encodeURIComponent(id)}` : '/xr'
     if (loc.pathname !== target) navigate(target + loc.search)

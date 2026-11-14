@@ -6,10 +6,10 @@ This document establishes the finalized, production-ready integration architectu
 
 ---
 
-## 2. Recommended Architecture: Hybrid Shell with Isolated Immersive Runtime (Approach C)
+## 2. Integrated Architecture: Single React Shell with Isolated Immersive Runtime
 
-We select **Approach C (Hybrid Architecture with Dedicated Shell & Isolated Immersive Runtime)**:
-- **Core Rationale**: The SPHEREx HTML prototype (`frontend/spherex-expedition.html`) is structured as a single-document multi-section application (`showScreen()`) where Gateway, Explorer, and Comparison are internal DOM sections, and Cosmic Guide uses hash routing (`/#/guide/:objectId`). The React AR/VR module (`arvr/`) runs as an independent React SPA managed by `BrowserRouter` using explicit `/xr` paths in `RouteSync.tsx`. Both modules consume the FastAPI backend (`backend/`) as their unified REST data provider under `/api/*`.
+- **Core Rationale**: `frontend/spherex-expedition.html` remains the visual and interaction reference. Gateway, Explorer, Comparison, Cosmic Guide, and the existing XR experiences are rendered by the React/Vite application in `arvr/` and managed by one `BrowserRouter`. FastAPI remains a separate service under `/api/*`.
+- **Runtime Boundary**: The React shell serves `/`, `/explorer`, `/comparison`, `/guide/:objectId`, and `/xr/*`; the XR scenes and offline runtime remain in their existing module. No iframe or second frontend deployment is used for application navigation.
 
 ---
 
@@ -22,9 +22,8 @@ graph TD
     end
 
     subgraph VercelServices [Vercel Multi-Service Routing]
-        WebSvc[Service web frontend]
+        XrSvc[Service xr React shell and XR]
         ApiSvc[Service api backend]
-        XrSvc[Service xr arvr]
     end
 
     subgraph Backend [FastAPI Backend backend]
@@ -35,35 +34,24 @@ graph TD
         ImgSvc[FITS Cutout Streamer]
     end
 
-    subgraph WebFrontend [SPHEREx Web Frontend frontend]
-        HTMLShell[spherex-expedition.html]
-        Gateway[Gateway Section]
-        Explorer[Explorer Section]
-        Comparison[Comparison Section]
-        Guide[Guide Hash Route]
-    end
-
-    subgraph XRRuntime [React AR/VR Module arvr]
+    subgraph ReactApp [React Shell and XR Runtime arvr]
+        Gateway[Gateway]
+        Explorer[Sky Explorer]
+        Comparison[Observation Comparison]
+        Guide[Cosmic Guide]
         Hub[Solar System Hub xr]
         BodyExp[Body Explorer xr body id]
         Surface[Surface Walk xr surface siteId]
     end
 
-    Browser -->|/| WebSvc
-    Browser -->|/xr/*| XrSvc
+    Browser -->|/, /explorer, /comparison, /guide/*, /xr/*| XrSvc
     Browser -->|/api/*| ApiSvc
 
-    WebSvc --> HTMLShell
-    XrSvc --> Hub
     ApiSvc --> API
-
-    HTMLShell --> Gateway
-    HTMLShell --> Explorer
-    HTMLShell --> Comparison
-    HTMLShell --> Guide
 
     Explorer -->|HTTP API Request| ApiSvc
     Comparison -->|HTTP API Request| ApiSvc
+    Gateway -->|NASA APOD| ApiSvc
     Hub -->|HTTP API Request| ApiSvc
 
     API --> Sspherex
@@ -79,8 +67,8 @@ graph TD
 | Module | Core Responsibilities | Primary Technologies |
 | :--- | :--- | :--- |
 | **Backend (`backend/`)** | NASA API integration (WordPress APOD endpoint migration & NeoWs), IRSA SIA2 observation queries, celestial object metadata (`kamus_object.json`), FITS metadata parsing, cutout image generation (`/api/image/t1`, `/api/image/t2`). | FastAPI, Astropy, Astroquery, Httpx, Uvicorn |
-| **Frontend (`frontend/`)** | Single-page multi-section UI (Gateway, Sky Explorer, Observation Comparison), capability detection, bottom-sheet lifecycle (`window.ZR`), and hash-routed Cosmic Guide assistant. | HTML5, Modern CSS (Design Tokens), Vanilla JS (ES Modules) |
-| **AR/VR (`arvr/`)** | Desktop 3D Solar System orbit hub, mobile gyroscope look-around, WebXR AR (tabletop hit-test passthrough), WebXR VR (Quest controllers, teleportation, hand tracking, wrist menu), walkable planetary surface terrains. | React 19, Vite 6, Three.js, R3F, Drei, @react-three/xr, Zustand |
+| **Frontend reference (`frontend/`)** | Design and behavior source for Gateway, Sky Explorer, Observation Comparison, and Cosmic Guide. | HTML5, CSS, JavaScript prototype |
+| **Application shell and AR/VR (`arvr/`)** | Single React Router host for the migrated 2D screens and the existing desktop, mobile, WebXR, and surface experiences. | React 19, Vite 6, Three.js, R3F, Drei, @react-three/xr, Zustand |
 
 ---
 
@@ -89,7 +77,7 @@ graph TD
 | Endpoint | Calling Module | Parameters | Response Structure / Behavior | Actual Error / Fallback State |
 | :--- | :--- | :--- | :--- | :--- |
 | `GET /api/status` | Frontend / AR/VR | None | `{ status, data_source, engine, capabilities, message }` | Returns operational JSON status |
-| `GET /api/spherex/observations` | Frontend (Explorer) | `ra`, `dec`, `radius`, `collection`, `start_date`, `end_date`, `detector` | `{ query, source, total_results, observations: [...] }` | Returns 504 on SIA2 timeout; frontend falls back to static samples |
+| `GET /api/spherex/observations` | React Explorer and Comparison | `ra`, `dec`, `radius`, `collection`, `start_date`, `end_date`, `detector` | `{ query, source, total_results, observations: [...] }`, including `observation_id`, `observed_at_utc`, `preview_url`, and `fits_url` | Search errors and empty results are displayed; no observation metadata is fabricated |
 | `GET /api/objects/{object_id}` | Frontend / AR/VR | `object_id` (path, e.g., `mars`, `halley`, `jupiter`) | Dictionary properties from `kamus_object.json` | Returns 404 if object ID not found |
 | `GET /api/image/t1` | Frontend (Comparison) | None | Binary PNG stream (`FileResponse`). *Note: serves hasil_gambar.png* | Returns 404 if image not generated yet |
 | `GET /api/image/t2` | Frontend (Comparison) | None | Binary PNG stream (`FileResponse`). *Note: serves hasil_gambar_2.png (currently identical)* | Returns 404 if image not generated yet |
@@ -106,16 +94,14 @@ graph TD
 ## 6. Verified Route Structure & Root Handling
 
 - **Root Routing & `/`**:
-  - `/` -> Serves `frontend/spherex-expedition.html` (HTML shell).
+  - `/`, `/explorer`, `/comparison`, `/guide`, and `/guide/:objectId` -> React/Vite application in `arvr/`.
   - `/mission-control` -> FastAPI SaaS documentation and test bench dashboard.
   - `/docs`, `/openapi.json`, `/redoc` -> Standard FastAPI OpenAPI documentation routes.
-- **Frontend SPA Sections**:
-  - Managed internally via `spherex-expedition.html` sections (`#gateway`, `#explorer`, `#comparison`) and hash routing (`/#/guide/:objectId`). `/explorer` and `/comparison` are not standalone pathname routes.
 - **AR/VR SPA Routes (`/xr/*`)**:
   - `/xr` -> Solar System Hub
   - `/xr/body/:id` -> Body Explorer
   - `/xr/surface/:siteId` -> Walkable Surface
-  - Managed by React Router (`BrowserRouter` with explicit `/xr` paths in `RouteSync.tsx`).
+  - Managed by the same React Router (`BrowserRouter`); query parameters such as `target`, `obs`, and `band` carry available context.
 
 ---
 
@@ -124,7 +110,7 @@ graph TD
 - **Window CustomEvents (`window.dispatchEvent`)**:
   - `cosmic:ask-guide`: Emitted by AR/VR (`arvr/src/xr/events.ts`) and consumed by host listeners with payload `{ body, hotspotId, guidePrompt }`.
   - `cosmic:back-to-source`: Emitted by AR/VR to signal return to source imagery.
-- **Cross-Origin/Context Navigation**: Since AR/VR runs under `/xr/*`, state synchronization between the main frontend and the XR runtime is handled via URL query parameters, hash state, or session storage rather than live DOM event listeners.
+- **Context Navigation**: State synchronization between the 2D screens and XR uses URL query parameters such as `target`, `obs`, and `band`; `RouteSync.tsx` transfers XR observation and band values into the shared store.
 
 ---
 
@@ -133,19 +119,19 @@ graph TD
 - **Identifier Harmonization**:
   - Backend `kamus_object.json`: `mars`, `halley`, `jupiter`.
   - AR/VR `content/bodies/*.json`: `mars`, `moon`, `bennu`.
-  - Frontend static targets: `rcw-36`, `candidate`, `demo-tile-01`, `vela-ridge`.
+  - Catalog target: `rcw-36`. Candidate and demo markers are illustrative only and do not have fabricated coordinates or observations.
 - **Taxonomy**: Distinct schema objects for *Solar System Bodies* (planets/moons), *Catalog Observation Targets* (nebulae, star-forming regions), and *Discrete Epoch Observations* (T1 vs. T2).
 - **Scientific Honesty Guardrails**: Every data record explicitly declares its provenance status: **Fact**, **Illustration**, **Candidate (unconfirmed)**, or **Unverified**.
 
 ---
 
-## 9. Vercel Services Routing & Build Output Sanitization
+## 9. Vercel Services Routing & Build Output
 
-- **Build Output Sanitization Risk**: Pointing `outputDirectory` directly to `frontend/` exposes internal design files (`DESIGN.md`, markdown plans, screenshots).
-- **Recommended Solution**: Introduce a lightweight pre-build step (or build script) that copies only production assets (`spherex-expedition.html`, assets, and necessary runtime scripts) into a clean `frontend/dist/` directory, which then serves as the `outputDirectory` for the `web` service.
-- **XR Service Routing & Asset Handling**:
-  - Under Vercel Services, the `xr` service receives requests matching `/xr/*`. Because the request path is received as-is by the service, Vite must be configured with `base: '/xr/'` so asset bundles reference `/xr/assets/...`.
+- **Application Services**: The root project exposes the React/Vite `xr` application service and the FastAPI `api` service. The standalone `web` service is no longer part of the application routing.
+- **Application Service Routing & Asset Handling**:
+  - Under Vercel Services, the `xr` service receives application routes as well as `/xr/*`. Vite remains configured with `base: '/xr/'` so asset bundles and service-worker resources preserve their established `/xr/` URLs.
   - React Router deep links (`/xr/body/mars`) hit the `xr` service rewrite, which serves `dist/index.html`, allowing client-side hydration to take over.
+  - The Vite development server proxies `/api/*` to `http://127.0.0.1:8000`; root Vercel rewrites continue to send `/api/*` to FastAPI.
 
 ---
 
@@ -159,11 +145,11 @@ graph TD
 ## 11. Phased Implementation Roadmap
 
 1. **Phase 1: Security & APOD Migration** — Remove public fallback API keys, enforce `os.getenv()`, and update `nasa_service.py` to target the official NASA WordPress APOD endpoint (`https://science.nasa.gov/wp-json/wp/v2/apod-basic`).
-2. **Phase 2: Vercel Services & Build Sanitization** — Configure root `vercel.json` with three services (`web`, `api`, `xr`), set up a clean `frontend/dist` build output, set `base: '/xr/'` in Vite, and scope the AR/VR Service Worker to `/xr/`.
+2. **Phase 2: Vercel Services & Build Routing** — Configure the React/Vite and FastAPI services, preserve `base: '/xr/'` in production, and scope the AR/VR Service Worker to `/xr/`.
 3. **Phase 3: Mobile Frontend Polish** — Implement `window.ZR` bottom sheet lifecycle and verify two-column capabilities grid at `<= 680px`.
-4. **Phase 4: API Client Wiring** — Connect frontend fetch handlers to live FastAPI endpoints (`/api/spherex/observations`, `/api/objects/{object_id}`, `/api/nasa/apod`).
-5. **Phase 5: AR/VR Event Bridge & Deep-Linking** — Ensure `cosmic:ask-guide` and URL parameters synchronize correctly between `/` and `/xr/*`.
-6. **Phase 6: Verification & QA** — Execute build checks (`npm run build`), verify Playwright smoke tests (`smoke-xr.mjs`), and confirm cross-device compliance.
+4. **Phase 4: API Client Wiring** — The migrated React screens use `/api/objects/{object_id}`, `/api/spherex/observations`, and `/api/nasa/apod`; empty results and failures remain explicit.
+5. **Phase 5: AR/VR Event Bridge & Deep-Linking** — The shared React router carries available `target`, `obs`, and `band` context through the XR URL; `RouteSync.tsx` synchronizes observation and band with the XR store.
+6. **Phase 6: Verification & QA** — Production build, local route/API checks, and the XR emulator smoke test are verified. Real-device cross-device compliance and deployment remain pending.
 
 ---
 
@@ -172,6 +158,6 @@ graph TD
 | Verification Category | Status | Details |
 | :--- | :--- | :--- |
 | **Verified by Source Inspection** | Verified | Architecture maps, API routes, Vite configs, Service Worker scoping, and routing constraints. |
-| **Verified by Local Execution** | Not yet tested | Requires running local test suites (`npm run build`, `smoke:xr`). |
+| **Verified by Local Execution** | Verified | `npm run build`, direct route/refresh checks, local FastAPI object/observation/APOD calls, and `npm run smoke:xr` against the production preview passed. |
 | **Verified by Actual Deployment** | Not yet tested | Requires production deployment to Vercel Services. |
 | **Not Yet Tested** | Pending | Real-device Meta Quest 3 FPS measurements (72 FPS target) and mobile AR hit-test validation. |

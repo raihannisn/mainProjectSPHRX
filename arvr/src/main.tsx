@@ -5,7 +5,8 @@ import '@fontsource/roboto/400.css'
 import '@fontsource/roboto/500.css'
 import './styles.css'
 import './menu.css'
-import { RouteSync, XRRoot, onAskGuide } from './xr'
+import { onAskGuide } from './xr'
+import { App } from './App'
 import { EMULATE, startEmulator } from './xr/emulator'
 import { registerServiceWorker } from './xr/offline'
 
@@ -18,8 +19,7 @@ function render() {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <BrowserRouter>
-        <RouteSync />
-        <XRRoot />
+        <App />
       </BrowserRouter>
     </StrictMode>,
   )

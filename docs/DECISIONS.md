@@ -2,6 +2,13 @@
 
 Record decisions that affect more than one workstream. Newest decisions go first.
 
+## Integration phase — Single React application shell
+
+- **Decision:** Use the `arvr/` React/Vite app as the single client-side application host for Gateway, Explorer, Comparison, Cosmic Guide, and the existing XR routes. Keep FastAPI on `/api/*`; preserve the XR app's `/xr/` asset base and service-worker scope.
+- **Reason:** A single `BrowserRouter` enables direct links and carries available target/observation context between 2D and XR screens without an iframe or separate frontend deployment.
+- **Alternatives considered:** Keep the vanilla frontend on `/` and link to a second React app under `/xr`; this keeps two independent navigation systems and complicates state handoff.
+- **Impact:** Root Vercel rewrites route app paths to the `xr` service, while API and documentation paths continue to route to FastAPI. Vite development proxies `/api/*` to local FastAPI on port 8000.
+
 ## 2026-11-09 — Initial project baseline
 
 - **Decision:** Treat the IRSA SPHEREx archive as the primary source for SPHEREx images. NASA APOD and NeoWs remain optional supporting modules only.

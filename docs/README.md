@@ -8,8 +8,8 @@
 ## ?? Quick Start
 
 ### Baru Pertama Kali?
-1. **`docs/00-START-HERE.md`** � Entry point & orientasi
-2. **`docs/WORKFLOW.md`** � Workflow standar
+1. **`docs/00-START-HERE.md`** � Entry point & orientasi
+2. **`docs/WORKFLOW.md`** � Workflow standar
 3. Pilih dokumentasi sesuai role
 
 ---
@@ -28,11 +28,14 @@
 
 ## Per Role
 
-### ?? Frontend
+### 🎨 Frontend
 1. `docs/ARCHITECTURE.md` (Section 6)
 2. `docs/audit/frontend-audit.md`
 3. `frontend/DESIGN.md`
-4. `docs/API-CONTRACT.md`
+4. `frontend/AGENT_PROMPT.md` — Quick agent prompt
+5. `frontend/AGENT_CONTEXT.md` — Module reference
+6. `frontend/AGENT_TASKS.md` — Backlog tasks
+7. `docs/API-CONTRACT.md`
 
 ### ?? Backend
 1. `docs/ARCHITECTURE.md` (Section 3-4)

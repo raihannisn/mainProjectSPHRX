@@ -41,14 +41,24 @@ function offlineManifest(): Plugin {
 // XR_HTTP=1 serves plain HTTP (fine on localhost only, e.g. for automated browser checks).
 const http = process.env.XR_HTTP === '1'
 
-export default defineConfig({
-  // The XR app is deployed under the /xr/ path prefix of the shared domain.
-  // base makes Vite emit asset URLs as /xr/assets/... and /xr/sw.js etc.
-  base: '/xr/',
+export default defineConfig(({ command }) => ({
+  // Production keeps the XR asset and service-worker scope under /xr/.
+  // The development server hosts the full application from / so its router
+  // can exercise both the migrated frontend and the XR routes directly.
+  base: command === 'serve' ? '/' : '/xr/',
   plugins: http ? [react(), offlineManifest()] : [react(), basicSsl(), offlineManifest()],
   // one three.js for everything (the ?emulate dev UI ships an older nested copy that breaks when mixed)
   resolve: { dedupe: ['three'] },
-  server: { host: true, port: 5173 },
+  server: {
+    host: true,
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+    },
+  },
   preview: { host: true, port: 4173 },
   build: { chunkSizeWarningLimit: 2500 },
-})
+}))

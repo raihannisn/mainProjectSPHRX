@@ -321,7 +321,7 @@
         <h1>Journey through <span>96</span> infrared colors.</h1>
         <p class="lead">Explore the changing infrared sky through SPHEREx observations. Navigate a celestial field, inspect targets, and compare distinct observation records.</p>
         <div class="button-row"><button class="primary" id="enter">Enter expedition <span aria-hidden="true">↗</span></button><button class="text-button" id="capInfo">Explore capabilities</button><button class="text-button" id="openApod" title="Astronomy Picture of the Day from NASA">NASA APOD Highlight ✦</button></div>
-        <div class="capabilities" id="capabilities"><div class="cap"><b>Desktop 3D</b><small>AVAILABLE</small></div><div class="cap"><b>Gyroscope</b><small>DEVICE CHECK</small></div><div class="cap"><b>WebXR AR</b><small>DEVICE CHECK</small></div><div class="cap"><b>WebXR VR</b><small>DEVICE CHECK</small></div></div>
+        <div class="capabilities" id="capabilities"><div class="cap"><b>Desktop 3D</b><small>AVAILABLE</small></div><div class="cap"><b>WebXR AR</b><small>DEVICE CHECK</small></div><div class="cap"><b>WebXR VR</b><small>DEVICE CHECK</small></div></div>
       </div>
       <div class="sky-art" aria-label="Animated illustrative solar system with planets orbiting a glowing sun"><div class="solar-system" aria-hidden="true"><div class="solar-dust"></div><div class="planet-orbit one"><i class="planet"></i></div><div class="planet-orbit two"><i class="planet"></i></div><div class="planet-orbit three"><i class="planet"></i></div><div class="sun"></div></div></div>
       <div class="steps"><div class="step"><em>01</em><b>Navigate sky</b><span>Find a region of interest</span></div><div class="step"><em>02</em><b>Select observation</b><span>Inspect a catalog target</span></div><div class="step"><em>03</em><b>Compare records</b><span>Review distinct observations</span></div></div>
@@ -3047,4 +3047,401 @@ window.ZR.getState=()=>state;
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ready,{once:true}); else ready();
 })();
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     HC HOLOGRAPHIC CAPABILITY CARDS — additive only, prefix hc-
+     Applies holographic glass effects to Gateway .cap cards only.
+     ═══════════════════════════════════════════════════════════════════ -->
+<style id="hc-styles">
+/* Enhanced glass surface */
+#gateway .cap{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:linear-gradient(145deg,rgba(13,28,51,.48),rgba(8,17,32,.32));
+  border:1px solid rgba(197,227,227,.18);
+  border-radius:10px;
+  box-shadow:0 6px 18px rgba(1,4,13,.18),inset 0 1px rgba(255,255,255,.06);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  transition:transform .28s ease,border-color .28s ease,box-shadow .28s ease;
+}
+
+/* Top scan-line gradient */
+#gateway .cap::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,#4fe3d6 0%,#38bdf8 35%,#d4af37 70%,rgba(212,175,55,0) 100%);
+  opacity:.75;
+  pointer-events:none;
+}
+
+/* Corner accent pips */
+#gateway .cap::after{
+  content:'';
+  position:absolute;
+  top:6px;left:6px;
+  width:3px;height:3px;
+  border-radius:50%;
+  background:var(--hc-accent,#4fe3d6);
+  box-shadow:0 0 6px var(--hc-accent,#4fe3d6),
+             calc(100vw - 12px - 6px) calc(100% - 12px - 6px) 0 0 var(--hc-accent,#4fe3d6),
+             calc(100vw - 12px - 6px) calc(100% - 12px - 6px) 0 0 var(--hc-accent,#4fe3d6) inset;
+  opacity:.6;
+  pointer-events:none;
+}
+
+/* Staggered entrance */
+@keyframes hc-arrive{
+  from{opacity:0;transform:scale(.92)}
+  to{opacity:1;transform:scale(1)}
+}
+#gateway .cap{
+  animation:hc-arrive .5s ease-out backwards;
+}
+#gateway .cap:nth-child(1){animation-delay:.05s}
+#gateway .cap:nth-child(2){animation-delay:.15s}
+#gateway .cap:nth-child(3){animation-delay:.25s}
+#gateway .cap:nth-child(4){animation-delay:.35s}
+
+/* Continuous float drift */
+@keyframes hc-float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-4px)}
+}
+@media(prefers-reduced-motion:no-preference){
+  #gateway .cap{
+    animation:hc-arrive .5s ease-out backwards,hc-float 5s ease-in-out infinite;
+  }
+  #gateway .cap:nth-child(1){animation-delay:.05s,1.2s}
+  #gateway .cap:nth-child(2){animation-delay:.15s,2.8s}
+  #gateway .cap:nth-child(3){animation-delay:.25s,.4s}
+  #gateway .cap:nth-child(4){animation-delay:.35s,2s}
+}
+
+/* Per-card accent colors */
+#gateway .cap:nth-child(1){--hc-accent:#4fe3d6}/* teal Desktop 3D */
+#gateway .cap:nth-child(2){--hc-accent:#8a8f9e}/* steel Gyroscope */
+#gateway .cap:nth-child(3){--hc-accent:#b18cff}/* violet WebXR AR */
+#gateway .cap:nth-child(4){--hc-accent:#d4af37}/* gold WebXR VR */
+
+/* Hover lift + accent glow */
+#gateway .cap:hover{
+  transform:translateY(-3px);
+  border-color:var(--hc-accent);
+  box-shadow:0 8px 24px rgba(1,4,13,.28),
+             0 0 18px var(--hc-accent),
+             inset 0 1px rgba(255,255,255,.1),
+             inset 0 0 40px var(--hc-accent);
+}
+
+/* Prismatic edge shimmer on hover */
+#gateway .cap .hc-shimmer{
+  position:absolute;
+  inset:-1px;
+  background:linear-gradient(135deg,transparent 0%,rgba(255,255,255,.16) 48%,rgba(255,255,255,.24) 52%,transparent 100%);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .28s ease;
+  border-radius:10px;
+}
+#gateway .cap:hover .hc-shimmer{
+  opacity:1;
+}
+
+/* Badge pop on hover */
+#gateway .cap small{
+  transition:transform .22s ease;
+  display:inline-block;
+  color:var(--hc-accent);
+  font-weight:650;
+}
+#gateway .cap:hover small{
+  transform:scale(1.08);
+}
+
+/* Sweep line container */
+#gateway .cap .hc-sweep{
+  position:absolute;
+  top:0;left:0;right:0;bottom:0;
+  overflow:hidden;
+  pointer-events:none;
+  border-radius:10px;
+}
+#gateway .cap .hc-sweep-line{
+  position:absolute;
+  left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--hc-accent),transparent);
+  box-shadow:0 0 8px var(--hc-accent);
+  opacity:0;
+  animation:hc-sweep-move 5s ease-in-out infinite;
+  animation-play-state:paused;
+}
+@keyframes hc-sweep-move{
+  0%{top:-1px;opacity:0}
+  8%{opacity:.7}
+  92%{opacity:.7}
+  100%{top:100%;opacity:0}
+}
+@media(prefers-reduced-motion:reduce){
+  #gateway .cap{animation:hc-arrive .5s ease-out backwards!important}
+  #gateway .cap .hc-sweep-line{animation:none!important}
+}
+</style>
+
+<script>
+(()=>{
+  const injectSweeps=()=>{
+    const caps=document.querySelectorAll('#gateway .cap');
+    caps.forEach((cap,i)=>{
+      if(cap.querySelector('.hc-shimmer')) return;
+      const shimmer=document.createElement('div');
+      shimmer.className='hc-shimmer';
+      cap.appendChild(shimmer);
+      
+      const sweep=document.createElement('div');
+      sweep.className='hc-sweep';
+      const line=document.createElement('div');
+      line.className='hc-sweep-line';
+      line.style.animationDelay=(i*1.3)+'s';
+      sweep.appendChild(line);
+      cap.appendChild(sweep);
+      
+      if(window.matchMedia('(prefers-reduced-motion:no-preference)').matches){
+        setTimeout(()=>{line.style.animationPlayState='running'},800+i*200);
+      }
+    });
+  };
+  if(document.readyState==='loading')
+    document.addEventListener('DOMContentLoaded',injectSweeps,{once:true});
+  else injectSweeps();
+  console.log('HC ready – holographic capability cards enhanced.');
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════════════════
+     MODULE AX — Layout Containment & Responsive Overlap Repair
+     Additive layer (prefix: ax-). No existing rule is removed; every
+     selector below is a later, scoped override of a broken state.
+       desktop : document no longer drifts under the topbar, the status
+                 chip no longer covers the sky title, the right column
+                 cannot self-collide on short viewports
+       tablet  : 768–1023 HUD becomes a real side rail instead of
+                 absolutely placed cards spilling over the map
+       phone   : capability chips recover their padding, comparison
+                 tabs stay on one row, peek sheet fades instead of
+                 slicing a text line in half
+     ═══════════════════════════════════════════════════════════════════ -->
+<style id="ax-styles">
+  /* ── 1. containment ──────────────────────────────────────────── */
+  html{ -webkit-text-size-adjust:100%; }
+  body{ overflow-x:hidden; }
+
+  /* The explorer is a fixed 100vh canvas. Overlays that live outside it
+     (toast, gesture buttons) added a document scroll which pushed the
+     topbar upwards and left a permanent scrollbar. Lock the document
+     only while the explorer screen owns the viewport. */
+  @media (min-width:768px){
+    html:has(#explorer.active),
+    body:has(#explorer.active){ overflow:hidden !important; height:100%; }
+  }
+
+  /* ── 2. capability chips: restore padding, stop text clipping ── */
+  #gateway .cap{ padding:12px 12px 13px; min-height:64px; }
+  #gateway .cap b{ line-height:1.3; }
+  #gateway .cap small{ margin-top:5px; line-height:1.35; }
+  #gateway .cap{
+    border:1px solid rgba(79,227,214,.34);
+    border-radius:12px;
+    background:rgba(79,227,214,.05);
+    color:var(--teal);
+  }
+  #gateway .cap b,
+  #gateway .cap small{ color:var(--teal); }
+
+  @media (max-width:767px){
+    #gateway .capabilities{ gap:10px; }
+    #gateway .cap{ padding:11px 11px 12px; min-height:62px; max-width:100%; }
+    #gateway .cap b{ font-size:.79rem; letter-spacing:.01em; }
+    #gateway .cap small{ font-size:.56rem; letter-spacing:.05em; }
+  }
+
+  /* ── 3. desktop / large laptop ───────────────────────────────── */
+  @media (min-width:1024px){
+    /* the status chip used to sit exactly on top of the sky title */
+    #explorer .hud-head{
+      left:50%; right:auto; top:24px; transform:translateX(-50%);
+      width:auto; max-width:min(348px, calc(100% - 380px));
+      display:flex; align-items:center; gap:10px; flex-wrap:nowrap;
+    }
+    #explorer .hud-head > *{ min-width:0; }
+    #explorer .hud-head #statusTag,
+    #explorer .hud-head .status-tag,
+    #explorer .hud-head .tag{ white-space:nowrap; }
+
+    /* a phone→desktop rotation can leave the ZR offset behind on the
+       title, pushing it ~60px out of the top-left corner */
+    #explorer .sky-title{ transform:none !important; }
+  }
+
+  /* short desktop (<=720px tall): the vertical rail (3 icons + Guide orb)
+     is ~207px tall and grows down into the centred action stack, so the
+     orb ends up sitting on the corner of "Ask the Guide". Lay the rail out
+     as one row first (same buttons, same place, 52px tall). */
+  @media (min-width:1024px) and (max-height:720px){
+    /* The horizontal rail (3 icons + Guide orb) is ~207px tall. On short
+       laptops it grows down into the centred action stack, so the orb ends
+       up sitting on the corner of "Ask the Guide". Lay the rail out as one
+       row instead: same buttons, same place, 52px tall. */
+    #explorer .toolbar{
+      display:flex; flex-direction:row; flex-wrap:nowrap;
+      gap:6px; padding:6px;
+    }
+    #explorer .toolbar .icon-btn{ flex:0 0 auto; }
+  }
+  /* short desktop: toolbar 156, action stack, metadata card at H-241 —
+     a 152px single column no longer fits between them. Lay the stack out
+     2-up (3 buttons => 2 rows) and keep it inside the band. */
+  @media (min-width:1024px) and (max-height:720px){
+    #explorer .hud-actions{
+      top:clamp(166px, 50%, calc(100% - 308px));
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:7px;
+      width:266px;
+    }
+    #explorer .hud-actions button{
+      min-height:38px; padding:7px 8px;
+      font-size:.68rem; line-height:1.15;
+      white-space:normal; text-align:center; justify-content:center;
+    }
+    #explorer .hud-actions #backSource{ grid-column:1 / -1; }
+  }
+  @media (min-width:1024px) and (max-height:760px){
+    #explorer .source-line{ bottom:74px; }
+  }
+
+  /* ── 4. tablet: HUD becomes a real side rail ─────────────────── */
+  @media (min-width:768px) and (max-width:1023px){
+    #explorer.active{ height:calc(100dvh - 76px); }
+    #explorer .explorer{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) clamp(280px,34vw,320px);
+      height:100%; min-height:0;
+    }
+    #explorer .viewport{ position:relative; inset:auto; height:100%; min-height:0; }
+    #explorer .sky-disc{ width:min(94%,520px); }
+    #explorer .toolbar{ display:grid; top:16px; right:14px; }
+    #explorer .sky-title{ top:16px; left:14px; max-width:calc(100% - 92px); transform:none !important; }
+    #explorer .view-hint{ left:14px; bottom:14px; }
+
+    #explorer .hud{
+      position:relative; inset:auto; transform:none !important;
+      display:flex; flex-direction:column;
+      gap:10px; width:auto; max-width:none; max-height:none; height:100%;
+      margin:0; padding:14px 12px;
+      overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
+      border:0; border-left:1px solid rgba(197,227,227,.16); border-radius:0;
+      background:linear-gradient(180deg,rgba(9,19,36,.93),rgba(6,16,32,.97));
+      box-shadow:none;
+      backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+      z-index:6;
+    }
+    #explorer .hud > *{
+      position:relative !important; inset:auto !important;
+      left:auto !important; right:auto !important;
+      top:auto !important; bottom:auto !important;
+      transform:none !important; width:auto !important; max-width:none !important;
+      min-width:0; margin:0 !important; flex:0 0 auto;
+    }
+    #explorer .hud-head{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:8px; padding:2px 2px 4px;
+    }
+    #explorer .hud-head #statusTag,
+    #explorer .hud-head .status-tag,
+    #explorer .hud-head .tag{ white-space:nowrap; }
+    #explorer .hud-actions{
+      display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:9px;
+    }
+    #explorer .hud-actions button{
+      white-space:normal; text-align:center; justify-content:center; min-height:42px;
+    }
+    #explorer .hud-actions #backSource{ grid-column:1 / -1; }
+    #explorer .dock{
+      display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px; margin-top:auto !important;
+    }
+    #explorer .dock button{ min-width:0; white-space:nowrap; }
+  }
+
+  /* ── 5. phone ────────────────────────────────────────────────── */
+  @media (max-width:767px){
+    /* peek state: fade the sheet body instead of hard-cutting a line */
+    .zr-sheet[data-state="peek"] .zr-sheet__body{
+      overflow:hidden;
+      -webkit-mask-image:linear-gradient(180deg,#000 66%,transparent);
+      mask-image:linear-gradient(180deg,#000 66%,transparent);
+    }
+    .zr-sheet[data-state="peek"] #objectDescription{
+      display:-webkit-box; -webkit-box-orient:vertical;
+      -webkit-line-clamp:2; overflow:hidden;
+    }
+  }
+
+  /* landscape phone: the details side panel spans top-to-bottom and slid
+     underneath the floating toolbar row, covering its icons. Start the
+     panel below the rail instead. */
+  @media (orientation:landscape) and (max-height:500px) and (max-width:767px){
+    .zr-sheet{ top:calc(44px + 60px + env(safe-area-inset-top,0px)); }
+  }
+
+  @media (max-width:680px){
+    /* three filters belong on one segmented row, not three stacked bars */
+    .tabs{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+    .tab{ min-width:0; padding:10px 4px; font-size:.63rem; line-height:1.2; text-align:center; }
+  }
+
+  @media (max-width:480px){
+    .brand{ min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .top-actions{ flex-shrink:0; }
+  }
+</style>
+
+<script id="ax-sheet-resume">
+/* AX-FIX — when the user leaves the explorer and comes back (Gateway →
+   Explorer, Comparison → Sky Explorer), ZR can leave the mobile sheet at
+   data-state="hidden", which removes the whole object card on phones.
+   Re-open it through the public ZR API on re-entry only: a sheet the user
+   closed by hand stays closed, because no screen class change fires then. */
+(function () {
+  if (window.axSheetResume) return;
+  window.axSheetResume = true;
+
+  var mq = window.matchMedia('(max-width:767px)');
+  var exp = document.getElementById('explorer');
+  if (!exp) return;
+
+  function resume() {
+    if (!mq.matches) return;
+    if (!exp.classList.contains('active')) return;
+    if (!window.ZR || typeof window.ZR.getState !== 'function') return;
+    if (window.ZR.getState() !== 'hidden') return;
+    try { window.ZR.open(); } catch (e) {}
+  }
+
+  var queued = false;
+  new MutationObserver(function () {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(function () { queued = false; resume(); });
+  }).observe(exp, { attributes: true, attributeFilter: ['class'] });
+
+  window.addEventListener('pageshow', resume);
+  requestAnimationFrame(resume);
+})();
+</script>
+
 </body></html>

@@ -1,18 +1,22 @@
 # AR Cosmic Expedition (XR module)
 
-The AR/VR part of the team's NASA Space Apps 2026 entry (Planet X / SPHEREx challenge). It's a standalone React + Vite + TypeScript app. The module itself lives in `src/xr/`, so the team web app can pull it in later.
+The AR/VR part of the team's NASA Space Apps 2026 entry (Planet X / SPHEREx challenge). It's a React + Vite + TypeScript application hosting both the migrated SPHEREx frontend screens and the existing AR/VR experiences. The frontend design reference remains `../frontend/spherex-expedition.html`; all application screens use the router in `src/App.tsx`.
 
 Stack: three.js via `@react-three/fiber`, `@react-three/xr` (WebXR), `@react-three/drei` and `zustand`.
 
 ## Run
 
+Start the FastAPI backend from `backend/` on port 8000 in a separate terminal (`python -m uvicorn main:app --reload --port 8000`) so the Vite `/api/*` proxy can reach it. Then start the app:
+
 ```sh
 set npm_config_cache=D:\npm-cache   # keep npm on D:
 npm install
-npm run dev        # HTTPS on https://<LAN-IP>:5173 (self-signed cert: accept the warning on each device)
+npm run dev        # Gateway: https://<LAN-IP>:5173/ (self-signed cert: accept the warning on each device)
 npm run build      # content check + type-check + production build
 npm run check:content
 ```
+
+The Gateway links to `/explorer`, `/comparison`, `/guide/:objectId`, and `/xr`. Vite proxies local `/api/*` requests to `http://127.0.0.1:8000`.
 
 Phones and headsets need HTTPS for WebXR and motion sensors, so the dev server uses `@vitejs/plugin-basic-ssl` with `--host`. `XR_HTTP=1 npx vite --port 5174` serves plain HTTP for localhost-only testing.
 

@@ -78,6 +78,16 @@ export function Hud({ inAR = false }: { inAR?: boolean }) {
           {name && <span className="crumb">{t(name)}</span>}
         </div>
         <div className="hud__modes">
+          {!session && !inAR && (
+            <a
+              href={bodyId === 'spherex' ? '/comparison' : '/explorer'}
+              className="btn btn--ghost"
+              style={{ textDecoration: 'none' }}
+              title={bodyId === 'spherex' ? 'Open 2D Comparison' : 'Back to 2D Sky Explorer'}
+            >
+              ◂ {t(bodyId === 'spherex' ? 'Comparison (2D)' : '2D Explorer')}
+            </a>
+          )}
           {!session && !inAR && <TourButton />}
           {!session && !inAR && <ModePickerToggle caps={caps} />}
           {!session && gyroEnabled && (
