@@ -48,6 +48,8 @@
 2. `docs/audit/arvr-audit.md`
 3. `arvr/HANDOFF.md`
 4. `arvr/docs/PLAN.md`
+5. `docs/OBSERVATION_3D_MODEL_INTEGRATION_PLAN.md` — Model 3D AR/VR (Mars/Moon/Bennu + hotspot) di viewport Sky Explorer: rencana, hasil tes, keputusan
+6. `docs/OBSERVATION_3D_MODEL_IMPLEMENTATION_PROMPT.md` — Prompt agent untuk melanjutkan pekerjaan ini
 
 ### ?? QA
 1. `docs/QA-CHECKLIST.md`

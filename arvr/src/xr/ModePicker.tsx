@@ -174,16 +174,19 @@ export function ModePickerToggle({ caps }: { caps: DeviceCaps }) {
   const atHub = useXRApp((s) => !s.bodyId && !s.siteId)
   const { search } = useLocation()
   const intent = new URLSearchParams(search).get('intent')
+  // ?intent=vr|ar (from the 2D Explorer's VR/AR toggle) opens the picker on any scene, so the immersive
+  // session still starts from a real tap inside the XR app (browsers require a user gesture for it).
+  const wantsImmersive = intent === 'ar' || intent === 'vr'
   const [open, setOpen] = useState(() => {
     try {
-      return atHub && ((intent === 'ar' || intent === 'vr') || !sessionStorage.getItem(SEEN_KEY))
+      return wantsImmersive || (atHub && !sessionStorage.getItem(SEEN_KEY))
     } catch {
       return atHub
     }
   })
   useEffect(() => {
-    if (atHub && (intent === 'ar' || intent === 'vr')) setOpen(true)
-  }, [atHub, intent])
+    if (wantsImmersive) setOpen(true)
+  }, [wantsImmersive])
   // right after the intro, let the camera's flight in finish before the choices appear
   const [held, setHeld] = useState(() => useIntro.getState().open || cameraMotion.request === 'intro')
   useEffect(() => {
