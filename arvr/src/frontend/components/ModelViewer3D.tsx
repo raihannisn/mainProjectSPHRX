@@ -4,6 +4,8 @@ import { OrbitControls } from '@react-three/drei'
 import type { PerspectiveCamera } from 'three'
 import '../../xr/loading' // registers the /xr/ base-path URL modifier for textures and models
 import { BodyExplorer } from '../../xr/BodyExplorer'
+import { SolarSystemHub } from '../../xr/SolarSystemHub'
+import { BODY_BY_ID } from '../../xr/bodies'
 import { ErrorBoundary } from '../../xr/ErrorBoundary'
 import { useXRApp } from '../../xr/store'
 
@@ -15,20 +17,25 @@ export function isModelBody(value: string | null): value is ModelBodyId {
   return value !== null && (MODEL_BODIES as readonly string[]).includes(value)
 }
 
+/** Any body of the Solar System chart can be shown in the viewer (the SPHEREx table lives in /xr). */
+export function isViewerBody(value: string | null): value is string {
+  return value !== null && value !== 'spherex' && value in BODY_BY_ID
+}
+
 const FOV = 40
 /** Radius that must stay in frame: the holo orbit ring (1.55) plus a small margin. */
 const FRAME_RADIUS = 1.62
 
 /** Pulls the camera back far enough that the whole body + ring fits, on wide and on portrait screens. */
-function FitCamera({ resetKey }: { resetKey: number }) {
+function FitCamera({ resetKey, radius = FRAME_RADIUS, lift = 0.18 }: { resetKey: number; radius?: number; lift?: number }) {
   const camera = useThree((s) => s.camera)
   const width = useThree((s) => s.size.width)
   const height = useThree((s) => s.size.height)
   useEffect(() => {
     const aspect = width / Math.max(1, height)
     const halfV = Math.tan(((FOV / 2) * Math.PI) / 180)
-    const distance = Math.max(FRAME_RADIUS / halfV, FRAME_RADIUS / (halfV * aspect)) * 1.05
-    camera.position.set(0, 0.18, 1).normalize().multiplyScalar(distance)
+    const distance = Math.max(radius / halfV, radius / (halfV * aspect)) * 1.05
+    camera.position.set(0, lift, 1).normalize().multiplyScalar(distance)
     camera.lookAt(0, 0, 0)
     // Narrow viewports: the title card and toolbar cover the top of the canvas, so draw the model a
     // little lower (a view offset shifts the picture without changing what the orbit controls rotate).
@@ -36,7 +43,7 @@ function FitCamera({ resetKey }: { resetKey: number }) {
     if (width < 768) cam.setViewOffset(width, height, 0, -height * 0.04, width, height)
     else cam.clearViewOffset()
     cam.updateProjectionMatrix()
-  }, [camera, width, height, resetKey])
+  }, [camera, width, height, resetKey, radius, lift])
   return null
 }
 
@@ -49,7 +56,8 @@ function ViewerFallback({ label }: { label: string }) {
 }
 
 interface ModelViewer3DProps {
-  bodyId: ModelBodyId
+  /** a body id, or 'solar' for the Solar System chart (tap a planet to open it) */
+  bodyId: string
   /** Bumped by the toolbar's reset/recentre buttons to re-frame the model. */
   resetKey: number
 }
@@ -87,9 +95,13 @@ export function ModelViewer3D({ bodyId, resetKey }: ModelViewer3DProps) {
           <ambientLight intensity={0.32} />
           <directionalLight position={[4, 2.5, 5]} intensity={2.4} />
           <directionalLight position={[-5, -1, -3]} intensity={0.25} color="#7fa6ff" />
-          <FitCamera resetKey={resetKey} />
+          <FitCamera resetKey={resetKey} radius={bodyId === 'solar' ? 3.4 : FRAME_RADIUS} lift={bodyId === 'solar' ? 0.55 : 0.18} />
           <Suspense fallback={null}>
-            <BodyExplorer key={bodyId} id={bodyId} vr={false} showTitle={false} hideObjectCard />
+            {bodyId === 'solar' ? (
+              <SolarSystemHub />
+            ) : (
+              <BodyExplorer key={bodyId} id={bodyId} vr={false} showTitle={false} hideObjectCard />
+            )}
           </Suspense>
           <OrbitControls
             key={resetKey}
@@ -97,7 +109,7 @@ export function ModelViewer3D({ bodyId, resetKey }: ModelViewer3DProps) {
             enablePan={false}
             enableDamping={!reduceMotion}
             minDistance={2.2}
-            maxDistance={12}
+            maxDistance={bodyId === 'solar' ? 30 : 12}
             rotateSpeed={0.7}
           />
         </Canvas>

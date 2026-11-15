@@ -131,10 +131,10 @@ export function GatewayScreen() {
                   {
                     origin,
                     label: lang === 'id' ? 'Menuju Cosmic Expedition…' : 'Entering Cosmic Expedition…',
-                    waitForScene: true,
-                    minMs: 650,
+                    waitForScene: false,
+                    minMs: 450,
                   },
-                  () => navigate('/xr')
+                  () => navigate('/explorer')
                 )
               }}
             >
@@ -181,10 +181,10 @@ export function GatewayScreen() {
                 {
                   origin,
                   label: lang === 'id' ? 'Membuka Solar System Hub…' : 'Opening the Solar System Hub…',
-                  waitForScene: true,
-                  minMs: 650,
+                  waitForScene: false,
+                  minMs: 450,
                 },
-                () => navigate('/xr')
+                () => navigate('/explorer')
               )
             }}
           >

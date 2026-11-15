@@ -8,7 +8,7 @@ type NavState = 'top' | 'island' | 'island-open'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Gateway' },
-  { to: '/xr', label: 'Sky Explorer' },
+  { to: '/explorer', label: 'Sky Explorer' },
   { to: '/comparison', label: 'Comparison' },
   { to: '/guide', label: 'Cosmic Guide' },
 ]
