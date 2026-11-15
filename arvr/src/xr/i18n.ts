@@ -27,6 +27,7 @@ const ID: Record<string, string> = {
   Menu: 'Menu',
   'Open menu': 'Buka menu',
   '2D Explorer': 'Penjelajah 2D',
+  'Back to the Gateway': 'Kembali ke Gateway',
   'Comparison (2D)': 'Komparasi (2D)',
   'Close menu': 'Tutup menu',
   'In VR: turn your left palm toward your face, or press Y on the left controller.': 'Di VR: hadapkan telapak tangan kiri ke wajahmu, atau tekan Y pada kontroler kiri.',

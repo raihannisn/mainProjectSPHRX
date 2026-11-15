@@ -15,7 +15,8 @@ for (const [label, option] of [
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } })
   const errors = []
   page.on('pageerror', (e) => errors.push(e.message))
-  await page.goto(`${base}/xr/?emulate`)
+  // ?intro: the title card no longer opens by itself (the Gateway is the front door), so ask for it here
+  await page.goto(`${base}/xr/?emulate&intro`)
   // click a button by its visible text (the intro animates, which upsets pointer-based clicks)
   const press = (text) =>
     page.waitForFunction((t) => {

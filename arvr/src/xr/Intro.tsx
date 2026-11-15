@@ -13,14 +13,9 @@ import { flyIn } from './cameraMotion'
  */
 const SEEN_KEY = 'cosmic-xr-intro-seen'
 const forced = typeof location !== 'undefined' && new URLSearchParams(location.search).has('intro')
-const seen = (() => {
-  try {
-    return localStorage.getItem(SEEN_KEY) === '1'
-  } catch {
-    return false
-  }
-})()
-export const useIntro = create<{ open: boolean }>(() => ({ open: forced || (!seen && typeof location !== 'undefined' && /^\/xr\/?$/.test(location.pathname)) }))
+// The Gateway screen is the app's front door, so the title card no longer opens by itself on a first
+// visit to /xr. It stays available with ?intro (exhibition stands, demos).
+export const useIntro = create<{ open: boolean }>(() => ({ open: forced }))
 
 export function closeIntro(cinematic: boolean) {
   try {
@@ -32,7 +27,7 @@ export function closeIntro(cinematic: boolean) {
   flyIn(cinematic ? 'intro' : 'scene')
 }
 
-const TITLE = 'AR Cosmic Expedition'
+const TITLE = 'SPHEREx Cosmic Expedition'
 
 export function IntroScreen() {
   const open = useIntro((s) => s.open)

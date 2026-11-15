@@ -1,0 +1,270 @@
+/* =========================================================================================
+   XR chrome in the SPHEREx Cosmic Expedition design language.
+
+   The 3D/AR/VR scenes keep their own layout (styles.css, menu.css); this file only re-skins
+   their on-screen chrome with the visual language of the 2D screens (frontend.css):
+   Poppins + mono labels, glass panels, gold action pills, teal for "active / fact / link".
+   Loaded last, so it wins without editing the older rules. Every selector here is an XR
+   class; nothing in the fe-* screens is touched.
+   ========================================================================================= */
+.xr-root,
+.hud,
+.menu-panel,
+.mode-picker,
+.intro,
+.attract,
+.loading-screen {
+  --x-sans: "Poppins", "Roboto", system-ui, -apple-system, sans-serif;
+  --x-mono: "SFMono-Regular", Consolas, "Roboto Mono", monospace;
+  --x-teal: #4fe3d6;
+  --x-violet: #b18cff;
+  --x-amber: #f5ae43;
+  --x-gold: #d4af37;
+  --x-gold-soft: #e5c07b;
+  --x-gold-text: #f4e8c6;
+  --x-soft: #c7cde6;
+  --x-muted: #9ba8bf;
+  --x-edge: rgba(226, 228, 233, 0.13);
+  --x-edge-teal: rgba(197, 227, 227, 0.18);
+  --x-glass: linear-gradient(145deg, rgba(13, 28, 51, 0.78), rgba(6, 16, 32, 0.68));
+  --x-glass-strong: linear-gradient(145deg, rgba(13, 28, 51, 0.94), rgba(6, 16, 32, 0.92));
+  --x-gold-glass: linear-gradient(135deg, rgba(212, 175, 55, 0.16), rgba(13, 28, 51, 0.6) 44%, rgba(13, 28, 51, 0.88));
+  --x-gold-glass-strong: linear-gradient(135deg, rgba(212, 175, 55, 0.3), rgba(212, 175, 55, 0.1) 46%, rgba(13, 28, 51, 0.86));
+  --x-gold-solid: linear-gradient(115deg, #d4af37, #e5c07b 52%, #f2e2b3);
+  --x-shadow-btn: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 6px 18px rgba(4, 10, 22, 0.42);
+  --x-shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 28px rgba(1, 4, 13, 0.24);
+  --x-radius-card: 18px;
+  --x-hit: 44px;
+  font-family: var(--x-sans);
+}
+
+/* ---- top bar ---- */
+.hud__bar { gap: 10px; }
+.xr-brand {
+  display: inline-flex; align-items: center; gap: 10px; min-height: var(--x-hit); color: #fff; text-decoration: none;
+  font-size: 12.5px; font-weight: 650; letter-spacing: 0.04em;
+}
+.xr-brand__mark {
+  display: grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 50%;
+  font-family: var(--x-mono); font-size: 11px; font-weight: 700; color: var(--x-teal);
+  border: 1px solid var(--x-teal); box-shadow: 0 0 20px rgba(79, 227, 214, 0.2);
+}
+.xr-brand__sep, .xr-brand__sub { color: var(--x-muted); font-weight: 500; }
+.xr-brand:hover .xr-brand__mark { background: rgba(79, 227, 214, 0.12); }
+.xr-brand:focus-visible { outline: 2px solid var(--x-teal); outline-offset: 4px; border-radius: 999px; }
+.brand { font-weight: 650; font-size: 13px; letter-spacing: 0.04em; }
+.crumb { font-weight: 600; font-size: 18px; letter-spacing: -0.02em; }
+
+/* ---- buttons: gold glass pills, as on the Sky Explorer ---- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: var(--x-sans); font-size: 12.5px; font-weight: 500; line-height: 1.2; color: var(--x-gold-text);
+  background: var(--x-gold-glass), rgba(13, 28, 51, 0.55);
+  border: 1px solid rgba(212, 175, 55, 0.38); border-radius: 999px; padding: 9px 16px; min-height: 40px;
+  box-shadow: var(--x-shadow-btn); backdrop-filter: blur(12px) saturate(1.3); -webkit-backdrop-filter: blur(12px) saturate(1.3);
+}
+.btn:hover {
+  background: var(--x-gold-glass-strong), rgba(13, 28, 51, 0.55); border-color: rgba(229, 192, 123, 0.72); color: #fff7dc;
+  box-shadow: var(--x-shadow-btn), 0 0 18px rgba(212, 175, 55, 0.18);
+}
+/* main action of a group (Guided tour, Stand on the surface, Go there) */
+.btn--accent {
+  font-weight: 650; background: var(--x-gold-glass-strong), rgba(13, 28, 51, 0.55); border-color: rgba(229, 192, 123, 0.55);
+}
+.btn--accent:hover { color: #07101f; background: var(--x-gold-solid); border-color: rgba(229, 192, 123, 0.92); box-shadow: 0 0 20px rgba(212, 175, 55, 0.25); }
+/* the way into 3D / VR / AR: same teal-violet badge as the nav bar's "3D / WebXR" */
+.btn--primary {
+  font-weight: 600; color: #fff; background: linear-gradient(115deg, rgba(79, 227, 214, 0.2), rgba(177, 140, 255, 0.15)), rgba(13, 28, 51, 0.6);
+  border-color: var(--x-teal);
+}
+.btn--primary:hover {
+  color: #fff; background: linear-gradient(115deg, rgba(79, 227, 214, 0.34), rgba(177, 140, 255, 0.26)), rgba(13, 28, 51, 0.6);
+  border-color: #8ff6eb; box-shadow: 0 0 22px rgba(79, 227, 214, 0.28);
+}
+.btn--ghost { color: #fff; background: rgba(13, 28, 51, 0.5); border-color: rgba(226, 228, 233, 0.16); box-shadow: none; }
+.btn--ghost:hover { color: var(--x-teal); background: rgba(79, 227, 214, 0.1); border-color: var(--x-teal); box-shadow: none; }
+.hud--surface .hud__bar .btn { background: rgba(20, 12, 8, 0.62); }
+.btn:focus-visible, .chip:focus-visible, .menu-panel button:focus-visible, .mode:focus-visible, .seg button:focus-visible, .chip-btn:focus-visible, .menu-fab:focus-visible, .time-pill:focus-visible {
+  outline: 2px solid var(--x-teal); outline-offset: 2px;
+}
+.icon-btn { color: var(--x-soft); border-radius: 999px; }
+.icon-btn:hover { color: #fff; }
+.link-btn { color: var(--x-teal); font-family: var(--x-sans); font-size: 12.5px; }
+
+/* ---- chips, badges, legend: mono micro-labels ---- */
+.chip {
+  font-family: var(--x-mono); font-size: 10.9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--x-soft); background: rgba(8, 17, 32, 0.5); border: 1px solid var(--x-edge-teal); padding: 7px 12px; min-height: 32px;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+}
+.chip--live { color: var(--x-teal); border-color: rgba(79, 227, 214, 0.55); background: rgba(79, 227, 214, 0.08); }
+.chip:hover { background: rgba(79, 227, 214, 0.14); color: #fff; }
+.badge {
+  font-family: var(--x-mono); font-size: 10.2px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--x-amber); border-color: rgba(245, 174, 67, 0.45); padding: 4px 9px;
+}
+.legend { font-family: var(--x-mono); font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--x-muted); }
+.legend .credit, .credit { font-family: var(--x-sans); text-transform: none; letter-spacing: 0; color: var(--x-muted); }
+.land { font-family: var(--x-mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--x-muted); }
+.land .btn { text-transform: none; letter-spacing: 0; font-family: var(--x-sans); }
+.hint {
+  font-family: var(--x-mono); font-size: 10.9px; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(199, 205, 230, 0.7);
+  background: rgba(8, 17, 32, 0.5); border: 1px solid rgba(197, 227, 227, 0.15); border-radius: 999px; padding: 8px 14px;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); max-width: calc(100% - 32px);
+}
+.notice { background: var(--x-glass); border: 1px solid var(--x-edge); border-radius: 14px; font-size: 13px; color: var(--x-soft); backdrop-filter: blur(18px); }
+.notice--warn { border-color: rgba(245, 174, 67, 0.6); }
+
+/* ---- glass cards ---- */
+.info-card, .layer-picker, .mission-card, .tour-caption, .loading-card, .problem-card, .mode-picker, .time-panel, .spherex-panel {
+  background: var(--x-glass-strong); border: 1px solid var(--x-edge); border-radius: var(--x-radius-card);
+  box-shadow: var(--x-shadow-card), 0 18px 50px rgba(1, 4, 13, 0.45);
+  backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2);
+}
+.info-card h2 { font-size: 19.5px; font-weight: 600; letter-spacing: -0.025em; }
+.info-card__short { font-size: 13.5px; line-height: 1.55; color: #fff; }
+.info-card__detail { font-size: 12.7px; line-height: 1.6; color: var(--x-soft); }
+.info-card__source { font-family: var(--x-mono); font-size: 10.9px; color: var(--x-muted); }
+.info-card__source a, .suit a, .fine a, .menu-panel a { color: var(--x-teal); }
+.kind-tag { font-family: var(--x-mono); font-size: 10.2px; letter-spacing: 0.08em; padding: 4px 9px; }
+
+.layer-picker { background: var(--x-glass); padding: 12px 14px; }
+.layer-picker > span { font-family: var(--x-mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--x-teal); }
+.seg { gap: 4px; padding: 4px; border-radius: 999px; background: rgba(8, 17, 32, 0.5); border: 1px solid var(--x-edge-teal); }
+.seg button {
+  font-family: var(--x-mono); font-size: 10.9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--x-soft); background: transparent; border: 1px solid transparent; border-radius: 999px; min-height: 36px; padding: 6px 10px;
+}
+.seg button:hover { color: #fff; }
+.seg button.on { color: var(--x-teal); background: rgba(79, 227, 214, 0.12); border-color: var(--x-teal); font-weight: 600; }
+
+.mission-card { border-left: 3px solid var(--x-teal); }
+.mission-card small { font-family: var(--x-mono); font-size: 10.5px; letter-spacing: 0.12em; color: var(--x-teal); }
+.mission-card strong { font-weight: 600; letter-spacing: -0.01em; }
+.mission-card span { color: var(--x-soft); }
+.mission-card--done { border-left-color: #5ee39a; }
+.tour-caption strong { font-weight: 600; letter-spacing: -0.02em; }
+.tour-caption p { color: var(--x-soft); }
+.tour-caption__top, .tour-caption .said { color: var(--x-teal); font-family: var(--x-mono); font-size: 10.9px; letter-spacing: 0.08em; text-transform: uppercase; }
+.problem-card { border-color: rgba(245, 174, 67, 0.5); }
+.problem-card strong { color: var(--x-amber); font-weight: 600; }
+.offline-pill { font-family: var(--x-mono); font-size: 10.9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--x-amber); background: rgba(13, 28, 51, 0.9); border-color: rgba(245, 174, 67, 0.45); }
+.toast {
+  font-size: 13px; color: var(--x-soft); background: #10272d; border: 1px solid rgba(79, 227, 214, 0.27); border-radius: 12px;
+  padding: 11px 18px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* ---- ways to explore ---- */
+.mode-picker { font-family: var(--x-sans); padding: 16px; }
+.mode-picker header strong { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+.mode { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--x-edge); border-radius: 14px; color: #fff; }
+.mode:hover:not(:disabled) { background: rgba(79, 227, 214, 0.1); border-color: rgba(79, 227, 214, 0.55); }
+.mode--primary { background: linear-gradient(115deg, rgba(79, 227, 214, 0.18), rgba(177, 140, 255, 0.12)); border-color: rgba(79, 227, 214, 0.7); }
+.mode__text b { font-weight: 600; }
+.mode__text small { color: var(--x-soft); }
+
+/* ---- expedition menu ---- */
+.menu-fab {
+  font-family: var(--x-sans); font-size: 12.5px; font-weight: 600; color: var(--x-gold-text);
+  background: var(--x-gold-glass), rgba(13, 28, 51, 0.7); border: 1px solid rgba(212, 175, 55, 0.38); box-shadow: var(--x-shadow-btn);
+}
+.menu-panel { font-family: var(--x-sans); background: var(--x-glass-strong); border: 1px solid var(--x-edge); }
+.menu-panel__title strong { font-weight: 600; letter-spacing: -0.01em; }
+.menu-panel__logo, .setting-card__icon { border-radius: 50%; }
+.menu-section h4 { font-family: var(--x-mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.15em; color: var(--x-teal); }
+.menu-tabs button { font-family: var(--x-mono); font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; }
+.lang-switch button.on, .segmented button.on {
+  color: var(--x-teal); background: rgba(79, 227, 214, 0.12); box-shadow: inset 0 0 0 1px var(--x-teal); font-weight: 600;
+}
+.tour-cta {
+  color: var(--x-gold-text); background: var(--x-gold-glass-strong), rgba(13, 28, 51, 0.7); border: 1px solid rgba(229, 192, 123, 0.55);
+  box-shadow: var(--x-shadow-btn);
+}
+.tour-cta b { font-weight: 650; }
+.tour-cta__icon { background: rgba(212, 175, 55, 0.18); color: var(--x-gold-soft); }
+.place { background: rgba(255, 255, 255, 0.04); border-color: var(--x-edge); }
+.place__icon { color: var(--x-violet); background: rgba(177, 140, 255, 0.12); border-radius: 50%; }
+.info-grid dt { font-family: var(--x-mono); font-size: 9.8px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--x-muted); }
+.info-grid dd { font-family: var(--x-mono); font-size: 11.5px; }
+.chip-btn { font-family: var(--x-sans); font-size: 12.5px; color: var(--x-gold-text); background: var(--x-gold-glass), rgba(13, 28, 51, 0.55); border: 1px solid rgba(212, 175, 55, 0.38); }
+.chip-btn:hover { background: var(--x-gold-glass-strong), rgba(13, 28, 51, 0.55); }
+.chip-btn.primary { color: #07101f; background: var(--x-gold-solid); border-color: rgba(229, 192, 123, 0.86); font-weight: 650; }
+
+/* ---- time machine ---- */
+.time-pill {
+  font-family: var(--x-mono); font-size: 10.9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--x-soft);
+  background: var(--x-glass); border: 1px solid var(--x-edge-teal);
+}
+.time-panel header strong { font-weight: 600; letter-spacing: -0.01em; }
+.time-live { font-family: var(--x-mono); font-size: 10.5px; letter-spacing: 0.06em; }
+.time-note, .light-time small { color: var(--x-muted); }
+.light-time b { font-weight: 600; }
+
+/* ---- SPHEREx table panel (phones) ---- */
+.spherex-panel { border-radius: 22px 22px 0 0; }
+.spherex-panel p { color: var(--x-soft); }
+
+/* ---- surface readout keeps its warm visor tint, in the shared type ---- */
+.suit { border-radius: var(--x-radius-card); backdrop-filter: blur(14px); }
+.suit h3 { font-family: var(--x-mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; }
+.suit dt { font-family: var(--x-mono); font-size: 9.8px; text-transform: uppercase; letter-spacing: 0.04em; }
+.suit dd { font-family: var(--x-mono); font-size: 11px; }
+.compass { font-family: var(--x-mono); }
+
+/* ---- loading, intro, kiosk ---- */
+.loading-screen__pct { font-weight: 600; letter-spacing: -0.02em; }
+.loading-screen__label { font-family: var(--x-mono); font-size: 10.9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--x-teal); }
+.loading-screen__tip { color: var(--x-soft); }
+.intro__eyebrow, .attract__eyebrow { font-family: var(--x-mono); font-size: 11.2px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--x-teal); }
+.intro__title { font-weight: 600; letter-spacing: -0.03em; }
+.intro__title em { font-style: normal; color: var(--x-teal); }
+.intro__tagline { color: var(--x-soft); }
+.intro__start, .attract__cta {
+  font-family: var(--x-sans); font-size: 15px; font-weight: 700; color: var(--x-gold-text);
+  background: var(--x-gold-glass-strong), rgba(13, 28, 51, 0.7); border: 1px solid rgba(229, 192, 123, 0.55); box-shadow: var(--x-shadow-btn);
+}
+.intro__start:hover { box-shadow: var(--x-shadow-btn), 0 0 22px rgba(212, 175, 55, 0.3); }
+.intro__skip { font-family: var(--x-mono); font-size: 10.9px; letter-spacing: 0.06em; text-transform: uppercase; }
+.attract__title { font-weight: 600; letter-spacing: -0.03em; }
+
+/* ---- phones ---- */
+@media (max-width: 640px) {
+  .btn { min-height: var(--x-hit); }
+  .hud__modes .btn, .hud__title .btn { min-height: var(--x-hit); }
+  .chip { min-height: var(--x-hit); }
+  .seg button { min-height: var(--x-hit); }
+  .land .btn { min-height: var(--x-hit); }
+  .xr-brand__text { display: none; }
+  /* inside a scene the bar is full: the back button and the 2D Explorer link already lead home */
+  .xr-brand--compact { display: none; }
+  .crumb { font-size: 16px; }
+  .menu-fab { background: var(--x-gold-solid); border: 1px solid rgba(229, 192, 123, 0.86); box-shadow: 0 10px 28px rgba(212, 175, 55, 0.28); }
+  .menu-fab__icon i { background: #08131f; }
+  .info-card, .hud--surface .info-card, .mode-picker, .time-panel { border-radius: 22px 22px 0 0; }
+}
+@media (pointer: coarse) {
+  .btn, .chip, .seg button, .chip-btn, .time-pill { min-height: var(--x-hit); }
+}
+
+/* the mission card clears the "Stand on the surface" row instead of sitting on it */
+@media (min-width: 641px) {
+  .hud:has(.land) .mission-card { top: 142px; }
+  .hud:has(.body-chips) .mission-card { top: 152px; }
+  /* the time-machine pill sits clear of the hint pill below it */
+  .time-pill, .time-panel { bottom: calc(60px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 640px) {
+  .hud__modes .btn, .hud__title .btn { padding: 8px 12px; }
+  .hud__title { gap: 8px; }
+}
+
+/* phones: the place name gets its own line, so long names ("Jezero Crater") are never cut to "J…";
+   the actions sit on a second line, and what hangs below the bar moves down with it */
+@media (max-width: 640px) {
+  .hud__bar { flex-wrap: wrap; row-gap: 8px; }
+  .hud__title { flex: 1 1 100%; }
+  .crumb { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; line-height: 1.2; }
+  .hud__modes { flex: 1 1 100%; justify-content: flex-start; }
+  .compass { top: 150px; }
+  .hud--surface .mission-card { top: calc(188px + env(safe-area-inset-top)); }
+}

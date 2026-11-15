@@ -68,6 +68,23 @@ export function Hud({ inAR = false }: { inAR?: boolean }) {
       {surface && !inAR && <div className="visor" aria-hidden />}
       <header className="hud__bar">
         <div className="hud__title">
+          {!inAR && !session && (
+            <a
+              className={`xr-brand${bodyId || surface ? ' xr-brand--compact' : ''}`}
+              href="/"
+              title={t('Back to the Gateway')}
+              aria-label={`SPHEREx Cosmic Expedition · ${t('Back to the Gateway')}`}
+            >
+              <span className="xr-brand__mark" aria-hidden>
+                S
+              </span>
+              {!bodyId && !surface && (
+                <span className="xr-brand__text">
+                  SPHEREx <span className="xr-brand__sep">/</span> <span className="xr-brand__sub">COSMIC EXPEDITION</span>
+                </span>
+              )}
+            </a>
+          )}
           {surface ? (
             <button className="btn btn--ghost" onClick={() => app().selectBody(site?.body ?? bodyId)}>
               ◂<span className="lbl-long"> {t('Back to orbit')}</span>
@@ -76,9 +93,9 @@ export function Hud({ inAR = false }: { inAR?: boolean }) {
             <button className="btn btn--ghost" onClick={() => app().selectBody(null)}>
               ◂<span className="lbl-long"> {t('Solar System')}</span>
             </button>
-          ) : (
-            <span className="brand">AR Cosmic Expedition</span>
-          )}
+          ) : inAR || session ? (
+            <span className="brand">SPHEREx Cosmic Expedition</span>
+          ) : null}
           {name && <span className="crumb">{t(name)}</span>}
         </div>
         <div className="hud__modes">
@@ -95,7 +112,8 @@ export function Hud({ inAR = false }: { inAR?: boolean }) {
               style={{ textDecoration: 'none' }}
               title={bodyId === 'spherex' ? (obsIdB ? 'Open 2D Comparison' : 'Back to 2D Sky Explorer') : 'Back to 2D Sky Explorer'}
             >
-              ◂ {t(bodyId === 'spherex' ? (obsIdB ? 'Comparison (2D)' : '2D Explorer') : '2D Explorer')}
+              ◂ <span className="lbl-long">{t(bodyId === 'spherex' ? (obsIdB ? 'Comparison (2D)' : '2D Explorer') : '2D Explorer')}</span>
+              <span className="lbl-short">2D</span>
             </a>
           )}
           {!session && !inAR && <TourButton />}

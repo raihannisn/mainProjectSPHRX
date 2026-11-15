@@ -131,7 +131,7 @@ export function AttractOverlay() {
   if (!attract) return null
   return (
     <button className="attract" onClick={markActive} aria-label={t('Touch to explore')}>
-      <span className="attract__title">AR Cosmic Expedition</span>
+      <span className="attract__title">SPHEREx Cosmic Expedition</span>
       <span className="attract__cta">{t('Touch to explore')}</span>
       <span className="attract__sub">{t('Walk on Mars, the Moon and asteroid Bennu with real NASA data. On screen, in VR or in AR.')}</span>
     </button>

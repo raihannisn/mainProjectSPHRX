@@ -7,6 +7,8 @@ import './styles.css'
 import './menu.css'
 import { onAskGuide } from './xr'
 import { App } from './App'
+// XR chrome re-skinned in the 2D screens' design language; must load after frontend.css (imported by App)
+import './xr/theme.css'
 import { EMULATE, startEmulator } from './xr/emulator'
 import { registerServiceWorker } from './xr/offline'
 

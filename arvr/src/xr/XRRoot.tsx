@@ -281,7 +281,7 @@ export function XRRoot() {
             ) : bodyId === 'spherex' ? (
               <SpherexTable mode={mode} />
             ) : bodyId ? (
-              <BodyExplorer key={bodyId} id={bodyId} vr={mode === 'vr'} />
+              <BodyExplorer key={bodyId} id={bodyId} vr={mode === 'vr'} showTitle={mode === 'vr' || mode === 'ar'} />
             ) : (
               <SolarSystemHub tilt={mode === 'vr' || mode === 'gyro' ? 0.35 : 0} />
             )}
