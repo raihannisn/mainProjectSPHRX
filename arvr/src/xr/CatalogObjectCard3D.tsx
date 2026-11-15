@@ -19,12 +19,15 @@ export function CatalogObjectCard3D({
   objectType,
   contentReady,
   localDescription,
+  hidden = false,
 }: {
   objectId: string
   objectName: string
   objectType: string
   contentReady: boolean
   localDescription: string
+  /** keeps the summary + voice-over running but draws no panel (inline 2D viewer; its HUD card shows the text) */
+  hidden?: boolean
 }) {
   const lang = useXRApp((state) => state.settings.lang)
   const [object, setObject] = useState<ObjectInfo | null>(null)
@@ -184,7 +187,7 @@ export function CatalogObjectCard3D({
   }
 
   return (
-    <group position={[-1.62, 0.08, 0.12]} rotation={[0, 0.42, 0]}>
+    <group visible={!hidden} position={[-1.62, 0.08, 0.12]} rotation={[0, 0.42, 0]}>
       <PopIn key={`${objectId}-${lang}`}>
         <GlassPanel width={1.58} height={2.14} radius={0.08} rim={0.01} />
         <Text

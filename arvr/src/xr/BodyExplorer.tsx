@@ -143,6 +143,7 @@ export function BodyExplorer({
   vr,
   showTitle = true,
   showObjectCard = true,
+  hideObjectCard = false,
 }: {
   id: string
   vr: boolean
@@ -150,6 +151,8 @@ export function BodyExplorer({
   showTitle?: boolean
   /** false when a 2D HUD card already carries the object summary (inline viewer) */
   showObjectCard?: boolean
+  /** keep the card's voice-over but do not draw it (inline 2D viewer) */
+  hideObjectCard?: boolean
 }) {
   const content = useBodyContent(id)
   const q = useQuality()
@@ -213,6 +216,7 @@ export function BodyExplorer({
           objectType={content?.type ?? info?.kind ?? ''}
           contentReady={content !== undefined}
           localDescription={content?.description?.[lang] ?? content?.description?.en ?? ''}
+          hidden={hideObjectCard}
         />
       )}
 

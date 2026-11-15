@@ -89,7 +89,7 @@ export function ModelViewer3D({ bodyId, resetKey }: ModelViewer3DProps) {
           <directionalLight position={[-5, -1, -3]} intensity={0.25} color="#7fa6ff" />
           <FitCamera resetKey={resetKey} />
           <Suspense fallback={null}>
-            <BodyExplorer key={bodyId} id={bodyId} vr={false} showTitle={false} showObjectCard={false} />
+            <BodyExplorer key={bodyId} id={bodyId} vr={false} showTitle={false} hideObjectCard />
           </Suspense>
           <OrbitControls
             key={resetKey}

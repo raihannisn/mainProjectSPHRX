@@ -227,11 +227,11 @@ export function TopBar() {
 
   const xrLink = (
     <Link
-      to="/xr"
+      to="/explorer?model=mars"
       className="fe-xr-badge-btn"
-      title="Open Solar System & WebXR 3D Hub"
+      title="Open the 3D models in the Cosmic Explorer"
       onClick={(event) => {
-        handleNav(event, '/xr', () => setMenuOpen(false))
+        handleNav(event, '/explorer?model=mars', () => setMenuOpen(false))
       }}
     >
       <span>3D / WebXR</span>
