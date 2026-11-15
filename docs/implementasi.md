@@ -99,3 +99,16 @@ Homepage, wormhole, navbar, audio ambience, tombol Cosmic Agent, Comparison, tom
 
 - Commit lokal dulu, tanpa atribusi AI. Tidak ada push atau PR tanpa perintah.
 - Fase 2 baru dimulai setelah Fase 1 dikonfirmasi jalan.
+
+## 7. Pembaruan: suara cadangan dan input mikrofon
+
+- **Narator tidak lagi "unavailable" tanpa key.** Bila `/api/agent/voiceover/text` gagal (key belum ada, offline, rate limit), teks yang sama dibacakan suara bawaan browser (`arvr/src/xr/browserVoice.ts`). Kartu menampilkan "Replay voice (browser)". Begitu `GEMINI_API_KEY` terpasang, suara AI dipakai otomatis.
+- **Mic adalah input suara.** Tombol mic bulat di baris input Cosmic Guide: tekan untuk merekam, tekan lagi untuk mengirim. Klip dikirim ke `/api/agent/voice/transcribe`; pengenal suara browser berjalan bersamaan dan dipakai bila backend gagal. Jawaban atas pertanyaan suara dibacakan.
+- **Tombol header menjadi ikon speaker** (baca jawaban, mati secara default).
+- **Mikrofon diblokir**: pesan jelas, tanpa error halaman. Mikrofon dilepas begitu rekaman berhenti; batas rekaman 30 detik.
+
+### Agar suara AI asli dan chat bebas berjalan
+
+1. Buat file `backend/.env` di folder backend yang dijalankan, isi `GEMINI_API_KEY=<key>`.
+2. Restart backend (`uvicorn main:app`). Key hanya dibaca saat start.
+3. Tanpa key: chat bebas dan transkripsi backend menjawab 503; narator dan mic tetap jalan lewat browser.

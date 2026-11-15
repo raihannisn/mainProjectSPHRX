@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { requestAgentSpeech } from '../api'
 import { playAgentSpeech, stopAgentSpeech, unlockAgentSpeech } from '../../xr/agentSpeech'
+import { hasBrowserVoice, speakWithBrowser, stopBrowserVoice } from '../../xr/browserVoice'
 import type { ChatMessage } from './guideStore'
 
 const STORAGE_KEY = 'cosmic-guide-voice'
@@ -42,11 +43,19 @@ export function useGuideSpeech(messages: ChatMessage[], lang: string, active: bo
   // an answer that is already on screen when the window mounts is not read back
   const spokenId = useRef<string | null>(lastAssistant?.id ?? null)
   const run = useRef(0)
+  /** set by a spoken question: its answer is read aloud even while the toggle is off */
+  const speakNextOnce = useRef(false)
 
   const stop = useCallback(() => {
     run.current++
     stopAgentSpeech()
+    stopBrowserVoice()
     setStatus('idle')
+  }, [])
+
+  const speakNext = useCallback(() => {
+    speakNextOnce.current = true
+    unlockAgentSpeech()
   }, [])
 
   const toggle = useCallback(() => {
@@ -64,34 +73,34 @@ export function useGuideSpeech(messages: ChatMessage[], lang: string, active: bo
 
   // answers already on screen when the voice is switched on are not read back
   useEffect(() => {
-    if (!enabled) {
-      spokenId.current = lastAssistant?.id ?? spokenId.current
-      stop()
-    }
-  }, [enabled, lastAssistant?.id, stop])
+    if (!enabled) stop()
+  }, [enabled, stop])
 
   useEffect(() => {
     if (!active) stop()
   }, [active, stop])
 
   useEffect(() => {
-    if (!enabled || !active || !lastAssistant || lastAssistant.id === spokenId.current) return
+    if (!active || !lastAssistant || lastAssistant.id === spokenId.current) return
     spokenId.current = lastAssistant.id
+    const wanted = enabled || speakNextOnce.current
+    speakNextOnce.current = false
+    if (!wanted) return
     const text = toSpokenText(lastAssistant.content)
     if (!text) return
     const mine = ++run.current
+    const language = lang === 'id' ? 'id' : 'en'
     stopAgentSpeech()
+    stopBrowserVoice()
     setStatus('loading')
     void (async () => {
-      const speech = await requestAgentSpeech(text, lang === 'id' ? 'id' : 'en')
+      const speech = await requestAgentSpeech(text, language)
       if (run.current !== mine) return
-      if (!speech.ok) {
-        setStatus('error')
-        return
-      }
-      setStatus('playing')
       try {
-        await playAgentSpeech(speech.data)
+        setStatus('playing')
+        if (speech.ok) await playAgentSpeech(speech.data)
+        else if (hasBrowserVoice()) await speakWithBrowser(text, language) // backend voice unavailable: browser voice
+        else throw new Error(speech.error)
         if (run.current === mine) setStatus('idle')
       } catch {
         if (run.current === mine) setStatus('error')
@@ -99,7 +108,13 @@ export function useGuideSpeech(messages: ChatMessage[], lang: string, active: bo
     })()
   }, [enabled, active, lastAssistant, lang])
 
-  useEffect(() => () => stopAgentSpeech(), [])
+  useEffect(
+    () => () => {
+      stopAgentSpeech()
+      stopBrowserVoice()
+    },
+    [],
+  )
 
-  return { enabled, status, toggle, stop }
+  return { enabled, status, toggle, stop, speakNext }
 }

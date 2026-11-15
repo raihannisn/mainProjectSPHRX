@@ -5176,3 +5176,34 @@
   color: var(--teal);
 }
 .cg-icon-btn--voice.is-speaking { box-shadow: 0 0 0 3px rgba(79, 227, 214, 0.18); }
+
+/* ---- Cosmic Guide window: push-to-talk mic in the input row (appended; no earlier rule changed) ---- */
+.cg-mic {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(79, 227, 214, 0.45);
+  background: rgba(79, 227, 214, 0.08);
+  color: var(--teal);
+  transition: background 0.2s var(--ui-motion), border-color 0.2s var(--ui-motion), opacity 0.2s var(--ui-motion);
+}
+.cg-mic svg { width: 18px; height: 18px; }
+.cg-mic:not(:disabled):hover { background: rgba(79, 227, 214, 0.18); border-color: var(--teal); }
+.cg-mic:disabled { opacity: 0.4; cursor: not-allowed; }
+.cg-mic:focus-visible { outline: 2px solid var(--ui-gold-soft); outline-offset: 2px; }
+.cg-mic.is-recording {
+  border-color: rgba(229, 192, 123, 0.9);
+  background: rgba(212, 175, 55, 0.22);
+  color: var(--ui-gold-soft);
+  animation: cg-mic-pulse 1.4s ease-in-out infinite;
+}
+@keyframes cg-mic-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cg-mic.is-recording { animation: none; }
+}

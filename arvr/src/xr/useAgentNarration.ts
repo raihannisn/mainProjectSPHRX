@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { fetchBackendObjectInfo, requestAgentSpeech, requestGuideReply, type ObjectInfo } from '../frontend/api'
 import { useXRApp } from './store'
 import { playAgentSpeech, stopAgentSpeech, unlockAgentSpeech } from './agentSpeech'
+import { hasBrowserVoice, speakWithBrowser, stopBrowserVoice } from './browserVoice'
 
 export type SpeechStatus = 'loading' | 'playing' | 'ready' | 'error' | 'unavailable'
 
@@ -33,6 +34,8 @@ export function useAgentNarration({
   const [speechBlob, setSpeechBlob] = useState<Blob | null>(null)
   const [speechStatus, setSpeechStatus] = useState<SpeechStatus>('loading')
   const [speechError, setSpeechError] = useState<string | null>(null)
+  /** text spoken by the browser's own voice when the backend voice-over is unavailable */
+  const [fallbackText, setFallbackText] = useState<string | null>(null)
   const isIndonesian = lang === 'id'
 
   useEffect(() => {
@@ -45,9 +48,11 @@ export function useAgentNarration({
     setGuideError(null)
     setGuideLoading(false)
     setSpeechBlob(null)
+    setFallbackText(null)
     setSpeechStatus('loading')
     setSpeechError(null)
     stopAgentSpeech()
+    stopBrowserVoice()
 
     const load = async () => {
       const result = await fetchBackendObjectInfo(objectId)
@@ -104,8 +109,23 @@ export function useAgentNarration({
       const speech = await requestAgentSpeech(narrationText, isIndonesian ? 'id' : 'en')
       if (!active) return
       if (!speech.ok) {
-        setSpeechStatus('error')
-        setSpeechError(speech.error)
+        // backend voice-over unavailable (no key, offline, rate limit): the browser's own voice reads the same text
+        if (!hasBrowserVoice()) {
+          setSpeechStatus('error')
+          setSpeechError(speech.error)
+          return
+        }
+        setFallbackText(narrationText)
+        setSpeechStatus('playing')
+        try {
+          await speakWithBrowser(narrationText, isIndonesian ? 'id' : 'en')
+          if (active) setSpeechStatus('ready')
+        } catch (error: unknown) {
+          if (active) {
+            setSpeechStatus('ready')
+            setSpeechError(error instanceof Error ? error.message : String(error))
+          }
+        }
         return
       }
 
@@ -128,25 +148,30 @@ export function useAgentNarration({
       controller.abort()
       window.clearTimeout(timer)
       stopAgentSpeech()
+      stopBrowserVoice()
     }
   }, [contentReady, objectId, objectName, objectType, localDescription, lang, isIndonesian])
 
   const replay = useCallback(() => {
-    if (!speechBlob) return
+    if (!speechBlob && !fallbackText) return
     unlockAgentSpeech()
     setSpeechStatus('playing')
     setSpeechError(null)
-    void playAgentSpeech(speechBlob).then(
+    const playing = speechBlob ? playAgentSpeech(speechBlob) : speakWithBrowser(fallbackText ?? '', isIndonesian ? 'id' : 'en')
+    void playing.then(
       () => setSpeechStatus('ready'),
       (error: unknown) => {
         setSpeechStatus('error')
         setSpeechError(error instanceof Error ? error.message : String(error))
       },
     )
-  }, [speechBlob])
+  }, [speechBlob, fallbackText, isIndonesian])
 
   /** stops the voice; the clip stays ready to replay */
-  const stop = useCallback(() => stopAgentSpeech(), [])
+  const stop = useCallback(() => {
+    stopAgentSpeech()
+    stopBrowserVoice()
+  }, [])
 
-  return { object, catalogMessage, guideAnswer, guideError, guideLoading, speechStatus, speechError, canReplay: speechBlob !== null, replay, stop, isIndonesian }
+  return { object, catalogMessage, guideAnswer, guideError, guideLoading, speechStatus, speechError, canReplay: speechBlob !== null || fallbackText !== null, engine: (speechBlob ? 'agent' : fallbackText ? 'browser' : null) as 'agent' | 'browser' | null, replay, stop, isIndonesian }
 }

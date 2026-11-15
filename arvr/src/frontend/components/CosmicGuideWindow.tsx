@@ -8,7 +8,9 @@ import { useXRApp } from '../../xr/store'
 import { BotIcon } from '../guide/BotIcon'
 import { useGuide } from '../guide/guideStore'
 import { MicIcon } from '../guide/MicIcon'
+import { SpeakerIcon } from '../guide/SpeakerIcon'
 import { useGuideSpeech } from '../guide/useGuideSpeech'
+import { useVoiceInput, voiceInputSupported } from '../guide/useVoiceInput'
 
 interface CosmicGuideWindowProps {
   fullPage?: boolean
@@ -34,6 +36,15 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
 
   const { messages, loading, error, sendMessage, setGuideTarget } = useGuide()
   const voice = useGuideSpeech(messages, lang, open)
+  // Push-to-talk: the spoken question is sent as typed text would be, and its answer is read aloud
+  const mic = useVoiceInput(isIndonesian ? 'id' : 'en', (text) => {
+    voice.speakNext()
+    void sendMessage(text, lang)
+  })
+  const micCancel = mic.cancel
+  useEffect(() => {
+    if (!open) micCancel()
+  }, [open, micCancel])
 
   const close = useCallback(() => {
     setOpen(false)
@@ -146,7 +157,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
           }
           onClick={voice.toggle}
         >
-          <MicIcon />
+          <SpeakerIcon />
         </button>
         {!fullPage && (
           <button type="button" className="cg-icon-btn cg-icon-btn--close" aria-label={isIndonesian ? 'Tutup' : 'Close'} onClick={close}>
@@ -182,6 +193,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
           )
         )}
         {error && <p className="cg-error" role="alert">{error}</p>}
+        {mic.error && <p className="cg-error" role="alert">{mic.error}</p>}
         {loading && (
           <p className="cg-msg cg-msg--bot" style={{ opacity: 0.7, fontStyle: 'italic' }}>
             {isIndonesian ? 'Cosmic Guide sedang berpikir…' : 'Cosmic Guide is thinking…'}
@@ -228,12 +240,33 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
           ref={inputRef}
           className="cg-input"
           value={draft}
-          disabled={loading}
+          disabled={loading || mic.status !== 'idle'}
           maxLength={500}
           onChange={(event) => setDraft(event.target.value)}
-          placeholder={isIndonesian ? 'Tulis pertanyaan ke Cosmic Guide…' : 'Ask Cosmic Guide a question…'}
+          placeholder={
+            mic.status === 'recording'
+              ? 'Listening… tap the mic to send'
+              : mic.status === 'transcribing'
+                ? 'Transcribing your question…'
+                : isIndonesian
+                  ? 'Tulis pertanyaan ke Cosmic Guide…'
+                  : 'Ask Cosmic Guide a question…'
+          }
           aria-label={isIndonesian ? 'Pertanyaan untuk Cosmic Guide' : 'Question for Cosmic Guide'}
         />
+        {voiceInputSupported() && (
+          <button
+            type="button"
+            className={`cg-mic${mic.status === 'recording' ? ' is-recording' : ''}`}
+            onClick={mic.toggle}
+            disabled={loading || mic.status === 'transcribing'}
+            aria-pressed={mic.status === 'recording'}
+            aria-label={mic.status === 'recording' ? 'Stop recording and send' : 'Ask by voice'}
+            title={mic.status === 'recording' ? 'Stop recording and send' : 'Ask by voice'}
+          >
+            <MicIcon />
+          </button>
+        )}
         <button type="submit" className="cg-send" disabled={!draft.trim() || loading} aria-label={isIndonesian ? 'Kirim' : 'Send'}>
           ↗
         </button>

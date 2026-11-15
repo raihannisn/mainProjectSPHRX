@@ -428,6 +428,35 @@ export async function requestGuideReply(payload: GuideReplyRequest): Promise<Gui
   )
 }
 
+/** Push-to-talk: one recorded clip -> its transcript (POST /api/agent/voice/transcribe). */
+export async function requestVoiceTranscript(audio: Blob, language: 'en' | 'id'): Promise<ApiResult<string>> {
+  try {
+    const response = await fetch(toApiUrl(`/api/agent/voice/transcribe?language=${language}`), {
+      method: 'POST',
+      headers: { 'Content-Type': audio.type || 'audio/webm' },
+      body: audio,
+      signal: AbortSignal.timeout(60000),
+    })
+    if (!response.ok) {
+      let detail = `HTTP ${response.status}`
+      try {
+        const body: unknown = await response.json()
+        if (isRecord(body) && typeof body.detail === 'string') detail += `: ${body.detail}`
+      } catch {
+        // Keep the HTTP status when the error body is not JSON.
+      }
+      return { ok: false, error: detail }
+    }
+    const body: unknown = await response.json()
+    if (isRecord(body) && body.success === true && isRecord(body.data) && typeof body.data.transcript === 'string' && body.data.transcript.trim()) {
+      return { ok: true, data: body.data.transcript.trim() }
+    }
+    return { ok: false, error: 'The Agent returned an empty transcript.' }
+  } catch (error: unknown) {
+    return { ok: false, error: error instanceof Error ? error.message : String(error) }
+  }
+}
+
 export async function requestAgentSpeech(
   text: string,
   language: 'en' | 'id',
