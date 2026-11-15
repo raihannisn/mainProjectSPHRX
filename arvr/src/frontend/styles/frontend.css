@@ -5131,6 +5131,9 @@
   right: clamp(20px, 3vw, 48px);
   display: flex;
   gap: 8px;
+  /* room for all three toggles, so 3D stays in the same spot in every view */
+  width: calc(var(--hit-target) * 3 + 16px);
+  justify-content: flex-start;
 }
 .fe-model-rail .fe-icon-btn { width: var(--hit-target); padding: 0; font-size: 1rem; }
 .fe-model-rail .fe-model-toggle { font: 700 0.72rem var(--mono); letter-spacing: 0.04em; }
