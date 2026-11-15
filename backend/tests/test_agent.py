@@ -19,6 +19,7 @@ from routes.agent import (
 )
 from services.agent_service import (
     SYSTEM_INSTRUCTIONS,
+    build_agent_system_instruction,
     build_conversation_prompt,
     generate_agent_response,
 )
@@ -84,7 +85,7 @@ class AgentServiceTests(unittest.TestCase):
     def test_object_service_reads_catalog_and_rejects_unknown_ids(self):
         self.assertEqual(get_object_record("MARS")["name"], "Mars")
         with self.assertRaises(ObjectRecordNotFound):
-            get_object_record("rcw-36")
+            get_object_record("unknown-object")
 
     def test_conversation_prompt_uses_backend_catalog_record(self):
         prompt = build_conversation_prompt(
@@ -120,6 +121,18 @@ class AgentServiceTests(unittest.TestCase):
 
         self.assertEqual(answer, "Jawaban")
         self.assertEqual(generate.call_args.args[1], SYSTEM_INSTRUCTIONS["id"])
+
+    def test_agent_instructions_clarify_a_target_that_conflicts_with_selection(self):
+        instruction = build_agent_system_instruction(
+            "en",
+            "rcw-36",
+            {"name": "RCW 36 Emission Nebula"},
+        )
+
+        self.assertIn("YouTube 36", instruction)
+        self.assertIn("do not silently substitute the selected object", instruction)
+        self.assertIn("briefly ask whether they meant that object or another one", instruction)
+        self.assertIn("source label is not a verified citation", instruction)
 
     def test_unknown_object_observation_question_gets_general_only_guidance(self):
         messages = [{"role": "user", "content": "How does SPHEREx observe it?"}]

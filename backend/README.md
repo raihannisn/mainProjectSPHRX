@@ -139,7 +139,9 @@ observasi SPHEREx/JPL yang terverifikasi. Jika FE mengirim ID objek, Backend
 mencari ID tersebut di `kamus_object.json`; label atau fakta dari browser tidak
 diteruskan sebagai sumber fakta. Record katalog dan tautan ke endpoint record
 disertakan bila ID ditemukan, tetapi katalog belum menyimpan provenance sumber
-aslinya sehingga informasinya bukan bukti observasi resmi. ID yang tidak dikenal
+dan rujukan langsung yang cukup untuk verifikasi independen sehingga informasinya
+bukan bukti observasi resmi. Field `source` adalah label katalog, bukan sitasi
+yang otomatis memverifikasi klaim. ID yang tidak dikenal
 tidak memperoleh sumber katalog. Gemini memakai model `gemini-3.5-flash-lite`
 melalui Interactions API. Jika objek tidak ditemukan dan pengguna bertanya
 tentang pengamatan SPHEREx, Agent membedakan metode survei umum (inframerah-dekat
