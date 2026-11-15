@@ -15,7 +15,7 @@ def get_object_info(object_id: str):
         raise HTTPException(status_code=404, detail=f"File database '{JSON_KAMUS}' tidak ditemukan di folder")
         
     try:
-        with open(JSON_KAMUS, "r") as file:
+        with open(JSON_KAMUS, "r", encoding="utf-8") as file:
             data = json.load(file)
             if object_id.lower() in data:
                 return data[object_id.lower()]
