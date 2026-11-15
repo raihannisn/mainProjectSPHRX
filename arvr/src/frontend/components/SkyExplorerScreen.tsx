@@ -17,6 +17,7 @@ import { KIND_LABEL } from '../../xr/InfoCard'
 import { localHotspot } from '../../xr/i18n'
 import { askGuide } from '../../xr/events'
 import { layersFor } from '../../xr/layers'
+import { useAgentNarration } from '../../xr/useAgentNarration'
 import { enterImmersive, xrErrorMessage } from '../../xr/xrStore'
 
 type MarkerId = 'rcw-36' | 'candidate-02' | 'demo-tile-01'
@@ -336,6 +337,26 @@ export function SkyExplorerScreen() {
     )
   }
 
+  // Agentic voice-over of the open body: the Mission Liaison Agent's summary, spoken, with a replay toggle on the card
+  const narration = useAgentNarration({
+    objectId: bodyModel ?? '',
+    objectName: bodyContent?.name ?? (bodyModel ? labelOf(bodyModel) : ''),
+    objectType: bodyContent?.type ?? '',
+    contentReady: !!bodyModel && bodyContent !== undefined,
+    localDescription: bodyContent?.description?.en ?? '',
+  })
+  const voiceLabel =
+    narration.speechStatus === 'loading'
+      ? 'Preparing AI voice…'
+      : narration.speechStatus === 'playing'
+        ? 'AI voice playing'
+        : narration.speechStatus === 'ready'
+          ? 'Replay AI voice'
+          : narration.speechStatus === 'error'
+            ? 'AI voice unavailable'
+            : 'No narration available'
+  const voicePlaying = narration.speechStatus === 'playing'
+
   // Honest labels for the 3D mode: the selected pin's own Fact / Illustration / Candidate kind,
   // otherwise "3D model" (or "Illustration" when an asteroid falls back to the procedural placeholder).
   const bodyTag = solar
@@ -566,6 +587,27 @@ export function SkyExplorerScreen() {
                           ? 'Drag to turn the model and tap a glowing pin to read about that place.'
                           : 'Hotspots are hidden. Use the ⦿ button to show them again.'}
                 </p>
+                {!hotspot && (
+                  <div className="fe-voice">
+                    {(narration.guideLoading || narration.guideAnswer) && (
+                      <p className="fe-voice-text">{narration.guideLoading ? 'Cosmic Guide is preparing a summary…' : narration.guideAnswer?.replace(/[*_`#]/g, '')}</p>
+                    )}
+                    <div className="fe-voice-row">
+                      <button
+                        type="button"
+                        className={`fe-icon-btn fe-voice-btn ${voicePlaying ? 'selected' : ''}`}
+                        onClick={voicePlaying ? narration.stop : narration.replay}
+                        disabled={!narration.canReplay}
+                        aria-pressed={voicePlaying}
+                        aria-label={voicePlaying ? 'Stop AI voice' : 'Play AI voice'}
+                        title={voicePlaying ? 'Stop AI voice' : 'Play AI voice'}
+                      >
+                        <span aria-hidden="true">{voicePlaying ? '■' : '▶'}</span>
+                      </button>
+                      <span className="fe-voice-status" role="status">{voiceLabel}</span>
+                    </div>
+                  </div>
+                )}
                 <div className="fe-card-links">
                   {hotspot ? (
                     <button

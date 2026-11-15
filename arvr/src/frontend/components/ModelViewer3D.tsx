@@ -103,7 +103,7 @@ export function ModelViewer3D({ bodyId, resetKey }: ModelViewer3DProps) {
               {bodyId === 'solar' ? (
                 <SolarSystemHub />
               ) : (
-                <BodyExplorer key={bodyId} id={bodyId} vr={false} showTitle={false} hideObjectCard />
+                <BodyExplorer key={bodyId} id={bodyId} vr={false} showTitle={false} showObjectCard={false} />
               )}
             </Suspense>
             <OrbitControls

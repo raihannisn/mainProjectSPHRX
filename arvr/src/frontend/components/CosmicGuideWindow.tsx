@@ -7,6 +7,8 @@ import type { GuideRequest } from '../../xr/types'
 import { useXRApp } from '../../xr/store'
 import { BotIcon } from '../guide/BotIcon'
 import { useGuide } from '../guide/guideStore'
+import { MicIcon } from '../guide/MicIcon'
+import { useGuideSpeech } from '../guide/useGuideSpeech'
 
 interface CosmicGuideWindowProps {
   fullPage?: boolean
@@ -31,6 +33,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
   const isIndonesian = lang === 'id'
 
   const { messages, loading, error, sendMessage, setGuideTarget } = useGuide()
+  const voice = useGuideSpeech(messages, lang, open)
 
   const close = useCallback(() => {
     setOpen(false)
@@ -127,6 +130,24 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
           <h1 className="cg-title" id="cg-title">Cosmic Guide</h1>
           <p className="cg-sub">{context || (isIndonesian ? 'Asisten AI SPHEREx' : 'SPHEREx AI Assistant')}</p>
         </span>
+        <button
+          type="button"
+          className={`cg-icon-btn cg-icon-btn--voice${voice.enabled ? ' is-on' : ''}${voice.status === 'playing' ? ' is-speaking' : ''}`}
+          aria-pressed={voice.enabled}
+          aria-label={voice.enabled ? 'Turn voice answers off' : 'Read answers aloud'}
+          title={
+            voice.status === 'error'
+              ? 'AI voice unavailable'
+              : voice.status === 'loading'
+                ? 'Preparing AI voice…'
+                : voice.enabled
+                  ? 'Voice answers on'
+                  : 'Read answers aloud'
+          }
+          onClick={voice.toggle}
+        >
+          <MicIcon />
+        </button>
         {!fullPage && (
           <button type="button" className="cg-icon-btn cg-icon-btn--close" aria-label={isIndonesian ? 'Tutup' : 'Close'} onClick={close}>
             ×
