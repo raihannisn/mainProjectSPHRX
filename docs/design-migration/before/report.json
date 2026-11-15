@@ -1,0 +1,2873 @@
+{
+  "base": "http://localhost:5180",
+  "phase": "before",
+  "stub": false,
+  "generatedAt": "2026-11-14T18:29:18.120Z",
+  "screens": [
+    {
+      "route": "/",
+      "name": "gateway-320x640",
+      "viewport": "320x640",
+      "top": {
+        "viewport": {
+          "width": 320,
+          "height": 640
+        },
+        "docScrollWidth": 320,
+        "appScrollWidth": 320,
+        "appClientWidth": 320,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 64
+        },
+        "firstContentTop": 124
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 320,
+          "height": 640
+        },
+        "docScrollWidth": 320,
+        "appScrollWidth": 320,
+        "appClientWidth": 320,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "island",
+        "islandRect": {
+          "x": 6,
+          "y": 8,
+          "w": 308,
+          "h": 56
+        },
+        "firstContentTop": -136
+      },
+      "firstContentShift": 260,
+      "menuOpen": {
+        "state": "island-open",
+        "expanded": "true",
+        "panelVisible": true,
+        "panelWidth": 286,
+        "islandBottom": 422,
+        "viewportWidth": 320,
+        "overflow": false
+      },
+      "menuClosedByEscape": {
+        "state": "top",
+        "focusOnMenuButton": true
+      },
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/",
+      "name": "gateway-390x844",
+      "viewport": "390x844",
+      "top": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "docScrollWidth": 390,
+        "appScrollWidth": 390,
+        "appClientWidth": 390,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 64
+        },
+        "firstContentTop": 124
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "docScrollWidth": 390,
+        "appScrollWidth": 390,
+        "appClientWidth": 390,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "island",
+        "islandRect": {
+          "x": 8,
+          "y": 8,
+          "w": 374,
+          "h": 56
+        },
+        "firstContentTop": -129
+      },
+      "firstContentShift": 253,
+      "menuOpen": {
+        "state": "island-open",
+        "expanded": "true",
+        "panelVisible": true,
+        "panelWidth": 344,
+        "islandBottom": 366,
+        "viewportWidth": 390,
+        "overflow": false
+      },
+      "menuClosedByEscape": {
+        "state": "top",
+        "focusOnMenuButton": true
+      },
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/",
+      "name": "gateway-768x1024",
+      "viewport": "768x1024",
+      "top": {
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "docScrollWidth": 768,
+        "appScrollWidth": 768,
+        "appClientWidth": 768,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 76
+        },
+        "firstContentTop": 157
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "docScrollWidth": 768,
+        "appScrollWidth": 768,
+        "appClientWidth": 768,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 76
+        },
+        "firstContentTop": 157
+      },
+      "firstContentShift": 0,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/",
+      "name": "gateway-1280x800",
+      "viewport": "1280x800",
+      "top": {
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "docScrollWidth": 1280,
+        "appScrollWidth": 1280,
+        "appClientWidth": 1280,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1280,
+          "h": 76
+        },
+        "firstContentTop": 185
+      },
+      "tabWalk": [
+        {
+          "tag": "A",
+          "label": "SSPHEREx / COSMIC EXPEDITION",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 23
+        },
+        {
+          "tag": "A",
+          "label": "Gateway",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Sky Explorer",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Comparison",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Cosmic Guide",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Switch to Indonesian",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "3D / WebXR↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 18
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Enter expedition ↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 640
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Explore capabilities",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 641
+        },
+        {
+          "tag": "BUTTON",
+          "label": "NASA APOD Highlight ✦",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 705
+        }
+      ],
+      "scrolled": {
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "docScrollWidth": 1280,
+        "appScrollWidth": 1280,
+        "appClientWidth": 1280,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "island",
+        "islandRect": {
+          "x": 120,
+          "y": 12,
+          "w": 1040,
+          "h": 60
+        },
+        "firstContentTop": 71
+      },
+      "firstContentShift": 114,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/",
+      "name": "gateway-1440x900",
+      "viewport": "1440x900",
+      "top": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "docScrollWidth": 1440,
+        "appScrollWidth": 1440,
+        "appClientWidth": 1440,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 76
+        },
+        "firstContentTop": 194
+      },
+      "tabWalk": [
+        {
+          "tag": "A",
+          "label": "SSPHEREx / COSMIC EXPEDITION",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Gateway",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "Sky Explorer",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "Comparison",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "Cosmic Guide",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Switch to Indonesian",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "3D / WebXR↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 18
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Enter expedition ↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 690
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Explore capabilities",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 691
+        },
+        {
+          "tag": "BUTTON",
+          "label": "NASA APOD Highlight ✦",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 691
+        }
+      ],
+      "scrolled": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "docScrollWidth": 1440,
+        "appScrollWidth": 1440,
+        "appClientWidth": 1440,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 76
+        },
+        "firstContentTop": 184
+      },
+      "firstContentShift": 10,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/",
+      "name": "gateway-844x390-landscape",
+      "viewport": "844x390-landscape",
+      "top": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "docScrollWidth": 844,
+        "appScrollWidth": 844,
+        "appClientWidth": 844,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 844,
+          "h": 76
+        },
+        "firstContentTop": 156
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "docScrollWidth": 844,
+        "appScrollWidth": 844,
+        "appClientWidth": 844,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "island",
+        "islandRect": {
+          "x": 12,
+          "y": 12,
+          "w": 820,
+          "h": 60
+        },
+        "firstContentTop": -104
+      },
+      "firstContentShift": 260,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/explorer?target=rcw-36",
+      "name": "explorer-320x640",
+      "viewport": "320x640",
+      "top": {
+        "viewport": {
+          "width": 320,
+          "height": 640
+        },
+        "docScrollWidth": 320,
+        "appScrollWidth": 320,
+        "appClientWidth": 320,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 64
+        },
+        "firstContentTop": 78
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 320,
+          "height": 640
+        },
+        "docScrollWidth": 320,
+        "appScrollWidth": 320,
+        "appClientWidth": 320,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [
+          "Illustrative candidate marker",
+          "Illustrative tile marker"
+        ],
+        "smallTargets": [],
+        "islandState": "island",
+        "islandRect": {
+          "x": 6,
+          "y": 8,
+          "w": 308,
+          "h": 56
+        },
+        "firstContentTop": -182
+      },
+      "firstContentShift": 260,
+      "menuOpen": {
+        "state": "island-open",
+        "expanded": "true",
+        "panelVisible": true,
+        "panelWidth": 286,
+        "islandBottom": 422,
+        "viewportWidth": 320,
+        "overflow": false
+      },
+      "menuClosedByEscape": {
+        "state": "top",
+        "focusOnMenuButton": true
+      },
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/explorer?target=rcw-36",
+      "name": "explorer-390x844",
+      "viewport": "390x844",
+      "top": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "docScrollWidth": 390,
+        "appScrollWidth": 390,
+        "appClientWidth": 390,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 64
+        },
+        "firstContentTop": 78
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "docScrollWidth": 390,
+        "appScrollWidth": 390,
+        "appClientWidth": 390,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [
+          "RCW 36 Emission Nebula (catalog target)",
+          "Illustrative candidate marker"
+        ],
+        "smallTargets": [],
+        "islandState": "island",
+        "islandRect": {
+          "x": 8,
+          "y": 8,
+          "w": 375,
+          "h": 56
+        },
+        "firstContentTop": -182
+      },
+      "firstContentShift": 260,
+      "menuOpen": {
+        "state": "island-open",
+        "expanded": "true",
+        "panelVisible": true,
+        "panelWidth": 344,
+        "islandBottom": 366,
+        "viewportWidth": 390,
+        "overflow": false
+      },
+      "menuClosedByEscape": {
+        "state": "top",
+        "focusOnMenuButton": true
+      },
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/explorer?target=rcw-36",
+      "name": "explorer-768x1024",
+      "viewport": "768x1024",
+      "top": {
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "docScrollWidth": 768,
+        "appScrollWidth": 768,
+        "appClientWidth": 768,
+        "horizontalOverflow": false,
+        "overlaps": [
+          {
+            "a": ".fe-hud-telemetry",
+            "b": ".fe-hud-actions",
+            "overlapX": 200,
+            "overlapY": 148
+          }
+        ],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 76
+        },
+        "firstContentTop": 100
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "docScrollWidth": 768,
+        "appScrollWidth": 768,
+        "appClientWidth": 768,
+        "horizontalOverflow": false,
+        "overlaps": [
+          {
+            "a": ".fe-hud-telemetry",
+            "b": ".fe-hud-actions",
+            "overlapX": 200,
+            "overlapY": 148
+          }
+        ],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 76
+        },
+        "firstContentTop": 100
+      },
+      "firstContentShift": 0,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/explorer?target=rcw-36",
+      "name": "explorer-1280x800",
+      "viewport": "1280x800",
+      "top": {
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "docScrollWidth": 1280,
+        "appScrollWidth": 1280,
+        "appClientWidth": 1280,
+        "horizontalOverflow": false,
+        "overlaps": [
+          {
+            "a": ".fe-hud-telemetry",
+            "b": ".fe-hud-actions",
+            "overlapX": 220,
+            "overlapY": 28
+          }
+        ],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "Reset view",
+            "w": 42,
+            "h": 40
+          },
+          {
+            "label": "Recenter",
+            "w": 42,
+            "h": 40
+          },
+          {
+            "label": "Toggle audio",
+            "w": 42,
+            "h": 40
+          },
+          {
+            "label": "RCW 36 Emission Nebula (catalog target)",
+            "w": 34,
+            "h": 34
+          },
+          {
+            "label": "Illustrative candidate marker",
+            "w": 26,
+            "h": 26
+          },
+          {
+            "label": "Illustrative tile marker",
+            "w": 26,
+            "h": 26
+          },
+          {
+            "label": "Ask the Guide↗",
+            "w": 220,
+            "h": 40
+          },
+          {
+            "label": "Compare observations→",
+            "w": 220,
+            "h": 41
+          },
+          {
+            "label": "Enter 3D Table (XR)↗",
+            "w": 220,
+            "h": 41
+          },
+          {
+            "label": "Exit to Gateway",
+            "w": 109,
+            "h": 33
+          },
+          {
+            "label": "Solar System Hub",
+            "w": 121,
+            "h": 33
+          }
+        ],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1280,
+          "h": 76
+        },
+        "firstContentTop": 100
+      },
+      "tabWalk": [
+        {
+          "tag": "A",
+          "label": "SSPHEREx / COSMIC EXPEDITION",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 23
+        },
+        {
+          "tag": "A",
+          "label": "Gateway",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Sky Explorer",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Comparison",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Cosmic Guide",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Switch to Indonesian",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "3D / WebXR↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 18
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Reset view",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 109
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Recenter",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 109
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Toggle audio",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 109
+        },
+        {
+          "tag": "BUTTON",
+          "label": "RCW 36 Emission Nebula (catalog target)",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 347
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Illustrative candidate marker",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 489
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Illustrative tile marker",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 554
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Ask the Guide↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 369
+        }
+      ],
+      "scrolled": {
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "docScrollWidth": 1280,
+        "appScrollWidth": 1280,
+        "appClientWidth": 1280,
+        "horizontalOverflow": false,
+        "overlaps": [
+          {
+            "a": ".fe-hud-telemetry",
+            "b": ".fe-hud-actions",
+            "overlapX": 220,
+            "overlapY": 28
+          }
+        ],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "Reset view",
+            "w": 42,
+            "h": 40
+          },
+          {
+            "label": "Recenter",
+            "w": 42,
+            "h": 40
+          },
+          {
+            "label": "Toggle audio",
+            "w": 42,
+            "h": 40
+          },
+          {
+            "label": "RCW 36 Emission Nebula (catalog target)",
+            "w": 34,
+            "h": 34
+          },
+          {
+            "label": "Illustrative candidate marker",
+            "w": 26,
+            "h": 26
+          },
+          {
+            "label": "Illustrative tile marker",
+            "w": 26,
+            "h": 26
+          },
+          {
+            "label": "Ask the Guide↗",
+            "w": 220,
+            "h": 40
+          },
+          {
+            "label": "Compare observations→",
+            "w": 220,
+            "h": 41
+          },
+          {
+            "label": "Enter 3D Table (XR)↗",
+            "w": 220,
+            "h": 41
+          },
+          {
+            "label": "Exit to Gateway",
+            "w": 109,
+            "h": 33
+          },
+          {
+            "label": "Solar System Hub",
+            "w": 121,
+            "h": 33
+          }
+        ],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1280,
+          "h": 76
+        },
+        "firstContentTop": 100
+      },
+      "firstContentShift": 0,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/explorer?target=rcw-36",
+      "name": "explorer-1440x900",
+      "viewport": "1440x900",
+      "top": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "docScrollWidth": 1440,
+        "appScrollWidth": 1440,
+        "appClientWidth": 1440,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "Reset view",
+            "w": 42,
+            "h": 40
+          },
+          {
+            "label": "Recenter",
+            "w": 42,
+            "h": 40
+          },
+          {
+            "label": "Toggle audio",
+            "w": 42,
+            "h": 40
+          },
+          {
+            "label": "RCW 36 Emission Nebula (catalog target)",
+            "w": 34,
+            "h": 34
+          },
+          {
+            "label": "Illustrative candidate marker",
+            "w": 26,
+            "h": 26
+          },
+          {
+            "label": "Illustrative tile marker",
+            "w": 26,
+            "h": 26
+          },
+          {
+            "label": "Ask the Guide↗",
+            "w": 220,
+            "h": 40
+          },
+          {
+            "label": "Compare observations→",
+            "w": 220,
+            "h": 41
+          },
+          {
+            "label": "Enter 3D Table (XR)↗",
+            "w": 220,
+            "h": 41
+          },
+          {
+            "label": "Exit to Gateway",
+            "w": 109,
+            "h": 33
+          },
+          {
+            "label": "Solar System Hub",
+            "w": 121,
+            "h": 33
+          }
+        ],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 76
+        },
+        "firstContentTop": 100
+      },
+      "tabWalk": [
+        {
+          "tag": "A",
+          "label": "SSPHEREx / COSMIC EXPEDITION",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Gateway",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "Sky Explorer",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "Comparison",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "Cosmic Guide",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Switch to Indonesian",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "3D / WebXR↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 18
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Reset view",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 109
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Recenter",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 109
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Toggle audio",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 109
+        },
+        {
+          "tag": "BUTTON",
+          "label": "RCW 36 Emission Nebula (catalog target)",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 385
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Illustrative candidate marker",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 546
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Illustrative tile marker",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 620
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Ask the Guide↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 419
+        }
+      ],
+      "scrolled": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "docScrollWidth": 1440,
+        "appScrollWidth": 1440,
+        "appClientWidth": 1440,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "Reset view",
+            "w": 42,
+            "h": 40
+          },
+          {
+            "label": "Recenter",
+            "w": 42,
+            "h": 40
+          },
+          {
+            "label": "Toggle audio",
+            "w": 42,
+            "h": 40
+          },
+          {
+            "label": "RCW 36 Emission Nebula (catalog target)",
+            "w": 34,
+            "h": 34
+          },
+          {
+            "label": "Illustrative candidate marker",
+            "w": 26,
+            "h": 26
+          },
+          {
+            "label": "Illustrative tile marker",
+            "w": 26,
+            "h": 26
+          },
+          {
+            "label": "Ask the Guide↗",
+            "w": 220,
+            "h": 40
+          },
+          {
+            "label": "Compare observations→",
+            "w": 220,
+            "h": 41
+          },
+          {
+            "label": "Enter 3D Table (XR)↗",
+            "w": 220,
+            "h": 41
+          },
+          {
+            "label": "Exit to Gateway",
+            "w": 109,
+            "h": 33
+          },
+          {
+            "label": "Solar System Hub",
+            "w": 121,
+            "h": 33
+          }
+        ],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 76
+        },
+        "firstContentTop": 100
+      },
+      "firstContentShift": 0,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/explorer?target=rcw-36",
+      "name": "explorer-844x390-landscape",
+      "viewport": "844x390-landscape",
+      "top": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "docScrollWidth": 844,
+        "appScrollWidth": 844,
+        "appClientWidth": 844,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 844,
+          "h": 76
+        },
+        "firstContentTop": 100
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "docScrollWidth": 844,
+        "appScrollWidth": 844,
+        "appClientWidth": 844,
+        "horizontalOverflow": false,
+        "overlaps": [
+          {
+            "a": ".fe-hud-telemetry",
+            "b": ".fe-hud-actions",
+            "overlapX": 200,
+            "overlapY": 148
+          }
+        ],
+        "truncations": [],
+        "obstructed": [
+          "RCW 36 Emission Nebula (catalog target)"
+        ],
+        "smallTargets": [],
+        "islandState": "island",
+        "islandRect": {
+          "x": 12,
+          "y": 12,
+          "w": 820,
+          "h": 60
+        },
+        "firstContentTop": -160
+      },
+      "firstContentShift": 260,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/comparison?target=rcw-36",
+      "name": "comparison-320x640",
+      "viewport": "320x640",
+      "top": {
+        "viewport": {
+          "width": 320,
+          "height": 640
+        },
+        "docScrollWidth": 320,
+        "appScrollWidth": 320,
+        "appClientWidth": 320,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 64
+        },
+        "firstContentTop": 138
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 320,
+          "height": 640
+        },
+        "docScrollWidth": 320,
+        "appScrollWidth": 320,
+        "appClientWidth": 320,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 64
+        },
+        "firstContentTop": 138
+      },
+      "firstContentShift": 0,
+      "menuOpen": {
+        "state": "island-open",
+        "expanded": "true",
+        "panelVisible": true,
+        "panelWidth": 286,
+        "islandBottom": 422,
+        "viewportWidth": 320,
+        "overflow": false
+      },
+      "menuClosedByEscape": {
+        "state": "top",
+        "focusOnMenuButton": true
+      },
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/comparison?target=rcw-36",
+      "name": "comparison-390x844",
+      "viewport": "390x844",
+      "top": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "docScrollWidth": 390,
+        "appScrollWidth": 390,
+        "appClientWidth": 390,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 64
+        },
+        "firstContentTop": 125
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "docScrollWidth": 390,
+        "appScrollWidth": 390,
+        "appClientWidth": 390,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 64
+        },
+        "firstContentTop": 125
+      },
+      "firstContentShift": 0,
+      "menuOpen": {
+        "state": "island-open",
+        "expanded": "true",
+        "panelVisible": true,
+        "panelWidth": 344,
+        "islandBottom": 366,
+        "viewportWidth": 390,
+        "overflow": false
+      },
+      "menuClosedByEscape": {
+        "state": "top",
+        "focusOnMenuButton": true
+      },
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/comparison?target=rcw-36",
+      "name": "comparison-768x1024",
+      "viewport": "768x1024",
+      "top": {
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "docScrollWidth": 768,
+        "appScrollWidth": 768,
+        "appClientWidth": 768,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 76
+        },
+        "firstContentTop": 137
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "docScrollWidth": 768,
+        "appScrollWidth": 768,
+        "appClientWidth": 768,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 76
+        },
+        "firstContentTop": 137
+      },
+      "firstContentShift": 0,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/comparison?target=rcw-36",
+      "name": "comparison-1280x800",
+      "viewport": "1280x800",
+      "top": {
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "docScrollWidth": 1280,
+        "appScrollWidth": 1280,
+        "appClientWidth": 1280,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1280,
+          "h": 76
+        },
+        "firstContentTop": 137
+      },
+      "tabWalk": [
+        {
+          "tag": "A",
+          "label": "SSPHEREx / COSMIC EXPEDITION",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 23
+        },
+        {
+          "tag": "A",
+          "label": "Gateway",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Sky Explorer",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Comparison",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Cosmic Guide",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Switch to Indonesian",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "3D / WebXR↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 18
+        },
+        {
+          "tag": "BUTTON",
+          "label": "← Sky Explorer",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 116
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Inspect in 3D Table ↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 116
+        }
+      ],
+      "scrolled": {
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "docScrollWidth": 1280,
+        "appScrollWidth": 1280,
+        "appClientWidth": 1280,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1280,
+          "h": 76
+        },
+        "firstContentTop": 137
+      },
+      "firstContentShift": 0,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/comparison?target=rcw-36",
+      "name": "comparison-1440x900",
+      "viewport": "1440x900",
+      "top": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "docScrollWidth": 1440,
+        "appScrollWidth": 1440,
+        "appClientWidth": 1440,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 76
+        },
+        "firstContentTop": 137
+      },
+      "tabWalk": [
+        {
+          "tag": "A",
+          "label": "SSPHEREx / COSMIC EXPEDITION",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Gateway",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "Sky Explorer",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "Comparison",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "Cosmic Guide",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Switch to Indonesian",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "3D / WebXR↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 18
+        },
+        {
+          "tag": "BUTTON",
+          "label": "← Sky Explorer",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 116
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Inspect in 3D Table ↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 116
+        }
+      ],
+      "scrolled": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "docScrollWidth": 1440,
+        "appScrollWidth": 1440,
+        "appClientWidth": 1440,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 76
+        },
+        "firstContentTop": 137
+      },
+      "firstContentShift": 0,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/comparison?target=rcw-36",
+      "name": "comparison-844x390-landscape",
+      "viewport": "844x390-landscape",
+      "top": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "docScrollWidth": 844,
+        "appScrollWidth": 844,
+        "appClientWidth": 844,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 844,
+          "h": 76
+        },
+        "firstContentTop": 137
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "docScrollWidth": 844,
+        "appScrollWidth": 844,
+        "appClientWidth": 844,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 844,
+          "h": 76
+        },
+        "firstContentTop": 124
+      },
+      "firstContentShift": 13,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/guide/rcw-36",
+      "name": "guide-320x640",
+      "viewport": "320x640",
+      "top": {
+        "viewport": {
+          "width": 320,
+          "height": 640
+        },
+        "docScrollWidth": 320,
+        "appScrollWidth": 322,
+        "appClientWidth": 320,
+        "horizontalOverflow": true,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "RCW",
+            "w": 51,
+            "h": 32
+          },
+          {
+            "label": "Vela",
+            "w": 48,
+            "h": 32
+          },
+          {
+            "label": "What is this object?",
+            "w": 160,
+            "h": 39
+          },
+          {
+            "label": "Why is it interesting?",
+            "w": 168,
+            "h": 39
+          },
+          {
+            "label": "How far away is it?",
+            "w": 155,
+            "h": 39
+          },
+          {
+            "label": "How does SPHEREx observe it?",
+            "w": 240,
+            "h": 39
+          }
+        ],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 64
+        },
+        "firstContentTop": 94
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 320,
+          "height": 640
+        },
+        "docScrollWidth": 320,
+        "appScrollWidth": 332,
+        "appClientWidth": 320,
+        "horizontalOverflow": true,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "RCW",
+            "w": 53,
+            "h": 32
+          },
+          {
+            "label": "Vela",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "label": "What is this object?",
+            "w": 175,
+            "h": 39
+          },
+          {
+            "label": "Why is it interesting?",
+            "w": 183,
+            "h": 39
+          },
+          {
+            "label": "How far away is it?",
+            "w": 169,
+            "h": 39
+          },
+          {
+            "label": "How does SPHEREx observe it?",
+            "w": 252,
+            "h": 39
+          }
+        ],
+        "islandState": "island",
+        "islandRect": {
+          "x": 6,
+          "y": 8,
+          "w": 308,
+          "h": 56
+        },
+        "firstContentTop": -166
+      },
+      "firstContentShift": 260,
+      "menuOpen": {
+        "state": "island-open",
+        "expanded": "true",
+        "panelVisible": true,
+        "panelWidth": 286,
+        "islandBottom": 422,
+        "viewportWidth": 320,
+        "overflow": false
+      },
+      "menuClosedByEscape": {
+        "state": "top",
+        "focusOnMenuButton": true
+      },
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/guide/rcw-36",
+      "name": "guide-390x844",
+      "viewport": "390x844",
+      "top": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "docScrollWidth": 390,
+        "appScrollWidth": 390,
+        "appClientWidth": 390,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "RCW",
+            "w": 53,
+            "h": 32
+          },
+          {
+            "label": "Vela",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "label": "Moving-source",
+            "w": 113,
+            "h": 32
+          },
+          {
+            "label": "What is this object?",
+            "w": 175,
+            "h": 39
+          },
+          {
+            "label": "Why is it interesting?",
+            "w": 183,
+            "h": 39
+          },
+          {
+            "label": "How far away is it?",
+            "w": 169,
+            "h": 39
+          },
+          {
+            "label": "How does SPHEREx observe it?",
+            "w": 252,
+            "h": 39
+          }
+        ],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 64
+        },
+        "firstContentTop": 94
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "docScrollWidth": 390,
+        "appScrollWidth": 390,
+        "appClientWidth": 390,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "RCW",
+            "w": 53,
+            "h": 32
+          },
+          {
+            "label": "Vela",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "label": "Moving-source",
+            "w": 113,
+            "h": 32
+          },
+          {
+            "label": "What is this object?",
+            "w": 175,
+            "h": 39
+          },
+          {
+            "label": "Why is it interesting?",
+            "w": 183,
+            "h": 39
+          },
+          {
+            "label": "How far away is it?",
+            "w": 169,
+            "h": 39
+          },
+          {
+            "label": "How does SPHEREx observe it?",
+            "w": 252,
+            "h": 39
+          }
+        ],
+        "islandState": "island",
+        "islandRect": {
+          "x": 8,
+          "y": 8,
+          "w": 374,
+          "h": 56
+        },
+        "firstContentTop": -144
+      },
+      "firstContentShift": 238,
+      "menuOpen": {
+        "state": "island-open",
+        "expanded": "true",
+        "panelVisible": true,
+        "panelWidth": 344,
+        "islandBottom": 366,
+        "viewportWidth": 390,
+        "overflow": false
+      },
+      "menuClosedByEscape": {
+        "state": "top",
+        "focusOnMenuButton": true
+      },
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/guide/rcw-36",
+      "name": "guide-768x1024",
+      "viewport": "768x1024",
+      "top": {
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "docScrollWidth": 768,
+        "appScrollWidth": 768,
+        "appClientWidth": 768,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "RCW",
+            "w": 53,
+            "h": 32
+          },
+          {
+            "label": "Vela",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "label": "Moving-source",
+            "w": 113,
+            "h": 32
+          },
+          {
+            "label": "What is this object?",
+            "w": 175,
+            "h": 39
+          },
+          {
+            "label": "Why is it interesting?",
+            "w": 183,
+            "h": 39
+          },
+          {
+            "label": "How far away is it?",
+            "w": 169,
+            "h": 39
+          },
+          {
+            "label": "How does SPHEREx observe it?",
+            "w": 252,
+            "h": 39
+          }
+        ],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 76
+        },
+        "firstContentTop": 106
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "docScrollWidth": 768,
+        "appScrollWidth": 768,
+        "appClientWidth": 768,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "RCW",
+            "w": 53,
+            "h": 32
+          },
+          {
+            "label": "Vela",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "label": "Moving-source",
+            "w": 113,
+            "h": 32
+          },
+          {
+            "label": "What is this object?",
+            "w": 175,
+            "h": 39
+          },
+          {
+            "label": "Why is it interesting?",
+            "w": 183,
+            "h": 39
+          },
+          {
+            "label": "How far away is it?",
+            "w": 169,
+            "h": 39
+          },
+          {
+            "label": "How does SPHEREx observe it?",
+            "w": 252,
+            "h": 39
+          }
+        ],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 76
+        },
+        "firstContentTop": 106
+      },
+      "firstContentShift": 0,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/guide/rcw-36",
+      "name": "guide-1280x800",
+      "viewport": "1280x800",
+      "top": {
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "docScrollWidth": 1280,
+        "appScrollWidth": 1280,
+        "appClientWidth": 1280,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "RCW",
+            "w": 53,
+            "h": 32
+          },
+          {
+            "label": "Vela",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "label": "Moving-source",
+            "w": 113,
+            "h": 32
+          },
+          {
+            "label": "What is this object?",
+            "w": 175,
+            "h": 39
+          },
+          {
+            "label": "Why is it interesting?",
+            "w": 183,
+            "h": 39
+          },
+          {
+            "label": "How far away is it?",
+            "w": 169,
+            "h": 39
+          },
+          {
+            "label": "How does SPHEREx observe it?",
+            "w": 252,
+            "h": 39
+          }
+        ],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1280,
+          "h": 76
+        },
+        "firstContentTop": 106
+      },
+      "tabWalk": [
+        {
+          "tag": "A",
+          "label": "SSPHEREx / COSMIC EXPEDITION",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 23
+        },
+        {
+          "tag": "A",
+          "label": "Gateway",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Sky Explorer",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Comparison",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Cosmic Guide",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Switch to Indonesian",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "3D / WebXR↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 18
+        },
+        {
+          "tag": "BUTTON",
+          "label": "← Explorer",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 121
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Inspect in 3D ↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 121
+        },
+        {
+          "tag": "BUTTON",
+          "label": "RCW",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 219
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Vela",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 219
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Moving-source",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 219
+        },
+        {
+          "tag": "BUTTON",
+          "label": "What is this object?",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 269
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Why is it interesting?",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 269
+        }
+      ],
+      "scrolled": {
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "docScrollWidth": 1280,
+        "appScrollWidth": 1280,
+        "appClientWidth": 1280,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [
+          "← Explorer",
+          "Inspect in 3D ↗"
+        ],
+        "smallTargets": [
+          {
+            "label": "RCW",
+            "w": 53,
+            "h": 32
+          },
+          {
+            "label": "Vela",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "label": "Moving-source",
+            "w": 113,
+            "h": 32
+          },
+          {
+            "label": "What is this object?",
+            "w": 175,
+            "h": 39
+          },
+          {
+            "label": "Why is it interesting?",
+            "w": 183,
+            "h": 39
+          },
+          {
+            "label": "How far away is it?",
+            "w": 169,
+            "h": 39
+          },
+          {
+            "label": "How does SPHEREx observe it?",
+            "w": 252,
+            "h": 39
+          }
+        ],
+        "islandState": "island",
+        "islandRect": {
+          "x": 120,
+          "y": 12,
+          "w": 1040,
+          "h": 60
+        },
+        "firstContentTop": 38
+      },
+      "firstContentShift": 68,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/guide/rcw-36",
+      "name": "guide-1440x900",
+      "viewport": "1440x900",
+      "top": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "docScrollWidth": 1440,
+        "appScrollWidth": 1440,
+        "appClientWidth": 1440,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "RCW",
+            "w": 53,
+            "h": 32
+          },
+          {
+            "label": "Vela",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "label": "Moving-source",
+            "w": 113,
+            "h": 32
+          },
+          {
+            "label": "What is this object?",
+            "w": 175,
+            "h": 39
+          },
+          {
+            "label": "Why is it interesting?",
+            "w": 183,
+            "h": 39
+          },
+          {
+            "label": "How far away is it?",
+            "w": 169,
+            "h": 39
+          },
+          {
+            "label": "How does SPHEREx observe it?",
+            "w": 252,
+            "h": 39
+          }
+        ],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 76
+        },
+        "firstContentTop": 106
+      },
+      "tabWalk": [
+        {
+          "tag": "A",
+          "label": "SSPHEREx / COSMIC EXPEDITION",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 22
+        },
+        {
+          "tag": "A",
+          "label": "Gateway",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "Sky Explorer",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "Comparison",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "Cosmic Guide",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Switch to Indonesian",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 19
+        },
+        {
+          "tag": "A",
+          "label": "3D / WebXR↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 18
+        },
+        {
+          "tag": "BUTTON",
+          "label": "← Explorer",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 121
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Inspect in 3D ↗",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 121
+        },
+        {
+          "tag": "BUTTON",
+          "label": "RCW",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 219
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Vela",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 219
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Moving-source",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 219
+        },
+        {
+          "tag": "BUTTON",
+          "label": "What is this object?",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 269
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Why is it interesting?",
+          "focusVisible": true,
+          "insideViewport": true,
+          "outline": "solid 2px",
+          "top": 269
+        }
+      ],
+      "scrolled": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "docScrollWidth": 1440,
+        "appScrollWidth": 1440,
+        "appClientWidth": 1440,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "RCW",
+            "w": 53,
+            "h": 32
+          },
+          {
+            "label": "Vela",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "label": "Moving-source",
+            "w": 113,
+            "h": 32
+          },
+          {
+            "label": "What is this object?",
+            "w": 175,
+            "h": 39
+          },
+          {
+            "label": "Why is it interesting?",
+            "w": 183,
+            "h": 39
+          },
+          {
+            "label": "How far away is it?",
+            "w": 169,
+            "h": 39
+          },
+          {
+            "label": "How does SPHEREx observe it?",
+            "w": 252,
+            "h": 39
+          }
+        ],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 76
+        },
+        "firstContentTop": 106
+      },
+      "firstContentShift": 0,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    },
+    {
+      "route": "/guide/rcw-36",
+      "name": "guide-844x390-landscape",
+      "viewport": "844x390-landscape",
+      "top": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "docScrollWidth": 844,
+        "appScrollWidth": 844,
+        "appClientWidth": 844,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [],
+        "smallTargets": [
+          {
+            "label": "RCW",
+            "w": 53,
+            "h": 32
+          },
+          {
+            "label": "Vela",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "label": "Moving-source",
+            "w": 113,
+            "h": 32
+          },
+          {
+            "label": "What is this object?",
+            "w": 175,
+            "h": 39
+          },
+          {
+            "label": "Why is it interesting?",
+            "w": 183,
+            "h": 39
+          },
+          {
+            "label": "How far away is it?",
+            "w": 169,
+            "h": 39
+          },
+          {
+            "label": "How does SPHEREx observe it?",
+            "w": 252,
+            "h": 39
+          }
+        ],
+        "islandState": "top",
+        "islandRect": {
+          "x": 0,
+          "y": 0,
+          "w": 844,
+          "h": 76
+        },
+        "firstContentTop": 106
+      },
+      "scrolled": {
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "docScrollWidth": 844,
+        "appScrollWidth": 844,
+        "appClientWidth": 844,
+        "horizontalOverflow": false,
+        "overlaps": [],
+        "truncations": [],
+        "obstructed": [
+          "What is this object?",
+          "Why is it interesting?",
+          "How far away is it?",
+          "How does SPHEREx observe it?"
+        ],
+        "smallTargets": [
+          {
+            "label": "RCW",
+            "w": 53,
+            "h": 32
+          },
+          {
+            "label": "Vela",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "label": "Moving-source",
+            "w": 113,
+            "h": 32
+          },
+          {
+            "label": "What is this object?",
+            "w": 175,
+            "h": 39
+          },
+          {
+            "label": "Why is it interesting?",
+            "w": 183,
+            "h": 39
+          },
+          {
+            "label": "How far away is it?",
+            "w": 169,
+            "h": 39
+          },
+          {
+            "label": "How does SPHEREx observe it?",
+            "w": 252,
+            "h": 39
+          }
+        ],
+        "islandState": "island",
+        "islandRect": {
+          "x": 12,
+          "y": 12,
+          "w": 820,
+          "h": 60
+        },
+        "firstContentTop": -154
+      },
+      "firstContentShift": 260,
+      "consoleIssues": [
+        "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    }
+  ]
+}

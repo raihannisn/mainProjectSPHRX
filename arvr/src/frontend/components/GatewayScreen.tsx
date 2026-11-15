@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchApod, type ApodData } from '../api'
 import { TopBar } from './TopBar'
 import { ParticleField } from './ParticleField'
+import { originOf, runWormhole } from '../wormhole'
 
 type DeviceCaps = { ar: boolean; vr: boolean }
 
 export function GatewayScreen() {
   const navigate = useNavigate()
   const [caps, setCaps] = useState<DeviceCaps>({ ar: false, vr: false })
+  const capabilitiesRef = useRef<HTMLDivElement | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [apodOpen, setApodOpen] = useState(false)
   const [apodLoading, setApodLoading] = useState(false)
@@ -44,6 +46,8 @@ export function GatewayScreen() {
   }
 
   const handleCapabilities = () => {
+    capabilitiesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    capabilitiesRef.current?.focus({ preventScroll: true })
     notify('Desktop 3D is available. Immersive modes (WebXR VR/AR) activate automatically on supported headsets and mobile devices.')
   }
 
@@ -150,6 +154,41 @@ export function GatewayScreen() {
             <b>Compare records</b>
             <span>Review distinct observations</span>
           </div>
+        </div>
+
+        <div className="fe-capabilities" id="fe-gateway-capabilities" ref={capabilitiesRef} tabIndex={-1} aria-label="Explore in 3D, AR, or VR">
+          <button type="button" className="fe-cap" onClick={() => navigate('/explorer')}>
+            <b>Desktop 3D</b>
+            <small>AVAILABLE · WEBGL</small>
+            <span>Explore the interactive 3D sky in the browser.</span>
+            <span className="fe-cap-action">Open 3D Explorer <span aria-hidden="true">↗</span></span>
+          </button>
+          <button
+            type="button"
+            className="fe-cap"
+            onClick={(event) => {
+              const origin = originOf(event.currentTarget)
+              void runWormhole({ origin }, () => navigate('/xr?intent=ar'))
+            }}
+          >
+            <b>WebXR AR</b>
+            <small>{caps.ar ? 'SUPPORTED ON THIS DEVICE' : 'REQUIRES AR-CAPABLE DEVICE'}</small>
+            <span>Place the tabletop observatory in your own room.</span>
+            <span className="fe-cap-action">Explore AR <span aria-hidden="true">↗</span></span>
+          </button>
+          <button
+            type="button"
+            className="fe-cap"
+            onClick={(event) => {
+              const origin = originOf(event.currentTarget)
+              void runWormhole({ origin }, () => navigate('/xr?intent=vr'))
+            }}
+          >
+            <b>WebXR VR</b>
+            <small>{caps.vr ? 'SUPPORTED ON THIS DEVICE' : 'REQUIRES VR HEADSET'}</small>
+            <span>Enter the immersive six-degrees-of-freedom sky view.</span>
+            <span className="fe-cap-action">Explore VR <span aria-hidden="true">↗</span></span>
+          </button>
         </div>
       </main>
 
