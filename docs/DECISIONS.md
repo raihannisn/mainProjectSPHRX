@@ -2,6 +2,14 @@
 
 Record decisions that affect more than one workstream. Newest decisions go first.
 
+## 2026-11-15 — Inline 3D body models in the Sky Explorer viewport (proposed, PR review)
+
+- **Decision:** The Sky Explorer viewport gets a compact model switch (Sky · Mars · Moon · Bennu, URL `?model=`). Body modes render the XR module's `BodyExplorer` + `Hotspots` in a separate `<Canvas>` (no WebXR session on 2D pages). One toolbar toggle shows/hides hotspots (shared `settings.pins`); a VR/AR toggle, shown only when WebXR is supported, opens `/xr/body/<id>?intent=vr|ar`, and `ModePicker` now honours `intent` on every scene, not only the hub. Default stays `Sky`.
+- **Reason:** Team request to show the AR/VR 3D models in the observation view without changing the tuned 2D layout; reusing the existing XR components avoids a second copy of the 3D code or assets.
+- **Alternatives considered:** Embedding the full `XRRoot` inline (brings its own HUD, intro and session handling; too heavy for a viewport); replacing the Comparison FITS previews with 3D (rejected: a 2D astronomical image must not be presented as a 3D volume).
+- **Impact:** 2D→XR handoff gains `?intent=` on body routes. No API, routing table, deployment or dependency changes. Details and test evidence: `docs/OBSERVATION_3D_MODEL_INTEGRATION_PLAN.md`.
+- **Owner:** Adnaan (approval via PR review)
+
 ## Integration phase — Single React application shell
 
 - **Decision:** Use the `arvr/` React/Vite app as the single client-side application host for Gateway, Explorer, Comparison, Cosmic Guide, and the existing XR routes. Keep FastAPI on `/api/*`; preserve the XR app's `/xr/` asset base and service-worker scope.
