@@ -54,6 +54,23 @@ All through the existing toolbar and HUD cards. No new panel; Sky mode is unchan
 - **Readable upstream errors**: when IRSA returns an HTML error page, the Explorer shows one clean line
   (tags stripped, 150 characters) instead of raw markup that pushed the telemetry card under the actions.
 
+### Phase 5: master design blueprint ([`MASTER_DESIGN_OVERHAUL_PROMPT.md`](MASTER_DESIGN_OVERHAUL_PROMPT.md))
+- **No purple / pink / magenta anywhere** (rule 1): every violet in the 2D and XR styles, the 3D UI kit, the XR sky
+  and the wormhole is now electric sky-blue / teal / gold. Honest labels keep three distinct colours:
+  Fact = teal, Candidate = gold, Illustration/Demo = silver-blue (2D tags, markers, 3D pins and legends).
+- **Interactive 3D Solar System on the Gateway** (`SolarSystem3D.tsx`) replaces the CSS art, so the landing page no
+  longer splits 2D and 3D: eight planets at the blueprint proportions (Jupiter largest, Saturn with a 26.7 degree
+  ring and Cassini gap), 750-star `InstancedMesh` (one draw call), pixel ratio capped at 1.5, two-layer additive Sun
+  glow, raycaster hover or tap that names the planet and its distance in AU, and a pill that opens the 3D scene
+  through the wormhole (Mars opens `/xr/body/mars`, the others the 3D hub). Labelled *illustrative, not to scale*;
+  it is not an ephemeris (real positions stay in `/xr`). The old CSS art remains as the WebGL-failure fallback.
+- **Frosted glass recipe** (depth gradient, blur 28px + saturate 190%, teal hairline, specular top + drop shadow) on
+  HUD cards, title, chips, dialogs and the XR cards; **thin type** (weight 300) for body copy; **teal primary
+  capsule** for primary actions in 2D and XR; design tokens added to `:root`.
+- **Dynamic Island**: the flowing gradient border exists only in `island` / `island-open` and is removed at `top`.
+- **Wormhole on navbar navigation**: nav links and the "3D / WebXR" badge open the portal from the clicked element
+  (380 ms floor for 2D routes, 650 ms for 3D).
+
 ### Fix found on the way
 - `backend/routes/objects.py` read `kamus_object.json` with the platform default codec. On Windows that is
   cp1252, so the Explorer HUD showed `-43Â°45â€²12â€³` instead of `-43°45′12″`. Now opened as UTF-8.
@@ -80,6 +97,7 @@ All through the existing toolbar and HUD cards. No new panel; Sky mode is unchan
 | Content + types + build | `npm run build --prefix arvr` | PASS (`check-content: 54 hotspots OK`, `tsc` clean) |
 | Legacy frontend build | `node frontend/build.mjs` | PASS |
 | Unified look (new) | `node arvr/scripts/smoke-unified-xr.mjs` | All checks passed: 4 scenes × 3 viewports + `?intro` |
+| Blueprint (new) | `node arvr/scripts/smoke-blueprint.mjs` | All checks passed (static: no purple, one InstancedMesh, DPR 1.5; runtime on 3 viewports: 3D solar system and hover pill, teal primary, island border only floating, wormhole on nav, glass cards) |
 | 3D viewport (extended) | `node arvr/scripts/smoke-observation-3d.mjs` | **135/135 PASS** (was 74; adds layers, surface link, guide context, EN/ID, tour entry) |
 | XR emulator | `npm run smoke:xr --prefix arvr` (preview 4173) | 30 PASS, 0 FAIL (the script now requests `?intro`) |
 | Team design QA harness | `node arvr/scripts/design-migration-qa.mjs --stub` | 24 screens; after phase 1 the report was **identical** to a run on the unchanged code (0 screens different) |
@@ -106,6 +124,8 @@ Not tested here: real Meta Quest 3 / Android AR devices (emulator only).
 
 1. Missions entry from the 2D screens (missions stay in the XR menu).
 2. More bodies in the model switch (needs content files first).
+4. **Blueprint items not done:** the ambient audio singleton (`ambientAudio.ts`, the Explorer's ♪ button is still a visual toggle), `waitForScene` in the wormhole for 3D routes, and the PBR planet textures (planets use colour or procedural bands).
+5. **Needs the team's decision:** the blueprint says the EN/ID toggle was removed and must not return, but it is in the current nav bar and drives the XR Indonesian text. Left in place.
 3. EN/ID for the Sky mode text of the 2D screens (team's copy).
 
 ## 8. Agent report

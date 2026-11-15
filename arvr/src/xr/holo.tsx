@@ -12,10 +12,10 @@ import type { TierParams } from './quality'
 export const HOLO = {
   teal: '#4fe3d6',
   amber: '#ffb54a',
-  violet: '#8f7cff',
-  skyTop: '#141046',
+  violet: '#38bdf8',
+  skyTop: '#0b1a3a',
   skyMid: '#0a1230',
-  skyLow: '#1d0f3f',
+  skyLow: '#0a1d36',
 }
 
 /** Per-body art direction (colours are stylised, chosen to keep each body recognisable). */

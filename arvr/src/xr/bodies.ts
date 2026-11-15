@@ -32,7 +32,7 @@ export const BODY_BY_ID = Object.fromEntries(BODIES.map((b) => [b.id, b])) as Re
 BODY_BY_ID.spherex = { id: 'spherex', name: 'SPHEREx sky', kind: 'planet', color: '#4fe3d6', orbit: 0, size: 0 }
 
 export const KIND_COLORS = {
-  fact: '#4fd1ff',
-  illustration: '#b18cff',
-  candidate: '#ffb347',
+  fact: '#4fe3d6',
+  illustration: '#a5b4c8',
+  candidate: '#fde047',
 } as const

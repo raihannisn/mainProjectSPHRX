@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { NavLink, Link, useLocation } from 'react-router-dom'
+import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
 import { fetchSystemStatus, type SystemStatus } from '../api'
 import { useXRApp } from '../../xr/store'
+import { originOf, runWormhole } from '../wormhole'
 
 type NavState = 'top' | 'island' | 'island-open'
 
@@ -27,6 +28,7 @@ export function TopBar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const lang = useXRApp((s) => s.settings.lang)
   const location = useLocation()
+  const navigate = useNavigate()
 
   const headerRef = useRef<HTMLElement>(null)
   const islandRef = useRef<HTMLDivElement>(null)
@@ -166,6 +168,11 @@ export function TopBar() {
             )
           }
           if (variant === 'panel') setMenuOpen(false)
+          // blueprint: navbar navigation opens the wormhole portal from the clicked element (snappy 2D floor)
+          if (!event.defaultPrevented && !event.metaKey && !event.ctrlKey && !event.shiftKey && event.button === 0 && location.pathname !== item.to) {
+            event.preventDefault()
+            void runWormhole({ origin: originOf(event.currentTarget), label: `Opening ${item.label}…`, minMs: 380 }, () => navigate(item.to))
+          }
         }}
       >
         {item.label}
@@ -204,7 +211,17 @@ export function TopBar() {
   )
 
   const xrLink = (
-    <Link to="/xr" className="fe-xr-badge-btn" title="Open Solar System & WebXR 3D Hub">
+    <Link
+      to="/xr"
+      className="fe-xr-badge-btn"
+      title="Open Solar System & WebXR 3D Hub"
+      onClick={(event) => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
+        event.preventDefault()
+        setMenuOpen(false)
+        void runWormhole({ origin: originOf(event.currentTarget), label: 'Opening 3D hub…', minMs: 650 }, () => navigate('/xr'))
+      }}
+    >
       <span>3D / WebXR</span>
       <span aria-hidden="true">↗</span>
     </Link>

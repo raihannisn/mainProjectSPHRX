@@ -263,7 +263,7 @@ export function XRRoot() {
             <>
               <ambientLight intensity={0.35} />
               {/* soft teal/violet fill so night sides read against the chart sky instead of going pure black */}
-              {kind === 'body' && <hemisphereLight args={['#4fe3d6', '#3a2a7a', 0.45]} />}
+              {kind === 'body' && <hemisphereLight args={['#4fe3d6', '#12365a', 0.45]} />}
               <directionalLight position={[5, 2, 4]} intensity={2.4} />
             </>
           )}

@@ -210,7 +210,7 @@ export function SpherexTable({ mode }: { mode: ViewMode }) {
             <Text font={FONT_BOLD} position={[-PW / 2 + 0.08, H / 2 - 0.08, 0.006]} fontSize={0.085} color="#4fe3d6" outlineWidth={0.005} outlineColor="#000" anchorX="left" anchorY="top">
               {`● LIVE NASA ARCHIVE · ${obsDataA?.observation_id || obsIdA || 'SPHEREx'}`}
             </Text>
-            <Text font={FONT_BOLD} position={[PW / 2 - 0.08, H / 2 - 0.08, 0.006]} fontSize={0.08} color="#b18cff" outlineWidth={0.005} outlineColor="#000" anchorX="right" anchorY="top">
+            <Text font={FONT_BOLD} position={[PW / 2 - 0.08, H / 2 - 0.08, 0.006]} fontSize={0.08} color="#a5b4c8" outlineWidth={0.005} outlineColor="#000" anchorX="right" anchorY="top">
               {obsDataA?.effective_wavelength_at_target || band || ''}
             </Text>
           </>
@@ -224,7 +224,7 @@ export function SpherexTable({ mode }: { mode: ViewMode }) {
                 ? `● LIVE A · ${obsDataA?.observation_id || obsIdA || 'Epoch 1'}`
                 : `● LIVE B · ${obsDataB?.observation_id || obsIdB || 'Epoch 2'}`}
             </Text>
-            <Text font={FONT_BOLD} position={[PW / 2 - 0.08, H / 2 - 0.08, 0.006]} fontSize={0.08} color="#b18cff" outlineWidth={0.005} outlineColor="#000" anchorX="right" anchorY="top">
+            <Text font={FONT_BOLD} position={[PW / 2 - 0.08, H / 2 - 0.08, 0.006]} fontSize={0.08} color="#a5b4c8" outlineWidth={0.005} outlineColor="#000" anchorX="right" anchorY="top">
               {liveFrame === 0 ? obsDataA?.effective_wavelength_at_target || '' : obsDataB?.effective_wavelength_at_target || ''}
             </Text>
           </>

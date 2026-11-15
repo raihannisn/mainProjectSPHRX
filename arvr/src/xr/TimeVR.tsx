@@ -27,7 +27,7 @@ export function TimeVR() {
     <group scale={0.1}>
       <GlassPanel width={3.6} height={1.5} radius={0.16} />
       <Label text={t('Time machine')} position={[-1.65, 0.55, 0.005]} size={UI.type.title} bold />
-      <Label text={date === null ? t('Live') : formatDate(now, lang)} position={[1.65, 0.55, 0.005]} size={UI.type.body} color={date === null ? UI.good : '#c9bfff'} anchorX="right" />
+      <Label text={date === null ? t('Live') : formatDate(now, lang)} position={[1.65, 0.55, 0.005]} size={UI.type.body} color={date === null ? UI.good : '#bae6fd'} anchorX="right" />
       <Label text={`${t('Earth ↔ Mars')}: ${t('A radio signal takes {x} one way.', { x: formatLightTime(light) })}`} position={[-1.65, 0.28, 0.005]} size={UI.type.tiny} color={UI.muted} maxWidth={3.3} />
       <Button label={`−1 ${t('yr')}`} onPress={() => setDate(now - YEAR)} position={[-1.3, -0.08, 0]} width={0.7} height={0.3} />
       <Button label={playing ? t('Pause') : t('Play')} icon={playing ? 'pause' : 'play'} onPress={() => setPlaying(!playing)} position={[-0.45, -0.08, 0]} width={0.85} height={0.3} />

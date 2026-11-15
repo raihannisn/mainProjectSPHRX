@@ -118,7 +118,7 @@ export function WormholeOverlay() {
       ctx.fillRect(0, 0, W, H)
       ctx.globalCompositeOperation = 'lighter'
 
-      const cols = ['50,100,230', '79,227,214', '150,120,255', '212,175,55']
+      const cols = ['50,100,230', '79,227,214', '56,189,248', '212,175,55']
       const weights = [1.3, 0.55, 0.8, 0.45]
       for (let i = 0; i < 4; i += 1) {
         const angle = t * 0.05 * (i % 2 ? -1 : 1) + i * 1.57

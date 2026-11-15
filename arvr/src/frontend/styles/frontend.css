@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 /* SPHEREx Cosmic Expedition — Frontend Styles */
 
@@ -7,8 +7,8 @@
   --panel: rgba(11, 24, 32, 0.88);
   --line: rgba(79, 227, 214, 0.27);
   --teal: #4fe3d6;
-  --violet: #b18cff;
-  --amber: #f5ae43;
+  --violet: #38bdf8; /* legacy token name; the palette has no purple */
+  --amber: #f59e0b;
   --white: #ffffff;
   --soft: #c7cde6;
   --muted: #9ba8bf;
@@ -391,7 +391,7 @@
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-  background: linear-gradient(115deg, rgba(79, 227, 214, 0.2), rgba(177, 140, 255, 0.15));
+  background: linear-gradient(115deg, rgba(79, 227, 214, 0.2), rgba(56, 189, 248, 0.15));
   border: 1px solid var(--teal);
   color: var(--teal);
   padding: 7px 14px;
@@ -720,7 +720,7 @@
   width: 19%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, #fff4c4 0 4%, #ffe17b 16%, #ff9e43 48%, #ef5b53 73%, #b72e59 100%);
+  background: radial-gradient(circle at 34% 30%, #fff4c4 0 4%, #ffe17b 16%, #ff9e43 48%, #f59e0b 73%, #d97706 100%);
   box-shadow: 0 0 22px 5px #ffb64c99, 0 0 70px 20px #ff8c3e55, 0 0 150px 45px #fc5d3b22;
   animation: fe-sun-breathe 4s ease-in-out infinite alternate;
 }
@@ -750,7 +750,7 @@
   inset: 21%;
   transform: rotate(31deg) scaleY(0.62);
   animation: fe-orbit-turn 47s linear infinite reverse;
-  border-color: #b18cff55;
+  border-color: #38bdf855;
 }
 
 .fe-planet-orbit.three {
@@ -775,16 +775,16 @@
   width: 22px;
   height: 22px;
   top: -11px;
-  background: radial-gradient(circle at 35% 27%, #ffe7ce 0 4%, #d99a70 24%, #9a5572 68%, #492e62);
-  box-shadow: 0 0 22px #d889a888;
+  background: radial-gradient(circle at 35% 27%, #ffe7ce 0 4%, #d99a70 24%, #3b82c4 68%, #1e3a5f);
+  box-shadow: 0 0 22px #38bdf888;
 }
 
 .fe-planet-orbit.three .fe-planet {
   width: 11px;
   height: 11px;
   top: -5px;
-  background: radial-gradient(circle at 30% 25%, #eee0ff, #ad83f1 44%, #6445ac);
-  box-shadow: 0 0 16px #b18cff;
+  background: radial-gradient(circle at 30% 25%, #e0f2fe, #38bdf8 44%, #0369a1);
+  box-shadow: 0 0 16px #38bdf8;
 }
 
 .fe-art-label {
@@ -922,7 +922,7 @@
 }
 
 .sky3d-marker.candidate {
-  color: var(--violet);
+  color: var(--gold);
 }
 
 .sky3d-marker.demo {
@@ -1167,7 +1167,7 @@
 .fe-marker.candidate {
   left: 34%;
   top: 57%;
-  color: var(--violet);
+  color: var(--gold);
 }
 
 .fe-marker.demo {
@@ -1249,13 +1249,13 @@
 }
 
 .fe-tag.candidate {
-  color: var(--violet);
-  border-color: #b18cff55;
+  color: var(--gold);
+  border-color: #fde04755;
 }
 
 .fe-tag.demo {
   color: var(--amber);
-  border-color: #f5ae4355;
+  border-color: #f59e0b55;
 }
 
 .fe-hud-object h2 {
@@ -1883,7 +1883,7 @@
 
 .fe-msg.user {
   align-self: flex-end;
-  background: linear-gradient(115deg, rgba(79, 227, 214, 0.22), rgba(177, 140, 255, 0.18));
+  background: linear-gradient(115deg, rgba(79, 227, 214, 0.22), rgba(56, 189, 248, 0.18));
   border: 1px solid rgba(79, 227, 214, 0.45);
   color: var(--white);
 }
@@ -2933,8 +2933,8 @@
   padding: 6px 12px;
   border-radius: 999px;
   font-size: 0.72rem;
-  border: 1px solid rgba(177, 140, 255, 0.35);
-  background: rgba(177, 140, 255, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(56, 189, 248, 0.08);
   color: var(--soft);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -4330,3 +4330,140 @@
 .fe-layer-legend { display: grid; gap: 3px; margin-top: 6px; }
 .fe-layer-legend i { display: block; height: 6px; border-radius: 3px; }
 .fe-layer-legend small { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 0.6rem; color: var(--muted); }
+
+/* ==========================================================================
+   MASTER DESIGN BLUEPRINT (docs/MASTER_DESIGN_OVERHAUL_PROMPT.md)
+   Palette without purple/pink, 4-layer frosted glass, thin editorial type,
+   teal primary action, and the Dynamic Island border that flows only while
+   the bar floats. Appended last; earlier rules are not edited.
+   ========================================================================== */
+:root {
+  --teal-rgb: 79, 227, 214;
+  --sky-blue: #38bdf8;
+  --sky-blue-rgb: 56, 189, 248;
+  --deep-blue: #0ea5e9;
+  --gold: #fde047;
+  --gold-warm: #e5c07b;
+  --danger: #f87171;
+  --fe-bg: #030712;
+  --fe-bg-subtle: #060f1e;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  --font-weight-thin: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --glass-blur: 28px;
+  --glass-saturate: 190%;
+  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(13, 27, 52, 0.42) 45%, rgba(6, 15, 30, 0.58) 100%);
+  --glass-border: rgba(79, 227, 214, 0.26);
+  --glass-specular: inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.28);
+  --glass-shadow: 0 16px 36px rgba(0, 0, 0, 0.42);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 180ms;
+  --dur-normal: 280ms;
+  --dur-morph: 380ms;
+}
+
+/* 4-layer frosted glass: depth gradient, optical blur + saturation, teal hairline, specular top + drop shadow */
+.fe-glass-surface,
+.fe-hud-card,
+.fe-sky-title,
+.fe-target-chip,
+.fe-apod-dialog,
+.fe-modal {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-specular), var(--glass-shadow);
+  color: #e2e8f0;
+}
+.fe-hud-card, .fe-glass-surface { border-radius: 18px; }
+@supports not (backdrop-filter: blur(1px)) {
+  .fe-glass-surface, .fe-hud-card, .fe-sky-title, .fe-target-chip, .fe-apod-dialog, .fe-modal { background: rgba(8, 17, 34, 0.94); }
+}
+
+/* thin editorial type: light body copy, regular/medium labels */
+.fe-lead, .fe-hud-card p, .fe-sky-title p, .fe-step span, .fe-cap span, .fe-guide-sub, .fe-apod-explanation, .fe-muted,
+.info-card__short, .info-card__detail, .mode__text small, .tour-caption p, .time-note {
+  font-weight: var(--font-weight-thin);
+}
+.fe-lead { letter-spacing: 0.005em; }
+
+/* primary action: luminous teal capsule with a sharp specular top edge */
+.fe-app .fe-btn-primary {
+  color: #030712;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, #4fe3d6 0%, #38bdf8 50%, #0ea5e9 100%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  box-shadow: inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.5), 0 8px 24px rgba(79, 227, 214, 0.35);
+  backdrop-filter: none;
+  transition: transform 0.22s var(--ease-spring), box-shadow 0.22s var(--ease-spring);
+}
+.fe-app .fe-btn-primary:hover,
+.fe-app .fe-btn-primary:focus-visible {
+  color: #030712;
+  background: linear-gradient(135deg, #4fe3d6 0%, #38bdf8 50%, #0ea5e9 100%);
+  transform: translateY(-1.5px);
+  box-shadow: inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.6), 0 12px 30px rgba(56, 189, 248, 0.45);
+}
+.fe-app .fe-btn-primary:active { transform: translateY(0.5px) scale(0.98); }
+.fe-app .fe-btn-primary span { color: inherit; }
+
+/* active selector: translucent glass capsule with a soft glow */
+.fe-nav-link.active {
+  color: #ffffff;
+  font-weight: 500;
+  background: linear-gradient(135deg, rgba(79, 227, 214, 0.22) 0%, rgba(56, 189, 248, 0.12) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(79, 227, 214, 0.45);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.3), 0 0 16px rgba(79, 227, 214, 0.22);
+}
+
+/* Dynamic Island: the flowing border exists only while the bar floats, and is gone at the top */
+.fe-topbar[data-state="island"] .fe-island,
+.fe-topbar[data-state="island-open"] .fe-island {
+  border: 1px solid transparent;
+  background-image: var(--glass-bg), linear-gradient(90deg, #4fe3d6, #38bdf8, #0ea5e9, #4fe3d6);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  background-size: 100% 100%, 200% 100%;
+  animation: fe-island-border-flow 6s linear infinite;
+}
+@keyframes fe-island-border-flow {
+  0% { background-position: 0% 0%, 0% 0%; }
+  100% { background-position: 0% 0%, 200% 0%; }
+}
+.fe-topbar[data-state="top"] .fe-island {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fe-topbar[data-state="island"] .fe-island,
+  .fe-topbar[data-state="island-open"] .fe-island { animation: none; }
+}
+
+/* ---- Gateway: interactive 3D solar system (SolarSystem3D) ---- */
+.solar3d { position: relative; width: 100%; height: 100%; min-height: inherit; }
+.solar3d-canvas { position: absolute !important; inset: 0; width: 100%; height: 100%; touch-action: pan-y; }
+.solar3d-hud {
+  position: absolute; left: 0; right: 0; bottom: 6px; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none;
+}
+.solar3d-pill {
+  display: inline-flex; align-items: baseline; gap: 10px; min-height: 36px; padding: 8px 16px; border-radius: 999px; font: inherit; font-size: 12.5px; color: #cbd5e1;
+  background: var(--glass-bg); border: 1px solid var(--glass-border); box-shadow: var(--glass-specular), var(--glass-shadow);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+}
+.solar3d-pill b { color: #fff; font-weight: 600; }
+.solar3d-pill span { font-weight: 300; }
+.solar3d-pill em { font-style: normal; color: var(--teal); font-size: 11.5px; }
+.solar3d-pill.active { pointer-events: auto; cursor: pointer; min-height: 44px; border-color: rgba(79, 227, 214, 0.55); }
+.solar3d-pill.active:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.solar3d-note { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.14em; color: rgba(199, 205, 230, 0.6); }
+@media (max-width: 560px) {
+  .solar3d-pill { flex-wrap: wrap; justify-content: center; row-gap: 2px; max-width: calc(100% - 24px); }
+}

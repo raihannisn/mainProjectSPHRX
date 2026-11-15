@@ -41,7 +41,7 @@ const MARKERS = [
     left: 34,
     top: 57,
     z: -0.12,
-    color: '#b18cff',
+    color: '#fde047',
     tone: 'candidate',
   },
   {

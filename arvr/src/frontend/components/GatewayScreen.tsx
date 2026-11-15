@@ -4,6 +4,7 @@ import { fetchApod, type ApodData } from '../api'
 import { TopBar } from './TopBar'
 import { ParticleField } from './ParticleField'
 import { originOf, runWormhole } from '../wormhole'
+import { SolarSystem3D } from './SolarSystem3D'
 
 type DeviceCaps = { ar: boolean; vr: boolean }
 
@@ -81,16 +82,16 @@ export function GatewayScreen() {
               <linearGradient id="fe-gw-grad-1" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#4fe3d6" stopOpacity=".9" />
                 <stop offset="50%" stopColor="#38bdf8" stopOpacity=".85" />
-                <stop offset="100%" stopColor="#b18cff" stopOpacity=".8" />
+                <stop offset="100%" stopColor="#38bdf8" stopOpacity=".8" />
               </linearGradient>
               <linearGradient id="fe-gw-grad-2" x1="100%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#b18cff" stopOpacity=".75" />
+                <stop offset="0%" stopColor="#38bdf8" stopOpacity=".75" />
                 <stop offset="45%" stopColor="#4fe3d6" stopOpacity=".8" />
                 <stop offset="100%" stopColor="#38bdf8" stopOpacity=".7" />
               </linearGradient>
               <linearGradient id="fe-gw-grad-3" x1="0%" y1="50%" x2="100%" y2="50%">
                 <stop offset="0%" stopColor="#38bdf8" stopOpacity=".5" />
-                <stop offset="60%" stopColor="#b18cff" stopOpacity=".6" />
+                <stop offset="60%" stopColor="#38bdf8" stopOpacity=".6" />
                 <stop offset="100%" stopColor="#4fe3d6" stopOpacity=".5" />
               </linearGradient>
             </defs>
@@ -122,20 +123,24 @@ export function GatewayScreen() {
           </div>
         </div>
 
-        <div className="fe-sky-art" aria-label="Illustrative solar system with planets orbiting a glowing sun">
-          <div className="fe-solar-system" aria-hidden="true">
-            <div className="fe-solar-dust" />
-            <div className="fe-planet-orbit one">
-              <i className="fe-planet" />
-            </div>
-            <div className="fe-planet-orbit two">
-              <i className="fe-planet" />
-            </div>
-            <div className="fe-planet-orbit three">
-              <i className="fe-planet" />
-            </div>
-            <div className="fe-sun" />
-          </div>
+        <div className="fe-sky-art" role="group" aria-label="Interactive 3D solar system: eight planets orbiting the Sun. Illustrative, not to scale.">
+          <SolarSystem3D
+            fallback={
+              <div className="fe-solar-system" aria-hidden="true">
+                <div className="fe-solar-dust" />
+                <div className="fe-planet-orbit one">
+                  <i className="fe-planet" />
+                </div>
+                <div className="fe-planet-orbit two">
+                  <i className="fe-planet" />
+                </div>
+                <div className="fe-planet-orbit three">
+                  <i className="fe-planet" />
+                </div>
+                <div className="fe-sun" />
+              </div>
+            }
+          />
         </div>
 
         <div className="fe-steps">

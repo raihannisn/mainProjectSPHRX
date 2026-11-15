@@ -203,7 +203,7 @@ export function BodyExplorer({ id, vr, showTitle = true }: { id: string; vr: boo
           <Text font={FONT_BOLD} fontSize={0.16} color="#ffffff" anchorY="bottom" outlineWidth={0.006} outlineColor="#000">
             {name}
           </Text>
-          <Text font={FONT} position={[0, -0.03, 0]} fontSize={0.06} color={illustration ? '#b18cff' : '#aab4cc'} anchorY="top">
+          <Text font={FONT} position={[0, -0.03, 0]} fontSize={0.06} color={illustration ? '#a5b4c8' : '#aab4cc'} anchorY="top">
             {subtitle}
           </Text>
         </Billboard>
