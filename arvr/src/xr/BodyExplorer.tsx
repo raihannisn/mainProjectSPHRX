@@ -138,7 +138,7 @@ function Asteroid({ model, onGeometry, onIllustration }: { model?: string; onGeo
  * Generic explorer for one body: loads content/bodies/<id>.json, shows a textured sphere (planets)
  * or a GLB / procedural placeholder (asteroids), hotspots, and (in VR) the in-world info card.
  */
-export function BodyExplorer({ id, vr }: { id: string; vr: boolean }) {
+export function BodyExplorer({ id, vr, showTitle = true }: { id: string; vr: boolean; /** false when a 2D HUD already shows the name (inline viewer) */ showTitle?: boolean }) {
   const content = useBodyContent(id)
   const q = useQuality()
   const sites = useSitesForBody(vr ? id : null)
@@ -178,7 +178,8 @@ export function BodyExplorer({ id, vr }: { id: string; vr: boolean }) {
       <group ref={manip}>
       <group ref={spin}>
         {isAsteroid ? (
-          <Asteroid model={content?.model} onGeometry={setGeometry} onIllustration={setIllustration} />
+          // wait for the content file: mounting without its model URL briefly reported "illustration"
+          content !== undefined && <Asteroid model={content?.model} onGeometry={setGeometry} onIllustration={setIllustration} />
         ) : content?.texture ? (
           <ErrorBoundary fallback={<PlainPlanet color={color} />}>
             <Suspense fallback={<PlainPlanet color={color} />}>
@@ -207,14 +208,16 @@ export function BodyExplorer({ id, vr }: { id: string; vr: boolean }) {
         <HoloOrbit radius={1.55} color={HOLO.teal} />
       </group>
       {id === 'mars' && <Atmosphere color="#e3a07a" intensity={0.9} />}
-      <Billboard position={[0, 1.38, 0]}>
-        <Text font={FONT_BOLD} fontSize={0.16} color="#ffffff" anchorY="bottom" outlineWidth={0.006} outlineColor="#000">
-          {name}
-        </Text>
-        <Text font={FONT} position={[0, -0.03, 0]} fontSize={0.06} color={illustration ? '#38bdf8' : '#aab4cc'} anchorY="top">
-          {subtitle}
-        </Text>
-      </Billboard>
+      {showTitle && (
+        <Billboard position={[0, 1.38, 0]}>
+          <Text font={FONT_BOLD} fontSize={0.16} color="#ffffff" anchorY="bottom" outlineWidth={0.006} outlineColor="#000">
+            {name}
+          </Text>
+          <Text font={FONT} position={[0, -0.03, 0]} fontSize={0.06} color={illustration ? '#38bdf8' : '#aab4cc'} anchorY="top">
+            {subtitle}
+          </Text>
+        </Billboard>
+      )}
 
       {vr && (
         <>
