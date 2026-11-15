@@ -138,7 +138,19 @@ function Asteroid({ model, onGeometry, onIllustration }: { model?: string; onGeo
  * Generic explorer for one body: loads content/bodies/<id>.json, shows a textured sphere (planets)
  * or a GLB / procedural placeholder (asteroids), hotspots, and (in VR) the in-world info card.
  */
-export function BodyExplorer({ id, vr, showTitle = true }: { id: string; vr: boolean; /** false when a 2D HUD already shows the name (inline viewer) */ showTitle?: boolean }) {
+export function BodyExplorer({
+  id,
+  vr,
+  showTitle = true,
+  showObjectCard = true,
+}: {
+  id: string
+  vr: boolean
+  /** false when a 2D HUD already shows the name (inline viewer) */
+  showTitle?: boolean
+  /** false when a 2D HUD card already carries the object summary (inline viewer) */
+  showObjectCard?: boolean
+}) {
   const content = useBodyContent(id)
   const q = useQuality()
   const sites = useSitesForBody(vr ? id : null)
@@ -194,13 +206,15 @@ export function BodyExplorer({ id, vr, showTitle = true }: { id: string; vr: boo
       </group>
       </group>
 
-      <CatalogObjectCard3D
-        objectId={id}
-        objectName={content?.name ?? info?.name ?? id}
-        objectType={content?.type ?? info?.kind ?? ''}
-        contentReady={content !== undefined}
-        localDescription={content?.description?.[lang] ?? content?.description?.en ?? ''}
-      />
+      {showObjectCard && (
+        <CatalogObjectCard3D
+          objectId={id}
+          objectName={content?.name ?? info?.name ?? id}
+          objectType={content?.type ?? info?.kind ?? ''}
+          contentReady={content !== undefined}
+          localDescription={content?.description?.[lang] ?? content?.description?.en ?? ''}
+        />
+      )}
 
       {content !== undefined && <SceneReady />}
       {/* the Solar System chart's language: a faint orbit ring with ticks around the body */}

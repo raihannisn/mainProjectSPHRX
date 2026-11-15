@@ -5099,3 +5099,75 @@
   }
 }
 
+/* ==========================================================================
+   Sky Explorer · 3D models (appended; no earlier rule is changed)
+   The AR/VR app's bodies render inside the same viewport. New controls sit in their own rail under the toolbar
+   (round toggles, same glass buttons), so the four existing toolbar buttons never move. Cards carry the rest.
+   ========================================================================== */
+.model3d {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  cursor: grab;
+  touch-action: none;
+}
+.model3d:active { cursor: grabbing; }
+.model3d-canvas { display: block; width: 100%; height: 100%; }
+.model3d-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: var(--soft);
+  font: 0.8rem var(--mono);
+  text-align: center;
+}
+
+.fe-model-rail {
+  position: absolute;
+  z-index: 4;
+  top: 96px;
+  right: clamp(20px, 3vw, 48px);
+  display: flex;
+  gap: 8px;
+}
+.fe-model-rail .fe-icon-btn { width: var(--hit-target); padding: 0; font-size: 1rem; }
+.fe-model-rail .fe-model-toggle { font: 700 0.72rem var(--mono); letter-spacing: 0.04em; }
+
+.fe-card-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.fe-card-link {
+  min-height: var(--hit-target);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid rgba(79, 227, 214, 0.4);
+  border-radius: 999px;
+  background: rgba(79, 227, 214, 0.08);
+  color: var(--teal);
+  font: 600 0.7rem var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.fe-card-link:hover { background: rgba(79, 227, 214, 0.18); border-color: var(--teal); }
+.fe-card-link:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+.fe-datum-layer { grid-column: 1 / -1; }
+.fe-layer-legend { display: grid; gap: 3px; margin-top: 6px; }
+.fe-layer-legend i { display: block; height: 6px; border-radius: 3px; }
+.fe-layer-legend small { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 0.6rem; color: var(--muted); }
+
+@media (max-width: 680px) {
+  /* the toolbar folds into a 2x2 block here, so the rail starts below it */
+  .fe-model-rail {
+    top: 142px;
+    display: grid;
+    grid-template-columns: repeat(2, var(--hit-target));
+    gap: 6px;
+    justify-content: end;
+  }
+}
+
