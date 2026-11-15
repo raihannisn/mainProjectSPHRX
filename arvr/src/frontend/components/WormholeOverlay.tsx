@@ -1,65 +1,33 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useLoading } from '../../xr/loading'
 import { useXRApp } from '../../xr/store'
 import { originOf, registerWormhole, type WormholeOptions, type WormholeRunner, type WormholeTask } from '../wormhole'
-import { ambientAudio, useAmbientAudio } from '../audio/ambientAudio'
 
 const COPY = {
   en: {
     entering: 'Opening wormhole — preparing the 3D scene…',
-    returning: 'Returning to Cosmic Expedition…',
     ambience: 'Ambience',
   },
   id: {
     entering: 'Membuka wormhole — menyiapkan scene 3D…',
-    returning: 'Kembali ke Cosmic Expedition…',
     ambience: 'Ambience',
   },
 } as const
 
 type Phase = 'idle' | 'in' | 'hold' | 'out'
-type Star = { a: number; z: number; colorIdx: number; w: number }
+type Star = { a: number; z: number; h: number; w: number }
+type Shock = { x: number; y: number; t: number; d: number; a: number }
 
-const STAR_COLORS = [
-  'rgba(79, 227, 214, ',  // cyan
-  'rgba(90, 160, 255, ',  // blue
-  'rgba(140, 190, 255, ', // light blue
-  'rgba(229, 192, 123, ', // gold
-  'rgba(56, 189, 248, ',  // electric sky-blue
-]
+const AMBIENCE_KEY = 'spherex.wormhole.ambience'
+const AMBIENCE_VOLUME = 0.28
 
-function createNebulaSprite(color: string, size = 128): HTMLCanvasElement {
-  const c = document.createElement('canvas')
-  c.width = size
-  c.height = size
-  const cx = c.getContext('2d')
-  if (!cx) return c
-  const half = size / 2
-  const grad = cx.createRadialGradient(half, half, 0, half, half, half)
-  grad.addColorStop(0, `rgba(${color}, 1)`)
-  grad.addColorStop(0.45, `rgba(${color}, 0.35)`)
-  grad.addColorStop(1, `rgba(${color}, 0)`)
-  cx.fillStyle = grad
-  cx.fillRect(0, 0, size, size)
-  return c
-}
-
-function createHaloSprite(size = 256): HTMLCanvasElement {
-  const c = document.createElement('canvas')
-  c.width = size
-  c.height = size
-  const cx = c.getContext('2d')
-  if (!cx) return c
-  const half = size / 2
-  const halo = cx.createRadialGradient(half, half, 0, half, half, half)
-  halo.addColorStop(0, 'rgba(255,255,255,0.95)')
-  halo.addColorStop(0.12, 'rgba(255,224,160,0.55)')
-  halo.addColorStop(0.45, 'rgba(79,227,214,0.14)')
-  halo.addColorStop(1, 'rgba(79,227,214,0)')
-  cx.fillStyle = halo
-  cx.fillRect(0, 0, size, size)
-  return c
+function readAmbience() {
+  try {
+    return window.localStorage.getItem(AMBIENCE_KEY) !== 'off'
+  } catch {
+    return true
+  }
 }
 
 export function WormholeOverlay() {
@@ -68,18 +36,29 @@ export function WormholeOverlay() {
   const lang = useXRApp((s) => s.settings.lang)
   const inXR = location.pathname.startsWith('/xr')
   const copy = COPY[lang === 'id' ? 'id' : 'en']
-  const { isEnabled: ambience, toggle: toggleAmbience } = useAmbientAudio()
 
   const rootRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const labelRef = useRef<HTMLSpanElement>(null)
   const barRef = useRef<HTMLElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
   const runRef = useRef<WormholeRunner | null>(null)
   const copyRef = useRef(copy)
+  const ambienceRef = useRef(true)
+  const [ambience, setAmbience] = useState(readAmbience)
 
   useEffect(() => {
     copyRef.current = copy
   }, [copy])
+
+  useEffect(() => {
+    ambienceRef.current = ambience
+    try {
+      window.localStorage.setItem(AMBIENCE_KEY, ambience ? 'on' : 'off')
+    } catch {
+      /* storage can be blocked; the toggle still works for this session */
+    }
+  }, [ambience])
 
   useEffect(() => {
     const root = rootRef.current
@@ -87,13 +66,6 @@ export function WormholeOverlay() {
     const ctx = canvas?.getContext('2d')
     if (!root || !canvas || !ctx) return
 
-    // Pre-render gradient sprites offscreen for maximum GPU rendering performance
-    const nebulaCols = ['50,100,230', '79,227,214', '56,189,248', '212,175,55']
-    const nebulaWeights = [1.2, 0.55, 0.8, 0.45]
-    const nebulaSprites = nebulaCols.map((col) => createNebulaSprite(col, 128))
-    const haloSprite = createHaloSprite(256)
-
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)')
     const state = {
       W: 0,
       H: 0,
@@ -104,74 +76,90 @@ export function WormholeOverlay() {
       raf: 0,
       speed: 0.3,
       tgt: 0.3,
-      iris: 0,
       flash: 0,
       phase: 'idle' as Phase,
       still: false,
     }
     let stars: Star[] = []
+    let shocks: Shock[] = []
+    let fadeTimer = 0
     let busy: Promise<void> | null = null
 
     const wait = (ms: number) => new Promise<void>((resolve) => { window.setTimeout(resolve, ms) })
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.25)
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
       state.W = window.innerWidth
       state.H = window.innerHeight
       canvas.width = Math.round(state.W * dpr)
       canvas.height = Math.round(state.H * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      const count = state.W < 700 ? 60 : 100
+      const count = state.W < 700 ? 130 : 260
       if (stars.length !== count) {
         stars = Array.from({ length: count }, () => ({
           a: Math.random() * Math.PI * 2,
           z: Math.random(),
-          colorIdx: Math.floor(Math.random() * STAR_COLORS.length),
+          h: [172, 208, 222, 42, 262][Math.floor(Math.random() * 5)] + Math.random() * 14,
           w: Math.random(),
         }))
       }
     }
 
+    /* Canvas painting ported from the ax- wormhole module: nebula, petals, star streaks,
+       swirling rings, white core + shockwaves. No demo UI, no progress fakery. */
     const draw = (dt: number) => {
-      const { W, H, cx, cy, t, speed, still, flash, iris } = state
+      const { W, H, cx, cy, t, speed, still, flash } = state
       const M = Math.min(W, H)
       const R = Math.hypot(W, H) * 0.55
-      const maxRadius = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) + 20
-      const currentR = still ? maxRadius : maxRadius * Math.min(1, Math.max(0.02, iris))
-
-      ctx.clearRect(0, 0, W, H)
-      ctx.save()
-
-      // Hardware-accelerated circular portal mask inside canvas
-      ctx.beginPath()
-      ctx.arc(cx, cy, currentR, 0, Math.PI * 2)
-      ctx.clip()
 
       ctx.globalCompositeOperation = 'source-over'
-      ctx.fillStyle = '#061020'
+      ctx.fillStyle = `rgba(6,16,32,${still ? 1 : 0.32})`
       ctx.fillRect(0, 0, W, H)
-
       ctx.globalCompositeOperation = 'lighter'
 
-      // 1. Nebula clouds drawn from pre-rendered GPU sprites
+      const cols = ['50,100,230', '79,227,214', '150,120,255', '212,175,55']
+      const weights = [1.3, 0.55, 0.8, 0.45]
       for (let i = 0; i < 4; i += 1) {
         const angle = t * 0.05 * (i % 2 ? -1 : 1) + i * 1.57
         const rr = R * (0.35 + 0.12 * Math.sin(t * 0.4 + i))
         const nx = cx + Math.cos(angle) * rr
         const ny = cy + Math.sin(angle) * rr
         const nr = M * 0.7
-        ctx.globalAlpha = (still ? 0.35 : 0.08) * nebulaWeights[i]
-        ctx.drawImage(nebulaSprites[i], nx - nr, ny - nr, nr * 2, nr * 2)
+        const gradient = ctx.createRadialGradient(nx, ny, 0, nx, ny, nr)
+        gradient.addColorStop(0, `rgba(${cols[i]},${(still ? 0.4 : 0.06) * weights[i]})`)
+        gradient.addColorStop(1, `rgba(${cols[i]},0)`)
+        ctx.fillStyle = gradient
+        ctx.fillRect(nx - nr, ny - nr, nr * 2, nr * 2)
       }
-      ctx.globalAlpha = 1
 
-      // 2. Star streaks batched by color
-      const twist = 0.8 + speed * 0.5
-      const vz = 0.14 + 0.6 * speed
-      const starPaths: Array<Array<{ x0: number; y0: number; x1: number; y1: number }>> = [
-        [], [], [], [], []
-      ]
+      for (let i = 0; i < 9; i += 1) {
+        const ph = (t * 0.16 * (0.6 + speed * 0.8) + i / 9) % 1
+        const a = i * 0.698 + t * 0.12 + ph * 1.2
+        const r0 = R * 0.12 + ph * R * 0.25
+        const r1 = r0 + R * (0.25 + 0.5 * ph)
+        const w = (4 + ph * 22) * (M / 900)
+        const alpha = Math.sin(ph * Math.PI) * 0.5
+        const ca = Math.cos(a)
+        const sa = Math.sin(a)
+        const cm = Math.cos(a + 0.12)
+        const sm = Math.sin(a + 0.12)
+        const rm = (r0 + r1) / 2
+        const mx = cx + cm * rm
+        const my = cy + sm * rm
+        const nxv = -sm * w
+        const nyv = cm * w
+        const tone = i % 3 === 2 ? 'rgba(229,192,123,' : i % 3 ? 'rgba(79,200,255,' : 'rgba(120,130,255,'
+        ctx.fillStyle = `${tone}${i % 3 === 2 ? alpha * 0.7 : alpha})`
+        ctx.beginPath()
+        ctx.moveTo(cx + ca * r0, cy + sa * r0)
+        ctx.quadraticCurveTo(mx + nxv, my + nyv, cx + Math.cos(a + 0.35) * r1, cy + Math.sin(a + 0.35) * r1)
+        ctx.quadraticCurveTo(mx - nxv, my - nyv, cx + ca * r0, cy + sa * r0)
+        ctx.fill()
+      }
 
+      ctx.lineCap = 'round'
+      const twist = 0.9 + speed * 0.5
+      const vz = 0.12 + 0.55 * speed
       for (const star of stars) {
         const v = dt * vz * (0.6 + star.w * 0.8)
         star.z -= v
@@ -185,76 +173,71 @@ export function WormholeOverlay() {
         const q1 = R * Math.pow(k1, 2.1) + 4
         const a0 = star.a + k0 * twist
         const a1 = star.a + k1 * twist
-        starPaths[star.colorIdx].push({
-          x0: cx + Math.cos(a0) * q0,
-          y0: cy + Math.sin(a0) * q0,
-          x1: cx + Math.cos(a1) * q1,
-          y1: cy + Math.sin(a1) * q1,
-        })
-      }
-
-      ctx.lineCap = 'round'
-      for (let c = 0; c < STAR_COLORS.length; c += 1) {
-        const list = starPaths[c]
-        if (list.length === 0) continue
-        ctx.strokeStyle = `${STAR_COLORS[c]}0.85)`
-        ctx.lineWidth = 1.3
+        ctx.strokeStyle = `hsla(${star.h},90%,${60 + k0 * 30}%,${0.15 + k0 * 0.8})`
+        ctx.lineWidth = 0.6 + k0 * 2.2 * (0.5 + star.w)
         ctx.beginPath()
-        for (let j = 0; j < list.length; j += 1) {
-          ctx.moveTo(list[j].x1, list[j].y1)
-          ctx.lineTo(list[j].x0, list[j].y0)
-        }
+        ctx.moveTo(cx + Math.cos(a1) * q1, cy + Math.sin(a1) * q1)
+        ctx.lineTo(cx + Math.cos(a0) * q0, cy + Math.sin(a0) * q0)
         ctx.stroke()
       }
 
-      // 3. Concentric energy warp rings (5 rings)
-      const RING_COUNT = 5
-      for (let i = 0; i < RING_COUNT; i += 1) {
-        const d = (i / RING_COUNT + t * 0.1 * (0.5 + speed)) % 1
-        const r = R * (0.04 + Math.pow(d, 2.2) * 0.88)
-        const rot = i * 0.6 + t * (0.6 - d * 0.3) * (0.6 + speed * 0.4)
-        ctx.lineWidth = 0.8 + d * 2.8
-        ctx.strokeStyle = `hsla(${44 + d * d * 165},90%,${80 - d * 20}%,${Math.sin(d * Math.PI) * 0.5})`
+      for (let i = 0; i < 14; i += 1) {
+        const d = (i / 14 + t * 0.09 * (0.5 + speed)) % 1
+        const r = R * (0.04 + Math.pow(d, 2.2) * 0.9)
+        const rot = i * 0.5 + t * (0.7 - d * 0.4) * (0.6 + speed * 0.4)
+        ctx.lineWidth = 0.8 + d * 3.2
+        ctx.strokeStyle = `hsla(${44 + d * d * 165},90%,${82 - d * 22}%,${Math.sin(d * Math.PI) * 0.5})`
         ctx.beginPath()
-        const STEPS = 28
-        for (let j = 0; j <= STEPS; j += 1) {
-          const th = (j / STEPS) * Math.PI * 2
-          const wave = 1 + 0.06 * Math.sin(th * 3 + t * 2.2 + i)
+        for (let j = 0; j <= 44; j += 1) {
+          const th = (j / 44) * Math.PI * 2
+          const wave = 1 + 0.07 * Math.sin(th * 3 + t * 2.2 + i) + 0.04 * Math.sin(th * 5 - t * 1.6)
           const x = cx + Math.cos(th + rot) * r * wave
           const y = cy + Math.sin(th + rot) * r * wave
-          if (j === 0) ctx.moveTo(x, y)
-          else ctx.lineTo(x, y)
+          if (j) ctx.lineTo(x, y)
+          else ctx.moveTo(x, y)
         }
         ctx.stroke()
       }
 
-      // 4. Central halo sprite
-      const hr = M * 0.28 * (1 + flash * 4)
-      ctx.drawImage(haloSprite, cx - hr, cy - hr, hr * 2, hr * 2)
-
+      const hr = M * 0.3 * (1 + flash * 6)
+      const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, hr)
+      halo.addColorStop(0, 'rgba(255,255,255,.95)')
+      halo.addColorStop(0.12, 'rgba(255,224,160,.55)')
+      halo.addColorStop(0.45, 'rgba(79,227,214,.14)')
+      halo.addColorStop(1, 'rgba(79,227,214,0)')
+      ctx.fillStyle = halo
+      ctx.fillRect(0, 0, W, H)
       ctx.globalCompositeOperation = 'source-over'
 
-      // 5. Core singularity
-      const cr = M * (0.035 + 0.01 * Math.sin(t * 3)) * (1 + flash * 12)
+      const cr = M * (0.035 + 0.01 * Math.sin(t * 3)) * (1 + flash * 16)
+      ctx.lineWidth = 2
+      ctx.strokeStyle = `rgba(229,192,123,${0.45 * (1 - flash)})`
+      ctx.beginPath()
+      ctx.arc(cx, cy, cr * 1.9, 0, Math.PI * 2)
+      ctx.stroke()
+
+      for (let i = shocks.length - 1; i >= 0; i -= 1) {
+        const shock = shocks[i]
+        const k = (t - shock.t) / shock.d
+        if (k < 0) continue
+        if (k >= 1) {
+          shocks.splice(i, 1)
+          continue
+        }
+        ctx.lineWidth = 1 + (1 - k) * 5
+        ctx.strokeStyle = `rgba(229,192,123,${(1 - k) * (shock.a || 0.8)})`
+        ctx.beginPath()
+        ctx.arc(shock.x, shock.y, k * R * 1.1, 0, Math.PI * 2)
+        ctx.stroke()
+      }
+
       ctx.fillStyle = '#fffaf0'
       ctx.beginPath()
       ctx.arc(cx, cy, cr, 0, Math.PI * 2)
       ctx.fill()
 
-      ctx.restore()
-
-      // 6. Glowing expanding boundary ring around portal iris
-      if (currentR < maxRadius - 4) {
-        ctx.lineWidth = 3
-        ctx.strokeStyle = `rgba(79, 227, 214, ${Math.max(0, 0.95 - iris * 0.7)})`
-        ctx.beginPath()
-        ctx.arc(cx, cy, currentR, 0, Math.PI * 2)
-        ctx.stroke()
-      }
-
-      // 7. Light flash on exit
       if (flash > 0) {
-        ctx.fillStyle = `rgba(255,255,255,${flash * flash * 0.92})`
+        ctx.fillStyle = `rgba(255,255,255,${flash * flash})`
         ctx.fillRect(0, 0, W, H)
       }
     }
@@ -264,19 +247,55 @@ export function WormholeOverlay() {
       const dt = Math.min(0.05, (now - state.last) / 1000 || 0.016)
       state.last = now
       state.t += dt
-      state.speed += (state.tgt - state.speed) * Math.min(1, dt * 3.5)
+      state.speed += (state.tgt - state.speed) * Math.min(1, dt * 3)
       if (state.phase === 'in' || state.phase === 'hold') {
-        const ease = Math.min(1, dt * 2.5)
+        const ease = Math.min(1, dt * 2.4)
         state.cx += (state.W / 2 - state.cx) * ease
         state.cy += (state.H / 2 - state.cy) * ease
-        state.iris += (1 - state.iris) * Math.min(1, dt * 7.0)
       }
-      if (state.phase === 'out') state.flash = Math.min(1, state.flash + dt / 0.22)
+      if (state.phase === 'out') state.flash = Math.min(1, state.flash + dt / 0.32)
       draw(dt)
+    }
+
+    const fadeTo = (target: number, ms: number) => {
+      const el = audioRef.current
+      if (!el) return
+      window.clearInterval(fadeTimer)
+      const from = el.volume
+      const steps = Math.max(1, Math.round(ms / 40))
+      let step = 0
+      fadeTimer = window.setInterval(() => {
+        step += 1
+        el.volume = Math.min(1, Math.max(0, from + (target - from) * (step / steps)))
+        if (step >= steps) {
+          window.clearInterval(fadeTimer)
+          if (target === 0) el.pause()
+        }
+      }, 40)
+    }
+
+    const startAudio = () => {
+      const el = audioRef.current
+      if (!el || !ambienceRef.current) return
+      el.volume = 0
+      const attempt = el.play()
+      // Autoplay policy: a transition is always user-initiated, but the promise can still reject.
+      if (attempt && typeof attempt.then === 'function') {
+        attempt.then(() => fadeTo(AMBIENCE_VOLUME, 900)).catch(() => {})
+      }
+    }
+
+    const stopAudio = () => {
+      const el = audioRef.current
+      if (!el) return
+      window.clearInterval(fadeTimer)
+      if (el.paused) return
+      fadeTo(0, 500)
     }
 
     /** Real work: the XR scene reports when its textures/models/manual tasks settle. */
     const waitForScene = () => new Promise<void>((resolve) => {
+      const started = performance.now()
       let settled = false
       const finish = () => {
         if (settled) return
@@ -287,12 +306,12 @@ export function WormholeOverlay() {
         resolve()
       }
       const check = () => {
+        if (performance.now() - started < 700) return
         if (!useLoading.getState().active) finish()
       }
       const unsubscribe = useLoading.subscribe(check)
-      const poll = window.setInterval(check, 80)
-      const limit = window.setTimeout(finish, 4000)
-      check()
+      const poll = window.setInterval(check, 120)
+      const limit = window.setTimeout(finish, 5000)
     })
 
     const hide = async () => {
@@ -301,17 +320,24 @@ export function WormholeOverlay() {
       state.phase = 'out'
       state.tgt = 2.6
       state.flash = still ? 1 : 0
-      const duration = still ? 80 : 240
-      if (!still) await wait(120)
-      root.style.transition = `opacity ${duration}ms cubic-bezier(0.4, 0, 0.2, 1)`
+      if (!still) shocks.push({ x: state.cx, y: state.cy, t: state.t, d: 0.75, a: 1 })
+      const duration = still ? 120 : 480
+      if (!still) await wait(320)
+      root.style.transition = `opacity ${duration}ms ease, transform ${duration}ms ease`
       root.style.opacity = '0'
-      await wait(duration + 20)
+      root.style.transform = still ? 'none' : 'scale(1.06)'
+      stopAudio()
+      await wait(duration + 40)
       if (state.raf) cancelAnimationFrame(state.raf)
       state.raf = 0
       state.phase = 'idle'
       root.classList.remove('fe-wormhole--on')
       root.setAttribute('aria-hidden', 'true')
-      root.style.opacity = '0'
+      root.style.transition = 'none'
+      root.style.transform = 'none'
+      root.style.opacity = '1'
+      root.style.clipPath = 'circle(0px at 50% 50%)'
+      // Never leave focus inside the now-hidden overlay.
       if (root.contains(document.activeElement) && document.activeElement instanceof HTMLElement) {
         document.activeElement.blur()
       }
@@ -320,7 +346,7 @@ export function WormholeOverlay() {
     const run: WormholeRunner = (options: WormholeOptions = {}, task?: WormholeTask) => {
       if (busy) return busy
       const started = performance.now()
-      const still = reduce.matches
+      const still = false
       const label = options.label || copyRef.current.entering
       if (labelRef.current) labelRef.current.textContent = label
       resize()
@@ -331,15 +357,20 @@ export function WormholeOverlay() {
       state.cy = y
       state.flash = 0
       state.speed = 0.3
-      state.tgt = 1.6
-      state.iris = still ? 1 : 0.04
+      state.tgt = 1.5
       state.phase = 'in'
+      shocks = still ? [] : [{ x, y, t: state.t, d: 0.9, a: 1 }]
       if (barRef.current) barRef.current.style.width = ''
       root.classList.add('fe-wormhole--on')
       root.setAttribute('aria-hidden', 'false')
-      root.style.transition = 'opacity 0.22s ease'
+      const radius = Math.hypot(Math.max(x, state.W - x), Math.max(y, state.H - y)) + 12
+      root.style.transition = 'none'
       root.style.opacity = '1'
-
+      root.style.transform = 'none'
+      root.style.clipPath = `circle(0px at ${x}px ${y}px)`
+      void root.offsetWidth
+      root.style.transition = still ? 'none' : 'clip-path 680ms cubic-bezier(.55,0,.15,1)'
+      root.style.clipPath = `circle(${radius}px at ${x}px ${y}px)`
       if (still) {
         state.t += 1.4
         draw(0)
@@ -347,20 +378,15 @@ export function WormholeOverlay() {
         state.last = performance.now()
         state.raf = requestAnimationFrame(frame)
       }
-
-      // Ensure ambient sound plays if enabled
-      if (ambientAudio.isEnabled()) {
-        ambientAudio.play()
-      }
+      startAudio()
 
       busy = (async () => {
         try {
-          if (!still) await wait(140)
+          if (!still) await wait(200)
           await task?.()
-          if (!still && options.waitForScene) {
-            await waitForScene()
-          }
-          const floor = options.minMs ?? (still ? 180 : (options.waitForScene ? 650 : 380))
+          if (!still) await waitForScene()
+          // Animation floor only — long enough to read the label, no invented progress.
+          const floor = options.minMs ?? (still ? 260 : 900)
           const rest = floor - (performance.now() - started)
           if (rest > 0) await wait(rest)
         } finally {
@@ -383,14 +409,20 @@ export function WormholeOverlay() {
       unregister()
       runRef.current = null
       window.removeEventListener('resize', onResize)
+      window.clearInterval(fadeTimer)
       if (state.raf) cancelAnimationFrame(state.raf)
+      const el = audioRef.current
+      if (el) {
+        el.pause()
+        el.volume = 0
+      }
     }
   }, [])
 
-  // Intercept navigation links for smooth wormhole transitions:
-  // 1) 2D -> 3D (to /xr)
-  // 2) 3D -> 2D (back to /explorer, /comparison, /guide, /)
+  // XR links live in components we must not touch (TopBar's Dynamic Island). Intercept them
+  // here so the portal opens from the link the user actually pressed.
   useEffect(() => {
+    if (inXR) return
     const onClick = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0) return
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
@@ -398,29 +430,18 @@ export function WormholeOverlay() {
       if (!(target instanceof HTMLAnchorElement)) return
       if (target.target && target.target !== '_self') return
       const href = target.getAttribute('href')
-      if (!href) return
-
-      const isToXR = !inXR && href.startsWith('/xr')
-      const isExitXR = inXR && (href.startsWith('/explorer') || href.startsWith('/comparison') || href.startsWith('/guide') || href === '/')
-
-      if (!isToXR && !isExitXR) return
-
+      if (!href || !href.startsWith('/xr')) return
       const run = runRef.current
       event.preventDefault()
       if (!run) {
         navigate(href)
         return
       }
-
-      const label = isExitXR
-        ? (lang === 'id' ? COPY.id.returning : COPY.en.returning)
-        : (lang === 'id' ? COPY.id.entering : COPY.en.entering)
-
-      void run({ origin: originOf(target), label, waitForScene: isToXR, minMs: isExitXR ? 380 : 650 }, () => navigate(href))
+      void run({ origin: originOf(target) }, () => navigate(href))
     }
     document.addEventListener('click', onClick, true)
     return () => document.removeEventListener('click', onClick, true)
-  }, [inXR, lang, navigate])
+  }, [inXR, navigate])
 
   return (
     <div
@@ -438,12 +459,13 @@ export function WormholeOverlay() {
           type="button"
           className="fe-wormhole__ambience"
           aria-pressed={ambience}
-          onClick={toggleAmbience}
+          onClick={() => setAmbience((value) => !value)}
         >
           <span aria-hidden="true">{ambience ? '♪' : '♪̸'}</span>
           <span>{copy.ambience} · {ambience ? 'ON' : 'OFF'}</span>
         </button>
       </div>
+      <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/wormhole-ambience.mp3`} loop preload="none" />
     </div>
   )
 }

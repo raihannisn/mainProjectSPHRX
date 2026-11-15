@@ -15,7 +15,6 @@ import { currentDate, PLAY_DAYS_PER_SECOND, useTime } from './timeMachine'
 import { helioLongitude } from './ephemeris'
 import { HOLO, HOLO_STYLES, HoloMotes, HoloOrbit, HoloSun, holoUniforms, makeHoloPlanetMaterial } from './holo'
 
-const MOON_OFFSET = new Vector3(0.17, 0.04, 0.05)
 const TWO_PI = Math.PI * 2
 
 /**
@@ -36,19 +35,24 @@ export function SolarSystemHub({ tilt = 0 }: { tilt?: number }) {
   const groups = useRef<Record<string, Group | null>>({})
   // shown angle per body, easing toward the real one so scrubbing the date glides instead of jumping
   const shown = useRef<Record<string, number>>({})
+  const orbitElapsed = useRef(0)
 
   useFrame(({ clock }, dt) => {
     // the Sun sits at the hub centre: planets are lit from there
     root.current?.getWorldPosition(holoUniforms.uSun.value)
+    holoUniforms.uTime.value = clock.elapsedTime
     const time = useTime.getState()
     if (time.playing && time.date !== null) time.setDate(time.date + Math.min(dt, 0.1) * PLAY_DAYS_PER_SECOND * 86400000)
+    const hoverSlow = hovered?.startsWith('hub:') ? 0.2 : 1
+    orbitElapsed.current += Math.min(dt, 0.1) * hoverSlow
     const date = currentDate()
     BODIES.forEach((b) => {
       const g = groups.current[b.id]
       if (!g || b.parent || b.orbit === 0) return
-      const target = helioLongitude(b.id, date) ?? 0
+      const angularRate = 0.45 / Math.pow(b.orbit, 0.95)
+      const target = (helioLongitude(b.id, date) ?? 0) + orbitElapsed.current * angularRate
       let cur = shown.current[b.id]
-      if (cur === undefined || time.playing) cur = target
+      if (cur === undefined || time.playing || time.date === null) cur = target
       else {
         let d = (target - cur) % TWO_PI
         if (d > Math.PI) d -= TWO_PI
@@ -63,7 +67,14 @@ export function SolarSystemHub({ tilt = 0 }: { tilt?: number }) {
     for (const b of BODIES) {
       const g = groups.current[b.id]
       const p = b.parent ? groups.current[b.parent] : null
-      if (g && p) g.position.copy(p.position).add(MOON_OFFSET)
+      if (g && p) {
+        const moonAngle = orbitElapsed.current * 1.2
+        g.position.set(
+          p.position.x + Math.cos(moonAngle) * 0.175,
+          p.position.y + 0.03 * Math.sin(moonAngle * 0.7),
+          p.position.z - Math.sin(moonAngle) * 0.175,
+        )
+      }
     }
   })
 
@@ -135,7 +146,7 @@ function ExploreMarker({ radius }: { radius: number }) {
 
 /** easeOutBack: a little overshoot, so bodies "pop" into place */
 const backOut = (x: number) => 1 + 2.4 * Math.pow(x - 1, 3) + 1.4 * Math.pow(x - 1, 2)
-const REDUCED = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
+const REDUCED = false
 
 function HubBody({ b, order }: { b: BodyInfo; order: number }) {
   const born = useRef(-1)

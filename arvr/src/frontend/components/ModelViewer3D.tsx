@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useMemo } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
+import { XR } from '@react-three/xr'
 import type { PerspectiveCamera } from 'three'
 import '../../xr/loading' // registers the /xr/ base-path URL modifier for textures and models
 import { BodyExplorer } from '../../xr/BodyExplorer'
@@ -8,6 +9,7 @@ import { SolarSystemHub } from '../../xr/SolarSystemHub'
 import { BODY_BY_ID } from '../../xr/bodies'
 import { ErrorBoundary } from '../../xr/ErrorBoundary'
 import { useXRApp } from '../../xr/store'
+import { xrStore } from '../../xr/xrStore'
 
 /** Bodies that have a 3D model + hotspot content in `arvr/content/bodies/`. */
 export const MODEL_BODIES = ['mars', 'moon', 'bennu'] as const
@@ -92,26 +94,28 @@ export function ModelViewer3D({ bodyId, resetKey }: ModelViewer3DProps) {
           camera={{ position: [0, 0.4, 4.8], fov: FOV, near: 0.05, far: 60 }}
           onPointerMissed={() => useXRApp.getState().selectHotspot(null)}
         >
-          <ambientLight intensity={0.32} />
-          <directionalLight position={[4, 2.5, 5]} intensity={2.4} />
-          <directionalLight position={[-5, -1, -3]} intensity={0.25} color="#7fa6ff" />
-          <FitCamera resetKey={resetKey} radius={bodyId === 'solar' ? 3.4 : FRAME_RADIUS} lift={bodyId === 'solar' ? 0.55 : 0.18} />
-          <Suspense fallback={null}>
-            {bodyId === 'solar' ? (
-              <SolarSystemHub />
-            ) : (
-              <BodyExplorer key={bodyId} id={bodyId} vr={false} showTitle={false} hideObjectCard />
-            )}
-          </Suspense>
-          <OrbitControls
-            key={resetKey}
-            makeDefault
-            enablePan={false}
-            enableDamping={!reduceMotion}
-            minDistance={2.2}
-            maxDistance={bodyId === 'solar' ? 30 : 12}
-            rotateSpeed={0.7}
-          />
+          <XR store={xrStore}>
+            <ambientLight intensity={0.32} />
+            <directionalLight position={[4, 2.5, 5]} intensity={2.4} />
+            <directionalLight position={[-5, -1, -3]} intensity={0.25} color="#7fa6ff" />
+            <FitCamera resetKey={resetKey} radius={bodyId === 'solar' ? 3.4 : FRAME_RADIUS} lift={bodyId === 'solar' ? 0.55 : 0.18} />
+            <Suspense fallback={null}>
+              {bodyId === 'solar' ? (
+                <SolarSystemHub />
+              ) : (
+                <BodyExplorer key={bodyId} id={bodyId} vr={false} showTitle={false} hideObjectCard />
+              )}
+            </Suspense>
+            <OrbitControls
+              key={resetKey}
+              makeDefault
+              enablePan={false}
+              enableDamping={!reduceMotion}
+              minDistance={2.2}
+              maxDistance={bodyId === 'solar' ? 30 : 12}
+              rotateSpeed={0.7}
+            />
+          </XR>
         </Canvas>
       </ErrorBoundary>
     </div>

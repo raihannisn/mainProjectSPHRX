@@ -4208,10 +4208,10 @@
   pointer-events: none;
   overflow: hidden;
   background: #061020;
+  clip-path: circle(0px at 50% 50%);
   isolation: isolate;
-  will-change: opacity;
+  will-change: clip-path, opacity, transform;
   transform: translateZ(0);
-  transition: opacity 0.24s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.24s;
 }
 
 .fe-wormhole--on {
@@ -4365,22 +4365,6 @@
 
 @keyframes fe-wormhole-spin {
   to { transform: rotate(360deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .fe-wormhole__bar b {
-    animation: none;
-    width: 100%;
-    opacity: 0.7;
-  }
-  .fe-wormhole__label {
-    transition-duration: 0.01ms;
-    transition-delay: 0s;
-  }
-  .fe-wormhole-pulse__ring::before,
-  .fe-wormhole-pulse__ring::after {
-    animation: none;
-  }
 }
 
 /* ==========================================================================
@@ -5131,8 +5115,8 @@
   right: clamp(20px, 3vw, 48px);
   display: flex;
   gap: 8px;
-  /* room for all three toggles, so 3D stays in the same spot in every view */
-  width: calc(var(--hit-target) * 3 + 16px);
+  /* room for all four toggles, so 3D stays in the same spot in every view */
+  width: calc(var(--hit-target) * 4 + 24px);
   justify-content: flex-start;
 }
 .fe-model-rail .fe-icon-btn { width: var(--hit-target); padding: 0; font-size: 1rem; }
@@ -5167,6 +5151,7 @@
   /* the toolbar folds into a 2x2 block here, so the rail starts below it */
   .fe-model-rail {
     top: 142px;
+    width: auto;
     display: grid;
     grid-template-columns: repeat(2, var(--hit-target));
     gap: 6px;

@@ -9,32 +9,27 @@ import { cacheObservations, useXRApp } from '../../xr/store'
 import { BotIcon } from '../guide/BotIcon'
 import { SkyScene3D } from './SkyScene3D'
 import { useAmbientAudio } from '../audio/ambientAudio'
-import { ModelViewer3D, MODEL_BODIES, isModelBody, isViewerBody, type ModelBodyId } from './ModelViewer3D'
+import { ModelViewer3D, MODEL_BODIES, isViewerBody } from './ModelViewer3D'
 import { BODY_BY_ID } from '../../xr/bodies'
-import { useBodyContent, useSitesForBody } from '../../xr/content'
+import { useBodyContent } from '../../xr/content'
 import { useDeviceCaps } from '../../xr/device'
 import { KIND_LABEL } from '../../xr/InfoCard'
 import { localHotspot } from '../../xr/i18n'
 import { askGuide } from '../../xr/events'
 import { layersFor } from '../../xr/layers'
+import { enterImmersive, xrErrorMessage } from '../../xr/xrStore'
 
 type MarkerId = 'rcw-36' | 'candidate-02' | 'demo-tile-01'
 
 /**
- * What the viewport shows: the SPHEREx sky (default, unchanged) or one of the AR/VR app's 3D bodies.
- * One round toggle in the model rail steps through Sky -> Mars -> Moon -> Bennu -> Sky, so the screen gains
- * a single control instead of a switcher. All 3D-mode text is English.
+ * What the viewport shows: the 3D Solar System (default), one of the 3D bodies, or the SPHEREx sky.
+ * One round toggle in the model rail steps through Solar System -> Mars -> Moon -> Bennu -> Solar System.
+ * All 3D-mode text is English.
  */
 type ViewportModel = string // 'solar' (default) | 'sky' | a body id
 const MODEL_ORDER: ViewportModel[] = ['solar', ...MODEL_BODIES]
 const labelOf = (model: ViewportModel) => (model === 'solar' ? 'Solar System' : model === 'sky' ? 'Sky' : (BODY_BY_ID[model]?.name ?? model))
 const BODY_TYPE_LABEL: Record<string, string> = { planet: 'Planet', moon: 'Moon', asteroid: 'Near-Earth asteroid', star: 'Star' }
-/** Walkable site offered from a 3D body when no pin with its own site is selected (content/sites/<id>.json). */
-const DEFAULT_SITE: Record<ModelBodyId, { id: string; name: string }> = {
-  mars: { id: 'jezero', name: 'Jezero Crater' },
-  moon: { id: 'apollo11', name: 'Apollo 11 site' },
-  bennu: { id: 'bennu-nightingale', name: 'Bennu surface' },
-}
 
 function parseModel(value: string | null, hasTarget: boolean): ViewportModel {
   if (value === 'sky') return 'sky'
@@ -103,15 +98,6 @@ export function SkyExplorerScreen() {
   const activeLayerId = useXRApp((s) => (bodyModel ? s.layer[bodyModel] : undefined))
   const bodyLayer = bodyLayers.find((l) => l.id === activeLayerId) ?? bodyLayers[0] ?? null
   const dataLayerOn = !!bodyLayer && bodyLayer.id !== bodyLayers[0]?.id
-  const bodySites = useSitesForBody(bodyModel)
-  // walkable surface site: the selected pin's own site, else the body's featured one
-  const surfaceSite = !bodyModel
-    ? null
-    : rawHotspot?.site
-      ? { id: rawHotspot.site, name: bodySites.find((site) => site.id === rawHotspot.site)?.name ?? hotspot?.title ?? rawHotspot.title }
-      : isModelBody(bodyModel)
-        ? { ...DEFAULT_SITE[bodyModel], name: bodySites.find((site) => site.id === DEFAULT_SITE[bodyModel].id)?.name ?? DEFAULT_SITE[bodyModel].name }
-        : null
 
   // Solar System chart: tapping a planet opens that body here, in the same viewport
   useEffect(() => {
@@ -244,18 +230,30 @@ export function SkyExplorerScreen() {
     notify(`NASA image layer: ${next.label}.`)
   }
 
-  /** Stand on the surface: the walkable NASA-elevation site in the 3D scene (screen, VR and AR). */
-  const handleSurface = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (!bodyModel || !surfaceSite) return
-    const origin = originOf(event.currentTarget)
-    void runWormhole({ origin }, () => navigate(`/xr/surface/${surfaceSite.id}`))
+  /** Exits the currently opened planet (or sky target) and returns to the 3D Solar System Hub. */
+  const exitPlanet = () => {
+    useXRApp.getState().selectHotspot(null)
+    const params = new URLSearchParams(searchParams)
+    params.delete('model')
+    params.delete('target')
+    setSearchParams(params)
+    notify('Solar System.')
   }
 
-  /** Opens the same body in the AR/VR scene with the mode picker up, so VR/AR starts from a real tap there. */
-  const handleImmersive = (event: React.MouseEvent<HTMLButtonElement>) => {
+  /** Step back: if a hotspot is selected on a planet, close the hotspot first; otherwise exit the planet to the Solar System. */
+  const handleBack = () => {
+    if (bodyModel && hotspot) {
+      useXRApp.getState().selectHotspot(null)
+      notify(`Back to ${bodyContent?.name || labelOf(bodyModel)}.`)
+      return
+    }
+    exitPlanet()
+  }
+
+  /** Starts an immersive WebXR VR/AR session directly on the inline 3D canvas. */
+  const handleImmersive = () => {
     if (!in3D || !xrIntent) return
-    const origin = originOf(event.currentTarget)
-    void runWormhole({ origin }, () => navigate(bodyModel ? `/xr/body/${bodyModel}?intent=${xrIntent}` : `/xr?intent=${xrIntent}`))
+    enterImmersive(xrIntent).catch((err) => notify(xrErrorMessage(err, xrIntent)))
   }
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -314,22 +312,28 @@ export function SkyExplorerScreen() {
   }
   const handleEnterXR = (event?: React.MouseEvent<HTMLButtonElement>) => {
     const origin = originOf(event?.currentTarget ?? null)
-    if (in3D) {
-      void runWormhole({ origin }, () => navigate(bodyModel ? `/xr/body/${bodyModel}` : '/xr'))
-      return
-    }
-    if (selectedId !== 'rcw-36') {
-      void runWormhole({ origin }, () => navigate('/xr/body/spherex'))
-      return
-    }
-    const params = new URLSearchParams({ target: selectedId })
-    if (chosenObservation) {
-      params.set('obs', chosenObservation.observation_id)
-      const wavelength = chosenObservation.effective_wavelength_at_target
-      if (wavelength) params.set('band', wavelength)
+    if (chosenObservation && selectedId === 'rcw-36') {
       useXRApp.getState().setObservationData(chosenObservation, null)
     }
-    void runWormhole({ origin }, () => navigate(`/xr/body/spherex?${params}`))
+    if (solar) {
+      cycleModel()
+      return
+    }
+    void runWormhole(
+      {
+        origin,
+        label: lang === 'id' ? 'Membuka Solar System Hub…' : 'Opening the Solar System Hub…',
+        waitForScene: false,
+        minMs: 580,
+      },
+      () => {
+        useXRApp.getState().selectHotspot(null)
+        const next = new URLSearchParams(searchParams)
+        next.delete('model')
+        next.delete('target')
+        setSearchParams(next)
+      },
+    )
   }
 
   // Honest labels for the 3D mode: the selected pin's own Fact / Illustration / Candidate kind,
@@ -454,6 +458,17 @@ export function SkyExplorerScreen() {
             >
               3D
             </button>
+            {!solar && (
+              <button
+                type="button"
+                className="fe-icon-btn fe-back-toggle"
+                onClick={handleBack}
+                aria-label={hotspot ? `Back to ${bodyContent?.name || labelOf(model)}` : 'Back to Solar System'}
+                title={hotspot ? `Back to ${bodyContent?.name || labelOf(model)}` : 'Back to Solar System'}
+              >
+                ←
+              </button>
+            )}
             {bodyModel && (
               <button
                 type="button"
@@ -551,22 +566,33 @@ export function SkyExplorerScreen() {
                           ? 'Drag to turn the model and tap a glowing pin to read about that place.'
                           : 'Hotspots are hidden. Use the ⦿ button to show them again.'}
                 </p>
-                {(surfaceSite || xrIntent) && (
-                  <div className="fe-card-links">
-                    {surfaceSite && (
-                      <button type="button" className="fe-card-link" onClick={handleSurface}>
-                        <span>Walk on {surfaceSite.name}</span>
-                        <span aria-hidden="true">↗</span>
-                      </button>
-                    )}
-                    {xrIntent && (
-                      <button type="button" className="fe-card-link" onClick={handleImmersive}>
-                        <span>{xrIntent === 'vr' ? 'Enter VR' : 'Enter AR'}</span>
-                        <span aria-hidden="true">↗</span>
-                      </button>
-                    )}
-                  </div>
-                )}
+                <div className="fe-card-links">
+                  {hotspot ? (
+                    <button
+                      type="button"
+                      className="fe-card-link"
+                      onClick={() => useXRApp.getState().selectHotspot(null)}
+                    >
+                      <span aria-hidden="true">←</span>
+                      <span>Back to {bodyContent?.name || labelOf(bodyModel)}</span>
+                    </button>
+                  ) : (
+                    <button type="button" className="fe-card-link" onClick={exitPlanet}>
+                      <span aria-hidden="true">←</span>
+                      <span>Back to Solar System</span>
+                    </button>
+                  )}
+                  <button type="button" className="fe-card-link" onClick={exitPlanet}>
+                    <span aria-hidden="true">✕</span>
+                    <span>Exit planet</span>
+                  </button>
+                  {xrIntent && (
+                    <button type="button" className="fe-card-link" onClick={handleImmersive}>
+                      <span>{xrIntent === 'vr' ? 'Enter VR' : 'Enter AR'}</span>
+                      <span aria-hidden="true">↗</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="fe-hud-card fe-hud-telemetry">
@@ -629,6 +655,12 @@ export function SkyExplorerScreen() {
             <h2>{targetLoading ? 'Loading catalog…' : currentName}</h2>
             <p>{targetLoading ? 'Fetching target information from the object catalog.' : currentDescription}</p>
             {targetError && <p className="fe-inline-error" role="alert">Catalog unavailable: {targetError}</p>}
+            <div className="fe-card-links">
+              <button type="button" className="fe-card-link" onClick={exitPlanet}>
+                <span aria-hidden="true">←</span>
+                <span>Back to Solar System</span>
+              </button>
+            </div>
           </div>
 
           <div className="fe-hud-card fe-hud-telemetry">
@@ -721,7 +753,21 @@ export function SkyExplorerScreen() {
             <button
               onClick={(event) => {
                 const origin = originOf(event.currentTarget)
-                void runWormhole({ origin }, () => navigate('/xr'))
+                void runWormhole(
+                  {
+                    origin,
+                    label: lang === 'id' ? 'Membuka Solar System Hub…' : 'Opening the Solar System Hub…',
+                    waitForScene: false,
+                    minMs: 580,
+                  },
+                  () => {
+                    useXRApp.getState().selectHotspot(null)
+                    const next = new URLSearchParams(searchParams)
+                    next.delete('model')
+                    next.delete('target')
+                    setSearchParams(next)
+                  },
+                )
               }}
             >
               Solar System Hub

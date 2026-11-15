@@ -288,15 +288,9 @@ export function ObservationComparisonScreen() {
 
   const enterXR = (event?: React.MouseEvent<HTMLButtonElement>) => {
     const origin = originOf(event?.currentTarget ?? null)
-    const params = new URLSearchParams({
-      target: targetId,
-      obs: pair[0].observation_id,
-      obs2: pair[1].observation_id,
-      band: pair[0].effective_wavelength_at_target || '2.4489 µm',
-    })
     useXRApp.getState().setObservationData(pair[0], pair[1])
-    void runWormhole({ origin, waitForScene: true, minMs: 650 }, () =>
-      navigate(`/xr/body/spherex?${params}`)
+    void runWormhole({ origin, waitForScene: false, minMs: 580 }, () =>
+      navigate('/explorer')
     )
   }
 

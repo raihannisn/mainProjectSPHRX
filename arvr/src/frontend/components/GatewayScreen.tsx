@@ -198,7 +198,15 @@ export function GatewayScreen() {
             className="fe-cap"
             onClick={(event) => {
               const origin = originOf(event.currentTarget)
-              void runWormhole({ origin }, () => navigate('/xr?intent=ar'))
+              void runWormhole(
+                {
+                  origin,
+                  label: lang === 'id' ? 'Membuka Solar System Hub…' : 'Opening the Solar System Hub…',
+                  waitForScene: false,
+                  minMs: 580,
+                },
+                () => navigate('/explorer')
+              )
             }}
           >
             <b>WebXR AR</b>
@@ -211,7 +219,15 @@ export function GatewayScreen() {
             className="fe-cap"
             onClick={(event) => {
               const origin = originOf(event.currentTarget)
-              void runWormhole({ origin }, () => navigate('/xr?intent=vr'))
+              void runWormhole(
+                {
+                  origin,
+                  label: lang === 'id' ? 'Membuka Solar System Hub…' : 'Opening the Solar System Hub…',
+                  waitForScene: false,
+                  minMs: 580,
+                },
+                () => navigate('/explorer')
+              )
             }}
           >
             <b>WebXR VR</b>
