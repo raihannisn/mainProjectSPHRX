@@ -10,6 +10,7 @@ import { FONT, FONT_BOLD } from './font'
 import { SceneReady } from './smooth'
 import { useT } from './i18n'
 import { useQuality } from './quality'
+import { unlockAgentSpeech } from './agentSpeech'
 import { currentDate, PLAY_DAYS_PER_SECOND, useTime } from './timeMachine'
 import { helioLongitude } from './ephemeris'
 import { HOLO, HOLO_STYLES, HoloMotes, HoloOrbit, HoloSun, holoUniforms, makeHoloPlanetMaterial } from './holo'
@@ -192,6 +193,7 @@ function HubBody({ b, order }: { b: BodyInfo; order: number }) {
         }}
         onClick={(e) => {
           e.stopPropagation()
+          unlockAgentSpeech()
           select()
         }}
       >

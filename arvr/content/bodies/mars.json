@@ -2,6 +2,10 @@
   "id": "mars",
   "name": "Mars",
   "type": "planet",
+  "description": {
+    "en": "Mars is the fourth planet from the Sun. Iron oxide on its surface gives it a reddish appearance.",
+    "id": "Mars adalah planet keempat dari Matahari. Oksida besi di permukaannya membuat planet ini tampak kemerahan."
+  },
   "texture": "/textures/mars.jpg",
   "textureCredit": "NASA 3D Resources (Viking-era global colour mosaic), public domain",
   "hotspots": [

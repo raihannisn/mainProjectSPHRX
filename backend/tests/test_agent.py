@@ -40,6 +40,7 @@ from services.gemini_agent_provider import (
     generate_text,
 )
 from utils.rate_limiter import InMemoryRateLimiter
+from main import app
 
 
 class GeminiAgentProviderTests(unittest.TestCase):
@@ -149,6 +150,13 @@ class AgentServiceTests(unittest.TestCase):
 
 
 class AgentRequestTests(unittest.TestCase):
+    def test_agent_router_is_registered_in_fastapi_app(self):
+        routes = app.openapi()["paths"]
+
+        self.assertIn("/api/agent/chat", routes)
+        self.assertIn("/api/agent/voice/transcribe", routes)
+        self.assertIn("/api/agent/voice/session", routes)
+
     def test_chat_request_rejects_non_user_final_message(self):
         with self.assertRaises(ValueError):
             AgentChatRequest(

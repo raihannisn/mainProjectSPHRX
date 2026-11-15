@@ -5,7 +5,7 @@
 
 export const BASE_URL: string =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ||
-  (import.meta.env.DEV ? 'http://127.0.0.1:8000' : 'https://nasa-spherex-backend.vercel.app')
+  (import.meta.env.DEV ? '' : 'https://nasa-spherex-backend.vercel.app')
 
 export const API_URL = BASE_URL
 
@@ -270,8 +270,12 @@ export const DEFAULT_RCW36_INFO: ObjectInfo = {
   source: 'IPAC IRSA SPHEREx QR3 Catalog',
 }
 
+export function fetchBackendObjectInfo(objectId: string): Promise<ApiResult<ObjectInfo>> {
+  return getJson(`/api/objects/${encodeURIComponent(objectId)}`, 6000, parseObjectInfo)
+}
+
 export async function fetchObjectInfo(objectId: string): Promise<ApiResult<ObjectInfo>> {
-  const result = await getJson(`/api/objects/${encodeURIComponent(objectId)}`, 6000, parseObjectInfo)
+  const result = await fetchBackendObjectInfo(objectId)
   if (result.ok) return result
   if (objectId.toLowerCase() === 'rcw-36' || objectId.toLowerCase() === 'rcw') {
     return { ok: true, data: DEFAULT_RCW36_INFO }
@@ -367,41 +371,91 @@ export interface GuideReplyRequest {
 
 export type GuideReply = { ok: true; text: string } | { ok: false; error: string }
 
-const GUIDE_ENDPOINT: string =
-  (import.meta.env.VITE_GUIDE_ENDPOINT as string | undefined)?.trim() || toApiUrl('/api/ai/chat')
+export interface AgentChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
 
-/** True once `VITE_GUIDE_ENDPOINT` points at the LLM service or backend /api/ai/chat is ready. */
-export const GUIDE_SERVICE_READY = true
-
-export async function requestGuideReply(payload: GuideReplyRequest): Promise<GuideReply> {
+export async function requestAgentChat(
+  messages: AgentChatMessage[],
+  objectId: string | undefined,
+  lang: 'en' | 'id',
+): Promise<GuideReply> {
   try {
-    const promptMessage = payload.question
-      ? `[Target: ${payload.objectName || payload.objectId}] ${payload.question}`
-      : `Halo Cosmic Guide, jelaskan tentang ${payload.objectName || payload.objectId}.`
-
-    const response = await fetch(GUIDE_ENDPOINT, {
+    const response = await fetch(toApiUrl('/api/agent/chat'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        message: promptMessage,
+        objectId,
+        lang,
+        messages: messages.slice(-10).map((message) => ({
+          role: message.role === 'assistant' ? 'bot' : 'user',
+          content: message.content,
+        })),
       }),
       signal: AbortSignal.timeout(45000),
     })
-    if (!response.ok) return { ok: false, error: `HTTP ${response.status}` }
+
+    if (!response.ok) {
+      let detail = `HTTP ${response.status}`
+      try {
+        const body: unknown = await response.json()
+        if (isRecord(body) && typeof body.detail === 'string') detail += `: ${body.detail}`
+      } catch {
+        // Keep the HTTP status when the error body is not JSON.
+      }
+      return { ok: false, error: detail }
+    }
 
     const body: unknown = await response.json()
-    if (isRecord(body)) {
-      const answer =
-        typeof body.reply === 'string'
-          ? body.reply
-          : typeof body.answer === 'string'
-            ? body.answer
-            : typeof body.text === 'string'
-              ? body.text
-              : ''
-      if (answer.trim()) return { ok: true, text: answer.trim() }
+    if (isRecord(body) && body.success === true && isRecord(body.data)) {
+      const answer = body.data.message
+      if (typeof answer === 'string' && answer.trim()) {
+        return { ok: true, text: answer.trim() }
+      }
     }
-    return { ok: false, error: 'Empty guide reply' }
+    return { ok: false, error: 'The Agent returned an invalid or empty response.' }
+  } catch (error: unknown) {
+    return { ok: false, error: error instanceof Error ? error.message : String(error) }
+  }
+}
+
+export async function requestGuideReply(payload: GuideReplyRequest): Promise<GuideReply> {
+  return requestAgentChat(
+    [{ role: 'user', content: payload.question }],
+    payload.objectId,
+    payload.lang,
+  )
+}
+
+export async function requestAgentSpeech(
+  text: string,
+  language: 'en' | 'id',
+): Promise<ApiResult<Blob>> {
+  try {
+    const response = await fetch(toApiUrl('/api/agent/voiceover/text'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, language, voicePreset: 'mission-liaison' }),
+      signal: AbortSignal.timeout(45000),
+    })
+
+    if (!response.ok) {
+      let detail = `HTTP ${response.status}`
+      try {
+        const body: unknown = await response.json()
+        if (isRecord(body) && typeof body.detail === 'string') detail += `: ${body.detail}`
+      } catch {
+        // Keep the HTTP status when the error body is not JSON.
+      }
+      return { ok: false, error: detail }
+    }
+
+    const audio = await response.blob()
+    if (audio.size === 0 || !audio.type.includes('audio')) {
+      return { ok: false, error: 'The Agent returned an invalid audio response.' }
+    }
+    return { ok: true, data: audio }
   } catch (error: unknown) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) }
   }

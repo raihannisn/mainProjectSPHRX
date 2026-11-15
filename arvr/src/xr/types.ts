@@ -87,6 +87,7 @@ export interface BodyContent {
   id: string
   name: string
   type: 'planet' | 'asteroid' | 'star' | 'moon'
+  description?: Partial<Record<'en' | 'id', string>>
   texture?: string
   textureCredit?: string
   model?: string

@@ -30,7 +30,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
   const returnFocusRef = useRef<HTMLElement | null>(null)
   const isIndonesian = lang === 'id'
 
-  const { messages, loading, sendMessage } = useGuide()
+  const { messages, loading, error, sendMessage, setGuideTarget } = useGuide()
 
   const close = useCallback(() => {
     setOpen(false)
@@ -45,6 +45,8 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
       returnFocusRef.current =
         detail?.returnFocus ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null)
       setContext(detail?.objectName || detail?.objectId || '')
+      const objectId = detail?.objectId?.trim()
+      setGuideTarget(objectId ? { id: objectId, name: detail?.objectName?.trim() || objectId } : null)
       setDraft('')
       setOpen(true)
     }
@@ -52,6 +54,8 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
       const { body, hotspotId, guidePrompt } = (event as CustomEvent<GuideRequest>).detail
       returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
       setContext([body, hotspotId].filter(Boolean).join(' · '))
+      const objectId = body.trim()
+      setGuideTarget(objectId ? { id: objectId, name: objectId } : null)
       setDraft(guidePrompt || '')
       setOpen(true)
     }
@@ -62,11 +66,14 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
       window.removeEventListener('cosmic:open-guide', openGuide)
       window.removeEventListener(ASK_GUIDE_EVENT, openForXRRequest)
     }
-  }, [fullPage])
+  }, [fullPage, setGuideTarget])
 
   useEffect(() => {
-    if (!fullPage) setContext(initialObjectId ?? '')
-  }, [fullPage, initialObjectId])
+    if (!fullPage) return
+    const objectId = initialObjectId?.trim()
+    setContext(objectId ?? '')
+    setGuideTarget(objectId ? { id: objectId, name: objectId } : null)
+  }, [fullPage, initialObjectId, setGuideTarget])
 
   useEffect(() => {
     if (threadRef.current) {
@@ -97,11 +104,11 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
     const text = draft.trim()
     if (!text || loading) return
     setDraft('')
-    await sendMessage(context ? `[Konteks: ${context}] ${text}` : text)
+    await sendMessage(text, lang)
   }
 
   const handleChipClick = (chipText: string) => {
-    sendMessage(context ? `[Konteks: ${context}] ${chipText}` : chipText)
+    if (!loading) void sendMessage(chipText, lang)
   }
 
   if (!open) return null
@@ -129,13 +136,15 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
 
       <div className="cg-thread" ref={threadRef} role="status" aria-live="polite">
         {messages.length === 0 ? (
-          <div className="cg-msg cg-msg--bot cg-markdown">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {isIndonesian
-                ? 'Halo Explorer! Saya **Cosmic Guide AI** bertenaga Gemini 3.5 Flash. Tanyakan apa saja seputar pengamatan SPHEREx, peta langit inframerah, atau objek tata surya!'
-                : 'Hello Explorer! I am **Cosmic Guide AI** powered by Gemini 3.5 Flash. Ask me anything about SPHEREx observations, infrared sky maps, or solar system targets!'}
-            </ReactMarkdown>
-          </div>
+          <p className="cg-empty" role="status">
+            {isIndonesian
+              ? context
+                ? `Tanyakan sesuatu tentang ${context}.`
+                : 'Ajukan pertanyaan tentang SPHEREx atau objek yang tersedia di katalog.'
+              : context
+                ? `Ask a question about ${context}.`
+                : 'Ask about SPHEREx or an object available in the catalog.'}
+          </p>
         ) : (
           messages.map((msg) =>
             msg.role === 'user' ? (
@@ -151,6 +160,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
             )
           )
         )}
+        {error && <p className="cg-error" role="alert">{error}</p>}
         {loading && (
           <p className="cg-msg cg-msg--bot" style={{ opacity: 0.7, fontStyle: 'italic' }}>
             {isIndonesian ? 'Cosmic Guide sedang berpikir…' : 'Cosmic Guide is thinking…'}
@@ -162,6 +172,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
         <button
           type="button"
           className="cg-chip"
+          disabled={loading}
           onClick={() => handleChipClick('Apa misi utama dari teleskop SPHEREx?')}
         >
           {isIndonesian ? 'Misi SPHEREx' : 'SPHEREx Mission'}
@@ -169,6 +180,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
         <button
           type="button"
           className="cg-chip"
+          disabled={loading}
           onClick={() => handleChipClick('Bagaimana SPHEREx mendeteksi air dan molekul es di ruang angkasa?')}
         >
           {isIndonesian ? 'Pencarian Air' : 'Water Ice Search'}
@@ -176,6 +188,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
         <button
           type="button"
           className="cg-chip"
+          disabled={loading}
           onClick={() => handleChipClick('Apa keunggulan spektroskopi seluruh langit 102 pita inframerah?')}
         >
           {isIndonesian ? 'Spektroskopi Inframerah' : 'Infrared All-Sky'}
@@ -183,8 +196,10 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
       </div>
 
       <p className="cg-note">
-        <span className="cg-note-tag">GEMINI 3.5</span>
-        {isIndonesian ? 'Terhubung langsung ke backend SPHEREx API' : 'Connected directly to SPHEREx API backend'}
+        <span className="cg-note-tag">MISSION AGENT</span>
+        {isIndonesian
+          ? 'Jawaban memakai record katalog backend bila tersedia; data yang tidak tersedia tidak akan ditebak.'
+          : 'Answers use backend catalog records when available; missing data is not guessed.'}
       </p>
 
       <form className="cg-form" onSubmit={submit}>
@@ -193,6 +208,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
           className="cg-input"
           value={draft}
           disabled={loading}
+          maxLength={500}
           onChange={(event) => setDraft(event.target.value)}
           placeholder={isIndonesian ? 'Tulis pertanyaan ke Cosmic Guide…' : 'Ask Cosmic Guide a question…'}
           aria-label={isIndonesian ? 'Pertanyaan untuk Cosmic Guide' : 'Question for Cosmic Guide'}

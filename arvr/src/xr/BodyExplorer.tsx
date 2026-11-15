@@ -23,6 +23,7 @@ import { HOLO, HoloOrbit } from './holo'
 import { layersFor, type DataLayer } from './layers'
 import { Choice3D, Label, UI, roundedRect, uiMat } from './ui3d'
 import { manipulation, useBodyManipulation } from './BodyManipulator'
+import { CatalogObjectCard3D } from './CatalogObjectCard3D'
 
 /** The body blocks pointer rays and gaze, so pins on the far side cannot be picked through it. */
 const block = (e: ThreeEvent<PointerEvent | MouseEvent>) => e.stopPropagation()
@@ -142,6 +143,7 @@ export function BodyExplorer({ id, vr }: { id: string; vr: boolean }) {
   const q = useQuality()
   const sites = useSitesForBody(vr ? id : null)
   const info = BODY_BY_ID[id]
+  const lang = useXRApp((s) => s.settings.lang)
   const spin = useRef<Group>(null)
   const manip = useRef<Group>(null)
   useBodyManipulation(manip)
@@ -190,6 +192,14 @@ export function BodyExplorer({ id, vr }: { id: string; vr: boolean }) {
         {id === 'bennu' && q.bursts && <BennuEjecta surface={geometry ? (geometry.attributes.position.array as Float32Array) : null} />}
       </group>
       </group>
+
+      <CatalogObjectCard3D
+        objectId={id}
+        objectName={content?.name ?? info?.name ?? id}
+        objectType={content?.type ?? info?.kind ?? ''}
+        contentReady={content !== undefined}
+        localDescription={content?.description?.[lang] ?? content?.description?.en ?? ''}
+      />
 
       {content !== undefined && <SceneReady />}
       {/* the Solar System chart's language: a faint orbit ring with ticks around the body */}

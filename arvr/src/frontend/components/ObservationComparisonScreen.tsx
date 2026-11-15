@@ -103,6 +103,7 @@ export function ObservationComparisonScreen() {
   const [aiPrompt, setAiPrompt] = useState('')
   const [lastQuestion, setLastQuestion] = useState<string | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
   const [aiFullText, setAiFullText] = useState<string | null>(null)
   const [aiDisplayedText, setAiDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -243,35 +244,28 @@ export function ObservationComparisonScreen() {
     if (!question) return
     setLastQuestion(question)
     setAiLoading(true)
+    setAiError(null)
     setAiFullText(null)
     setAiDisplayedText('')
-
-    const contextualPrompt = `[Konteks Observasi SPHEREx: Objek ${object?.name || 'RCW 36'}, Koordinat RA 134.8708° DEC -43.7533°, T1: 2025-05-28 (2.4489 µm, DR1), T2: 2026-06-04 (2.4679 µm, QR3), Overlap 75.8%]. Pertanyaan: ${question}`
 
     try {
       const res = await requestGuideReply({
         objectId: targetId,
-        objectName: object?.name || 'RCW 36 Emission Nebula',
-        question: contextualPrompt,
+        objectName: object?.name || targetId,
+        question,
         lang: lang === 'id' ? 'id' : 'en',
       })
-      setAiLoading(false)
-      if (res.ok && res.text) {
+      if (!res.ok) {
+        setAiError(res.error)
+      } else if (res.text) {
         setAiFullText(res.text)
       } else {
-        setAiFullText(
-          lang === 'id'
-            ? '### Analisis Astrofisika RCW 36 (SPHEREx Multi-Epoch)\n\n- **Identifikasi Objek**: RCW 36 adalah nebula emisi H II dan klaster pembentukan bintang masif di *Cloud C Vela Molecular Ridge* (~700 pc).\n- **Perbedaan T1 vs T2**: Citra T1 (28 Mei 2025, 2.45 µm) dan T2 (04 Jun 2026, 2.47 µm) dengan rentang waktu **371 hari** memperlihatkan stabilitas fotometri kontinu serta pelacakan garis emisi hidrogen **Br-gamma** yang sensitif terhadap aktivitas akresi protobintang muda.\n- **Karakteristik Spektral**: Pergeseran filter spektral merekam variabilitas termal selubung debu circumstellar di sekitar bintang tipe O/B yang baru lahir.'
-            : '### Astrophysical Analysis of RCW 36 (SPHEREx Multi-Epoch)\n\n- **Target Identification**: RCW 36 is an H II emission nebula and young massive star-forming region in Cloud C of the Vela Molecular Ridge (~700 pc).\n- **T1 vs T2 Variations**: Comparing Epoch T1 (28 May 2025, 2.45 µm) and Epoch T2 (04 Jun 2026, 2.47 µm) across **371 days** confirms continuum catalog photometry stability while isolating **Br-gamma** ionized hydrogen emissions tracking young stellar accretion.\n- **Spectral Insights**: The slight filter shift isolates circumstellar dust thermal emission fluctuations surrounding embedded O/B protostars.'
-        )
+        setAiError('The Agent returned an empty response.')
       }
-    } catch {
+    } catch (error: unknown) {
+      setAiError(error instanceof Error ? error.message : String(error))
+    } finally {
       setAiLoading(false)
-      setAiFullText(
-        lang === 'id'
-          ? '### Analisis Astrofisika RCW 36 (SPHEREx Multi-Epoch)\n\n- **Identifikasi Objek**: RCW 36 adalah nebula emisi H II dan klaster pembentukan bintang masif di *Cloud C Vela Molecular Ridge* (~700 pc).\n- **Perbedaan T1 vs T2**: Citra T1 (28 Mei 2025, 2.45 µm) dan T2 (04 Jun 2026, 2.47 µm) dengan rentang waktu **371 hari** memperlihatkan stabilitas fotometri kontinu serta pelacakan garis emisi hidrogen **Br-gamma** yang sensitif terhadap aktivitas akresi protobintang muda.\n- **Karakteristik Spektral**: Pergeseran filter spektral merekam variabilitas termal selubung debu circumstellar di sekitar bintang tipe O/B yang baru lahir.'
-          : '### Astrophysical Analysis of RCW 36 (SPHEREx Multi-Epoch)\n\n- **Target Identification**: RCW 36 is an H II emission nebula and young massive star-forming region in Cloud C of the Vela Molecular Ridge (~700 pc).\n- **T1 vs T2 Variations**: Comparing Epoch T1 (28 May 2025, 2.45 µm) and Epoch T2 (04 Jun 2026, 2.47 µm) across **371 days** confirms continuum catalog photometry stability while isolating **Br-gamma** ionized hydrogen emissions tracking young stellar accretion.\n- **Spectral Insights**: The slight filter shift isolates circumstellar dust thermal emission fluctuations surrounding embedded O/B protostars.'
-      )
     }
   }
 
@@ -712,6 +706,7 @@ export function ObservationComparisonScreen() {
                   className="fe-ai-input"
                   placeholder="Tanyakan variabilitas spektral atau astrofisika..."
                   value={aiPrompt}
+                  maxLength={500}
                   onChange={(e) => setAiPrompt(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') void handleAskAi(aiPrompt)
@@ -727,6 +722,8 @@ export function ObservationComparisonScreen() {
                   {aiLoading ? 'Menjawab…' : 'Kirim ↗'}
                 </button>
               </div>
+
+              {aiError && <p className="fe-inline-error" role="alert">{aiError}</p>}
 
               {/* Response Box with Typewriter & Markdown */}
               {aiDisplayedText && !aiLoading && (
@@ -761,6 +758,7 @@ export function ObservationComparisonScreen() {
                           setAiFullText(null)
                           setAiDisplayedText('')
                           setLastQuestion(null)
+                          setAiError(null)
                         }}
                         title="Tutup"
                       >

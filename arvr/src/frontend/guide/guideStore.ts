@@ -1,10 +1,7 @@
 import { create } from 'zustand'
+import { requestAgentChat } from '../api'
 
-export const BASE_URL: string =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ||
-  (import.meta.env.DEV ? 'http://127.0.0.1:8000' : 'https://nasa-spherex-backend.vercel.app')
-
-export const API_URL = BASE_URL
+let requestGeneration = 0
 
 export interface GuideTarget {
   id: string
@@ -18,82 +15,49 @@ export interface ChatMessage {
   timestamp: number
 }
 
-export const DEFAULT_GUIDE_TARGET: GuideTarget = { id: 'rcw-36', name: 'RCW 36 Emission Nebula' }
-
-/**
- * Mengirim pesan prompt ke backend /api/ai/chat
- * Format: Method POST, headers Content-Type: application/json, body: {"message": "..."}
- */
-export async function sendChatMessage(message: string): Promise<string> {
-  const primaryEndpoint = `${BASE_URL.replace(/\/+$/, '')}/api/ai/chat`
-  const payload = JSON.stringify({ message })
-  const headers = { 'Content-Type': 'application/json' }
-
-  try {
-    const response = await fetch(primaryEndpoint, {
-      method: 'POST',
-      headers,
-      body: payload,
-    })
-
-    if (response.ok) {
-      const data = await response.json()
-      if (typeof data?.reply === 'string' && data.reply.trim().length > 0) {
-        return data.reply.trim()
-      }
-    }
-  } catch (primaryError) {
-    // Jika fetch direct ke http://127.0.0.1:8000 dicegat browser security/CORS,
-    // coba fallback otomatis lewat same-origin Vite proxy (/api/ai/chat)
-    if (primaryEndpoint.includes('8000')) {
-      try {
-        const fallbackResponse = await fetch('/api/ai/chat', {
-          method: 'POST',
-          headers,
-          body: payload,
-        })
-        if (fallbackResponse.ok) {
-          const data = await fallbackResponse.json()
-          if (typeof data?.reply === 'string' && data.reply.trim().length > 0) {
-            return data.reply.trim()
-          }
-        }
-      } catch {
-        // jika fallback juga gagal, lempar error asli
-      }
-    }
-    throw primaryError
-  }
-
-  return 'Maaf, Cosmic Guide sedang sibuk. Silakan coba lagi.'
-}
-
 export interface GuideState {
   open: boolean
-  target: GuideTarget
+  target: GuideTarget | null
   messages: ChatMessage[]
   loading: boolean
   error: string | null
   openGuide: (target?: GuideTarget) => void
   closeGuide: () => void
-  setGuideTarget: (target: GuideTarget) => void
-  sendMessage: (message: string) => Promise<string>
+  setGuideTarget: (target: GuideTarget | null) => void
+  sendMessage: (message: string, lang: 'en' | 'id') => Promise<string>
   clearMessages: () => void
 }
 
-export const useGuide = create<GuideState>((set) => ({
+export const useGuide = create<GuideState>((set, get) => ({
   open: false,
-  target: DEFAULT_GUIDE_TARGET,
+  target: null,
   messages: [],
   loading: false,
   error: null,
-  openGuide: (target) => set((state) => ({ open: true, target: target ?? state.target })),
+  openGuide: (target) => {
+    if (target && target.id !== get().target?.id) {
+      requestGeneration += 1
+      set({ open: true, target, messages: [], loading: false, error: null })
+      return
+    }
+    set((state) => ({ open: true, target: target ?? state.target }))
+  },
   closeGuide: () => set({ open: false }),
-  setGuideTarget: (target) => set({ target }),
-  clearMessages: () => set({ messages: [], error: null }),
-  sendMessage: async (text: string) => {
+  setGuideTarget: (target) => {
+    if (target?.id !== get().target?.id) {
+      requestGeneration += 1
+      set({ target, messages: [], loading: false, error: null })
+      return
+    }
+    set({ target })
+  },
+  clearMessages: () => {
+    requestGeneration += 1
+    set({ messages: [], error: null })
+  },
+  sendMessage: async (text, lang) => {
     const cleanText = text.trim()
-    if (!cleanText) return ''
+    if (!cleanText || get().loading) return ''
 
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -101,6 +65,9 @@ export const useGuide = create<GuideState>((set) => ({
       content: cleanText,
       timestamp: Date.now(),
     }
+    const requestMessages = [...get().messages, userMsg].slice(-10)
+    const objectId = get().target?.id
+    const generation = ++requestGeneration
 
     set((state) => ({
       messages: [...state.messages, userMsg],
@@ -109,32 +76,28 @@ export const useGuide = create<GuideState>((set) => ({
     }))
 
     try {
-      const reply = await sendChatMessage(cleanText)
+      const result = await requestAgentChat(requestMessages, objectId, lang)
+      if (generation !== requestGeneration) return ''
+      if (!result.ok) throw new Error(result.error)
+
       const assistantMsg: ChatMessage = {
-        id: `bot-${Date.now()}`,
+        id: `assistant-${Date.now()}`,
         role: 'assistant',
-        content: reply,
+        content: result.text,
         timestamp: Date.now(),
       }
       set((state) => ({
         messages: [...state.messages, assistantMsg],
         loading: false,
       }))
-      return reply
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err)
-      const fallbackMsg: ChatMessage = {
-        id: `bot-${Date.now()}`,
-        role: 'assistant',
-        content: 'Maaf, Cosmic Guide sedang sibuk. Silakan coba lagi.',
-        timestamp: Date.now(),
-      }
-      set((state) => ({
-        messages: [...state.messages, fallbackMsg],
+      return result.text
+    } catch (error: unknown) {
+      if (generation !== requestGeneration) return ''
+      set({
         loading: false,
-        error: errorMsg,
-      }))
-      return fallbackMsg.content
+        error: error instanceof Error ? error.message : String(error),
+      })
+      return ''
     }
   },
 }))

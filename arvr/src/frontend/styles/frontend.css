@@ -4530,6 +4530,28 @@
   scrollbar-color: rgba(229, 192, 123, 0.35) transparent;
 }
 
+.cg-empty {
+  margin: auto;
+  padding: 18px 12px;
+  color: rgba(199, 205, 230, 0.72);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.cg-error {
+  align-self: stretch;
+  margin: 0;
+  padding: 9px 12px;
+  border: 1px solid rgba(248, 113, 113, 0.38);
+  border-radius: 12px;
+  background: rgba(127, 29, 29, 0.18);
+  color: #fecaca;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
 .cg-msg {
   max-width: 88%;
   margin: 0;
