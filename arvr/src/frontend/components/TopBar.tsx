@@ -8,7 +8,7 @@ type NavState = 'top' | 'island' | 'island-open'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Gateway' },
-  { to: '/explorer', label: 'Sky Explorer' },
+  { to: '/xr', label: 'Sky Explorer' },
   { to: '/comparison', label: 'Comparison' },
   { to: '/guide', label: 'Cosmic Guide' },
 ]
@@ -225,20 +225,6 @@ export function TopBar() {
     </div>
   )
 
-  const xrLink = (
-    <Link
-      to="/xr"
-      className="fe-xr-badge-btn"
-      title="Open Solar System & WebXR 3D Hub"
-      onClick={(event) => {
-        handleNav(event, '/xr', () => setMenuOpen(false))
-      }}
-    >
-      <span>3D / WebXR</span>
-      <span aria-hidden="true">↗</span>
-    </Link>
-  )
-
   return (
     <>
       <header className="fe-topbar" data-state={state} data-instant={instant ? 'true' : 'false'} ref={headerRef}>
@@ -267,9 +253,7 @@ export function TopBar() {
               {routeLabel(location.pathname)}
             </span>
 
-            <div className="fe-top-actions">
-              {xrLink}
-            </div>
+            <div className="fe-top-actions" />
 
             <button
               type="button"
@@ -288,9 +272,6 @@ export function TopBar() {
             <nav className="fe-nav-links fe-nav-links--panel" aria-label={copy.panel}>
               {navLinks('panel')}
             </nav>
-            <div className="fe-island-panel-actions">
-              {xrLink}
-            </div>
           </div>
         </div>
       </header>

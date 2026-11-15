@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { GatewayScreen } from './frontend/components/GatewayScreen'
-import { SkyExplorerScreen } from './frontend/components/SkyExplorerScreen'
 import { ObservationComparisonScreen } from './frontend/components/ObservationComparisonScreen'
 import { CosmicGuideScreen } from './frontend/components/CosmicGuideScreen'
 import { CosmicGuideWindow } from './frontend/components/CosmicGuideWindow'
@@ -23,7 +22,8 @@ export function App() {
       <Routes>
         {/* 2D SPHEREx Frontend Screens */}
         <Route path="/" element={<GatewayScreen />} />
-        <Route path="/explorer" element={<SkyExplorerScreen />} />
+        {/* The 2D explorer is retired: Expedition and the navbar Explorer item open the 3D Solar System Hub. */}
+        <Route path="/explorer" element={<Navigate to="/xr" replace />} />
         <Route path="/comparison" element={<ObservationComparisonScreen />} />
         <Route path="/guide" element={<CosmicGuideScreen />} />
         <Route path="/guide/:objectId" element={<CosmicGuideScreen />} />

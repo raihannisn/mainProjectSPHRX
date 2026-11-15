@@ -131,10 +131,10 @@ export function GatewayScreen() {
                   {
                     origin,
                     label: lang === 'id' ? 'Menuju Cosmic Expedition…' : 'Entering Cosmic Expedition…',
-                    waitForScene: false,
-                    minMs: 450,
+                    waitForScene: true,
+                    minMs: 650,
                   },
-                  () => navigate('/explorer')
+                  () => navigate('/xr')
                 )
               }}
             >
@@ -180,11 +180,11 @@ export function GatewayScreen() {
               void runWormhole(
                 {
                   origin,
-                  label: lang === 'id' ? 'Membuka 3D Sky Explorer…' : 'Opening 3D Sky Explorer…',
-                  waitForScene: false,
-                  minMs: 450,
+                  label: lang === 'id' ? 'Membuka Solar System Hub…' : 'Opening the Solar System Hub…',
+                  waitForScene: true,
+                  minMs: 650,
                 },
-                () => navigate('/explorer')
+                () => navigate('/xr')
               )
             }}
           >

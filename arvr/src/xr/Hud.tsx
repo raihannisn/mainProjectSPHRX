@@ -82,7 +82,7 @@ export function Hud({ inAR = false }: { inAR?: boolean }) {
           {name && <span className="crumb">{t(name)}</span>}
         </div>
         <div className="hud__modes">
-          {!session && !inAR && (
+          {!session && !inAR && bodyId === 'spherex' && obsIdB && (
             <a
               href={
                 bodyId === 'spherex'
