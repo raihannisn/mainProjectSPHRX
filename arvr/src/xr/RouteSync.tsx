@@ -124,6 +124,24 @@ export function RouteSync() {
   }, [loc.pathname, loc.search, navigate])
 
   // store → URL (e.g. picking a body inside VR).
+  // ?tour (from the 2D screens' "Guided tour" entry) starts the guided tour once the scene is up.
+  // The explore sheet would cover the tour caption, so it is marked as already seen for this session.
+  const tourAsked = useRef(false)
+  useEffect(() => {
+    if (tourAsked.current || !new URLSearchParams(loc.search).has('tour')) return
+    try {
+      sessionStorage.setItem('cosmic-xr-modes-seen', '1')
+    } catch {
+      /* private mode */
+    }
+    // (the flag is set when the timer fires, not before: React's dev double-mount cancels the first timer)
+    const id = setTimeout(() => {
+      tourAsked.current = true
+      useXRApp.getState().setTourStep(0)
+    }, 1200)
+    return () => clearTimeout(id)
+  }, [loc.search])
+
   useEffect(() => {
     if (!ready.current) return
     if (!loc.pathname.startsWith('/xr')) return

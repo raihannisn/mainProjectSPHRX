@@ -12,21 +12,22 @@ import { hoverFeedback, pressFeedback } from './feedback'
  * Units are relative: each panel's parent scales it (the wrist menu uses 1 unit ≈ 7 cm).
  */
 export const UI = {
-  glass: '#0b1820',
+  // palette of the 2D screens (frontend.css): navy glass, teal = active, gold = action, violet = guide
+  glass: '#0d1c33',
   glassOpacity: 0.86,
-  rim: '#a8efe8',
+  rim: '#c5e3e3',
   rimOpacity: 0.28,
-  plate: '#1b2e38',
-  plateHover: '#27434f',
-  accent: '#2bb8b0',
-  accentHover: '#3fd0c7',
-  accentText: '#03201e',
-  warm: '#c4683a',
-  warmHover: '#da7c4c',
-  blue: '#2f6fed',
-  blueHover: '#4a84f5',
+  plate: '#16263f',
+  plateHover: '#22385a',
+  accent: '#4fe3d6',
+  accentHover: '#8ff6eb',
+  accentText: '#06151a',
+  warm: '#d4af37',
+  warmHover: '#e5c07b',
+  blue: '#7b61d9',
+  blueHover: '#9479f0',
   text: '#eef6f8',
-  muted: '#93aab4',
+  muted: '#9ba8bf',
   good: '#5ee39a',
   warn: '#ffcc55',
   /** type scale, in panel units */
@@ -37,7 +38,7 @@ export type Tone = 'plate' | 'accent' | 'warm' | 'blue'
 const TONES: Record<Tone, { base: string; hover: string; text: string }> = {
   plate: { base: UI.plate, hover: UI.plateHover, text: UI.text },
   accent: { base: UI.accent, hover: UI.accentHover, text: UI.accentText },
-  warm: { base: UI.warm, hover: UI.warmHover, text: '#ffffff' },
+  warm: { base: UI.warm, hover: UI.warmHover, text: '#08131f' },
   blue: { base: UI.blue, hover: UI.blueHover, text: '#ffffff' },
 }
 

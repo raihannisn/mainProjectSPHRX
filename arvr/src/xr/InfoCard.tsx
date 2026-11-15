@@ -149,7 +149,7 @@ export function InfoCard3D({
           {h.detail}
         </Text>
       )}
-      <Text font={FONT} position={[left, ySource, 0]} fontSize={0.036} maxWidth={W - 2 * pad} color="#8fb4ff" anchorX="left" anchorY="top">
+      <Text font={FONT} position={[left, ySource, 0]} fontSize={0.036} maxWidth={W - 2 * pad} color="#4fe3d6" anchorX="left" anchorY="top">
         {`${t('Source:')} ${h.source.label}\n${h.source.url}`}
       </Text>
       <Button3D label={t('Ask the guide')} icon="info" position={[-W / 4 + 0.02, yButtons, 0]} width={0.56} height={0.11} color="#2f6fed" onClick={() => ask(h)} />

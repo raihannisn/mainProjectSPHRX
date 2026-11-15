@@ -12,7 +12,7 @@ import { ModelViewer3D, MODEL_BODIES, isModelBody, type ModelBodyId } from './Mo
 import { useBodyContent, useSitesForBody } from '../../xr/content'
 import { useDeviceCaps } from '../../xr/device'
 import { KIND_LABEL } from '../../xr/InfoCard'
-import { localHotspot } from '../../xr/i18n'
+import { localHotspot, useT } from '../../xr/i18n'
 import { askGuide } from '../../xr/events'
 import { layersFor } from '../../xr/layers'
 
@@ -54,6 +54,12 @@ function isMarkerId(value: string | null): value is MarkerId {
   return value === 'rcw-36' || value === 'candidate-02' || value === 'demo-tile-01'
 }
 
+/** Upstream failures can carry a whole HTML error page; show one readable line instead of raw markup. */
+function tidyError(message: string) {
+  const text = message.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+  return text.length > 150 ? `${text.slice(0, 150).trimEnd()}…` : text
+}
+
 function queryValue(value: number | undefined, precision = 4) {
   return value === undefined ? '—' : value.toFixed(precision)
 }
@@ -68,6 +74,8 @@ export function SkyExplorerScreen() {
   const [toast, setToast] = useState<string | null>(null)
   const [audioOn, setAudioOn] = useState(false)
   const lang = useXRApp((s) => s.settings.lang)
+  // EN/ID for the 3D model mode (the XR app's dictionary); the Sky mode text is unchanged
+  const t = useT()
   const [target, setTarget] = useState<ObjectInfo | null>(null)
   const [targetLoading, setTargetLoading] = useState(true)
   const [targetError, setTargetError] = useState<string | null>(null)
@@ -202,7 +210,7 @@ export function SkyExplorerScreen() {
     const next = !useXRApp.getState().settings.pins
     useXRApp.getState().setSetting('pins', next)
     if (!next) useXRApp.getState().selectHotspot(null)
-    notify(next ? 'Hotspots shown.' : 'Hotspots hidden.')
+    notify(t(next ? 'Hotspots shown.' : 'Hotspots hidden.'))
   }
 
   const cycleLayer = () => {
@@ -210,7 +218,7 @@ export function SkyExplorerScreen() {
     const index = bodyLayers.findIndex((l) => l.id === bodyLayer?.id)
     const next = bodyLayers[(index + 1) % bodyLayers.length]
     useXRApp.getState().setLayer(bodyModel, next.id)
-    notify(`NASA image layer: ${next.label}.`)
+    notify(`${t('NASA image layer')}: ${t(next.label)}.`)
   }
 
   /** Stand on the surface: the walkable NASA-elevation site in the 3D scene (works on screen, in VR and AR). */
@@ -309,12 +317,12 @@ export function SkyExplorerScreen() {
     ? null
     : hotspot
       ? {
-          label: `● ${KIND_LABEL[hotspot.kind].toUpperCase()}`,
+          label: `● ${t(KIND_LABEL[hotspot.kind]).toUpperCase()}`,
           tone: hotspot.kind === 'fact' ? 'fact' : hotspot.kind === 'candidate' ? 'candidate' : 'demo',
         }
       : shapeIsIllustration
-        ? { label: '● ILLUSTRATION', tone: 'demo' }
-        : { label: '● 3D MODEL', tone: 'fact' }
+        ? { label: `● ${t('Illustration').toUpperCase()}`, tone: 'demo' }
+        : { label: `● ${t('3D model').toUpperCase()}`, tone: 'fact' }
   const headTag = bodyTag ?? targetTag
   const headLoading = bodyModel ? bodyContent === undefined : targetLoading || observationsLoading
   const bodyCredit = bodyContent
@@ -350,12 +358,12 @@ export function SkyExplorerScreen() {
           <div className="fe-sky-title">
             {bodyModel ? (
               <>
-                <div className="fe-eyebrow">3D model · NASA imagery &amp; shape data</div>
+                <div className="fe-eyebrow">{t('3D model · NASA imagery & shape data')}</div>
                 <h2>{bodyContent?.name || MODEL_LABELS[bodyModel]}</h2>
                 <p>
                   {bodyContent === undefined
-                    ? 'Loading model…'
-                    : `${bodyContent?.hotspots.length ?? 0} hotspots · ${pinsOn ? 'tap a pin to read it' : 'hotspots hidden'}`}
+                    ? t('Loading model…')
+                    : `${t('{n} hotspots', { n: bodyContent?.hotspots.length ?? 0 })} · ${t(pinsOn ? 'tap a pin to read it' : 'hotspots hidden')}`}
                 </p>
               </>
             ) : (
@@ -391,8 +399,8 @@ export function SkyExplorerScreen() {
                 className={`fe-icon-btn fe-pins-toggle ${pinsOn ? 'selected' : ''}`}
                 onClick={togglePins}
                 aria-pressed={pinsOn}
-                aria-label={pinsOn ? 'Hide hotspots' : 'Show hotspots'}
-                title={pinsOn ? 'Hide hotspots' : 'Show hotspots'}
+                aria-label={t(pinsOn ? 'Hide hotspots' : 'Show hotspots')}
+                title={t(pinsOn ? 'Hide hotspots' : 'Show hotspots')}
               >
                 ⦿
               </button>
@@ -402,8 +410,8 @@ export function SkyExplorerScreen() {
                 className={`fe-icon-btn fe-layer-toggle ${dataLayerOn ? 'selected' : ''}`}
                 onClick={cycleLayer}
                 aria-pressed={dataLayerOn}
-                aria-label={`NASA image layer: ${bodyLayer?.label ?? ''}. Switch layer`}
-                title={`NASA image layer: ${bodyLayer?.label ?? ''}`}
+                aria-label={`${t('NASA image layer')}: ${t(bodyLayer?.label ?? '')}. ${t('Switch layer')}`}
+                title={`${t('NASA image layer')}: ${t(bodyLayer?.label ?? '')}`}
               >
                 ◐
               </button>
@@ -450,12 +458,12 @@ export function SkyExplorerScreen() {
             ))}
           </div>
           <div className="fe-view-hint">
-            {bodyModel ? 'DRAG TO TURN · SCROLL TO ZOOM' : 'DRAG TO ROTATE SKY · SCROLL TO ZOOM'}
+            {bodyModel ? t('DRAG TO TURN · SCROLL TO ZOOM') : 'DRAG TO ROTATE SKY · SCROLL TO ZOOM'}
           </div>
         </div>
 
         <div className="fe-target-chip">
-          <span className="fe-eyebrow">{bodyModel ? (hotspot ? 'Hotspot selected' : '3D model') : 'Target selected'}</span>
+          <span className="fe-eyebrow">{bodyModel ? t(hotspot ? 'Hotspot selected' : '3D model') : 'Target selected'}</span>
           {headLoading && <WormholePulse decorative />}
           <span className={`fe-tag ${headTag.tone}`}>{headTag.label}</span>
         </div>
@@ -465,7 +473,7 @@ export function SkyExplorerScreen() {
             <>
               <div className="fe-hud-card fe-hud-object">
                 <div className="fe-hud-head">
-                  <span className="fe-eyebrow">{hotspot ? 'Hotspot selected' : '3D model'}</span>
+                  <span className="fe-eyebrow">{t(hotspot ? 'Hotspot selected' : '3D model')}</span>
                   {headLoading && <WormholePulse decorative />}
                   <span className={`fe-tag ${bodyTag.tone}`}>{bodyTag.label}</span>
                 </div>
@@ -474,12 +482,12 @@ export function SkyExplorerScreen() {
                   {hotspot
                     ? hotspot.detail || hotspot.short
                     : bodyContent === undefined
-                      ? 'Loading the 3D model and its hotspots.'
+                      ? t('Loading the 3D model and its hotspots.')
                       : bodyContent === null
-                        ? 'No hotspot content is available for this body.'
+                        ? t('No hotspot content is available for this body.')
                         : pinsOn
-                          ? 'Drag to turn the model and tap a glowing pin to read about that place.'
-                          : 'Hotspots are hidden. Use the ⦿ button to show them again.'}
+                          ? t('Drag to turn the model and tap a glowing pin to read about that place.')
+                          : t('Hotspots are hidden. Use the ⦿ button to show them again.')}
                 </p>
               </div>
 
@@ -494,17 +502,17 @@ export function SkyExplorerScreen() {
                     <strong>{BODY_TYPE_LABEL[bodyContent?.type ?? ''] ?? 'Solar System body'}</strong>
                   </div>
                   <div className="fe-datum">
-                    <span>Hotspots</span>
-                    <strong>{bodyContent ? `${bodyContent.hotspots.length} · ${pinsOn ? 'shown' : 'hidden'}` : '—'}</strong>
+                    <span>{t('Hotspots')}</span>
+                    <strong>{bodyContent ? `${bodyContent.hotspots.length} · ${t(pinsOn ? 'shown' : 'hidden')}` : '—'}</strong>
                   </div>
                   <div className="fe-datum">
                     <span>Label</span>
-                    <strong>{hotspot ? KIND_LABEL[hotspot.kind] : shapeIsIllustration ? 'Illustration' : 'NASA data'}</strong>
+                    <strong>{t(hotspot ? KIND_LABEL[hotspot.kind] : shapeIsIllustration ? 'Illustration' : 'NASA data')}</strong>
                   </div>
                   {bodyLayers.length > 1 && bodyLayer && (
                     <div className="fe-datum fe-datum-layer">
-                      <span>NASA image layer</span>
-                      <strong>{bodyLayer.label}</strong>
+                      <span>{t('NASA image layer')}</span>
+                      <strong>{t(bodyLayer.label)}</strong>
                       {bodyLayer.legend && (
                         <div className="fe-layer-legend" aria-label={`Colour scale from ${bodyLayer.legend.min} to ${bodyLayer.legend.max}`}>
                           <i style={{ background: `linear-gradient(90deg, ${bodyLayer.legend.stops.join(', ')})` }} />
@@ -526,7 +534,7 @@ export function SkyExplorerScreen() {
                     {hotspot.source.label}
                   </a>
                 ) : dataLayerOn && bodyLayer ? (
-                  bodyLayer.credit
+                  t(bodyLayer.credit)
                 ) : (
                   bodyCredit
                 )}
@@ -542,7 +550,7 @@ export function SkyExplorerScreen() {
             </div>
             <h2>{targetLoading ? 'Loading catalog…' : currentName}</h2>
             <p>{targetLoading ? 'Fetching target information from the object catalog.' : currentDescription}</p>
-            {targetError && <p className="fe-inline-error" role="alert">Catalog unavailable: {targetError}</p>}
+            {targetError && <p className="fe-inline-error" role="alert">Catalog unavailable: {tidyError(targetError)}</p>}
           </div>
 
           <div className="fe-hud-card fe-hud-telemetry">
@@ -591,7 +599,7 @@ export function SkyExplorerScreen() {
                 <strong>{chosenObservation?.observed_at_utc || 'Not available'}</strong>
               </div>
             </div>
-            {observationsError && <p className="fe-inline-error" role="alert">Observation search failed: {observationsError}</p>}
+            {observationsError && <p className="fe-inline-error" role="alert">Observation search failed: {tidyError(observationsError)}</p>}
             {!observationsLoading && !observationsError && selectedId === 'rcw-36' && observations.length === 0 && (
               <p className="fe-muted" role="status">No SPHEREx observation records were returned for this search.</p>
             )}
@@ -609,7 +617,7 @@ export function SkyExplorerScreen() {
             </button>
             {bodyModel && surfaceSite ? (
               <button className="fe-btn-text fe-surface-btn" onClick={handleSurface}>
-                <span>Walk on {surfaceSite.name}</span><span aria-hidden="true">↗</span>
+                <span>{t('Walk on {x}', { x: t(surfaceSite.name) })}</span><span aria-hidden="true">↗</span>
               </button>
             ) : (
               <button className="fe-btn-text" onClick={handleCompare}>
@@ -617,7 +625,7 @@ export function SkyExplorerScreen() {
               </button>
             )}
             <button className="fe-btn-text fe-btn-gold" onClick={handleEnterXR}>
-              <span>{bodyModel ? `Open ${MODEL_LABELS[bodyModel]} in 3D / XR` : 'Enter 3D Table (XR)'}</span><span aria-hidden="true">↗</span>
+              <span>{bodyModel ? t('Open {x} in 3D / XR', { x: t(MODEL_LABELS[bodyModel]) }) : 'Enter 3D Table (XR)'}</span><span aria-hidden="true">↗</span>
             </button>
           </div>
 
@@ -630,6 +638,16 @@ export function SkyExplorerScreen() {
               }}
             >
               Solar System Hub
+            </button>
+            <button
+              className="fe-dock-tour"
+              onClick={(event) => {
+                const origin = originOf(event.currentTarget)
+                void runWormhole({ origin }, () => navigate('/xr?tour=1'))
+              }}
+              title={t('Start the guided tour')}
+            >
+              {t('Guided tour')}
             </button>
           </div>
         </aside>

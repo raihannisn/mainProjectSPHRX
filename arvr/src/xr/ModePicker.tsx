@@ -179,7 +179,8 @@ export function ModePickerToggle({ caps }: { caps: DeviceCaps }) {
   const wantsImmersive = intent === 'ar' || intent === 'vr'
   const [open, setOpen] = useState(() => {
     try {
-      return wantsImmersive || (atHub && !sessionStorage.getItem(SEEN_KEY))
+      // ?tour: the guided tour is starting, so the sheet must not cover its caption
+      return wantsImmersive || (atHub && !sessionStorage.getItem(SEEN_KEY) && !new URLSearchParams(search).has('tour'))
     } catch {
       return atHub
     }

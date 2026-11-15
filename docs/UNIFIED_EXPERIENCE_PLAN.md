@@ -1,7 +1,7 @@
 # Unified experience: one app, one look (plan and report)
 
 > Branch: `feat/unified-experience` (from `feat/3d-observation`) · Date: 2026-11-15
-> Status: **phases 1–3 implemented locally, waiting for owner review.** Not pushed, no PR.
+> Status: **phases 1–4 implemented locally, waiting for owner review.** Not pushed, no PR.
 > Follows `docs/WORKFLOW.md` (Phase A → D). Earlier step: [`OBSERVATION_3D_MODEL_INTEGRATION_PLAN.md`](OBSERVATION_3D_MODEL_INTEGRATION_PLAN.md).
 
 ## 1. Context
@@ -45,6 +45,15 @@ All through the existing toolbar and HUD cards. No new panel; Sky mode is unchan
 - **Ask the Guide with context**: in 3D model mode the guide opens with the body as context, or with the
   selected pin's own question (`cosmic:ask-guide`, already handled by `CosmicGuideWindow`).
 
+### Phase 4: remaining items
+- **In-headset panels**: the 3D UI kit (`ui3d.tsx`: wrist menu, 3D buttons, info card, SPHEREx console) uses
+  the same palette: navy glass, teal = active, gold = action, violet = guide.
+- **EN/ID** for the Sky Explorer's 3D model mode through the XR dictionary (`useT()`); Sky mode text unchanged.
+- **Guided tour entry**: a third dock button in the Sky Explorer opens `/xr?tour=1`; `RouteSync` starts the
+  tour and the "Ways to explore" sheet stays closed so it does not cover the tour caption.
+- **Readable upstream errors**: when IRSA returns an HTML error page, the Explorer shows one clean line
+  (tags stripped, 150 characters) instead of raw markup that pushed the telemetry card under the actions.
+
 ### Fix found on the way
 - `backend/routes/objects.py` read `kamus_object.json` with the platform default codec. On Windows that is
   cp1252, so the Explorer HUD showed `-43Â°45â€²12â€³` instead of `-43°45′12″`. Now opened as UTF-8.
@@ -71,7 +80,7 @@ All through the existing toolbar and HUD cards. No new panel; Sky mode is unchan
 | Content + types + build | `npm run build --prefix arvr` | PASS (`check-content: 54 hotspots OK`, `tsc` clean) |
 | Legacy frontend build | `node frontend/build.mjs` | PASS |
 | Unified look (new) | `node arvr/scripts/smoke-unified-xr.mjs` | All checks passed: 4 scenes × 3 viewports + `?intro` |
-| 3D viewport (extended) | `node arvr/scripts/smoke-observation-3d.mjs` | **129/129 PASS** (was 74; adds layers, surface link, guide context) |
+| 3D viewport (extended) | `node arvr/scripts/smoke-observation-3d.mjs` | **135/135 PASS** (was 74; adds layers, surface link, guide context, EN/ID, tour entry) |
 | XR emulator | `npm run smoke:xr --prefix arvr` (preview 4173) | 30 PASS, 0 FAIL (the script now requests `?intro`) |
 | Team design QA harness | `node arvr/scripts/design-migration-qa.mjs --stub` | 24 screens; after phase 1 the report was **identical** to a run on the unchanged code (0 screens different) |
 | Backend | `python -m pytest backend/tests --asyncio-mode=auto` | 7/7 PASS (new `test_objects_encoding.py` fails without the fix) |
@@ -93,14 +102,13 @@ Not tested here: real Meta Quest 3 / Android AR devices (emulator only).
 
 ## 7. Deferred
 
-1. EN/ID text for the Sky Explorer's 3D-mode HUD (the XR scenes are already EN/ID).
-2. Guided tour and missions entry from the 2D screens.
-3. Re-colour the in-world 3D panels (VR wrist menu, 3D buttons) to the gold/teal palette.
-4. More bodies in the model switch (needs content files first).
+1. Missions entry from the 2D screens (missions stay in the XR menu).
+2. More bodies in the model switch (needs content files first).
+3. EN/ID for the Sky mode text of the 2D screens (team's copy).
 
 ## 8. Agent report
 
-**Status:** PARTIAL (phases 1–3 done; deferred items above) · **Branch:** `feat/unified-experience`
+**Status:** COMPLETE for phases 1–4 (deferred items above) · **Branch:** `feat/unified-experience`
 
 | File | Change | Summary |
 |---|---|---|

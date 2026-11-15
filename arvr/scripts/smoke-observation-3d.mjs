@@ -263,6 +263,29 @@ for (const vp of VIEWPORTS) {
   await context.close()
 }
 
+// 5c. Bahasa Indonesia in 3D model mode, and the dock's Guided tour entry
+{
+  const { page, context, errors } = await openPage(VIEWPORTS[0])
+  await page.goto(`${base}/explorer?model=mars`, { waitUntil: 'domcontentloaded' })
+  await waitForModel(page, 'mars')
+  await page.click('.fe-top-actions .fe-lang-btn')
+  const idOk = await page
+    .waitForFunction(() => document.querySelector('.fe-sky-title .fe-eyebrow')?.textContent.includes('Model 3D') && document.querySelector('.fe-surface-btn')?.textContent.includes('Berjalan di Kawah Jezero'), null, { timeout: 5000 })
+    .then(() => true)
+    .catch(() => false)
+  check('[id] 3D model mode switches to Bahasa Indonesia', idOk, await page.textContent('.fe-surface-btn'))
+  await page.click('.fe-top-actions .fe-lang-btn')
+  check('[en] and back to English', (await page.textContent('.fe-sky-title .fe-eyebrow')).includes('3D model'))
+  await page.click('.fe-dock .fe-dock-tour')
+  const tourUrl = await page.waitForURL('**/xr?tour=1', { timeout: 20000 }).then(() => true).catch(() => false)
+  check('[tour] dock "Guided tour" opens the 3D hub', tourUrl, page.url())
+  const caption = await page.waitForSelector('.tour-caption', { timeout: 30000 }).then(() => true).catch(() => false)
+  check('[tour] the guided tour starts by itself', caption)
+  check('[tour] the explore sheet does not cover it', (await page.$('.mode-picker')) === null)
+  check('[tour] no page errors', errors.length === 0, errors.slice(0, 3).join(' | '))
+  await context.close()
+}
+
 // 6. ?intent=vr opens the XR mode picker on a body scene (the VR/AR toggle's target)
 {
   const { page, context, errors } = await openPage(VIEWPORTS[0])
