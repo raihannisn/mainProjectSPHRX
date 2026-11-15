@@ -31,6 +31,15 @@ const hotspotCount = Object.fromEntries(
   BODIES.map((id) => [id, JSON.parse(readFileSync(resolve(here, `../content/bodies/${id}.json`), 'utf8')).hotspots.length]),
 )
 
+// Featured walkable site per body (ids must match DEFAULT_SITE in SkyExplorerScreen.tsx); names come from the site content
+const siteName = (id) => JSON.parse(readFileSync(resolve(here, `../content/sites/${id}.json`), 'utf8')).name
+const SURFACE = {
+  mars: { id: 'jezero', name: siteName('jezero') },
+  moon: { id: 'apollo11', name: siteName('apollo11') },
+  bennu: { id: 'bennu-nightingale', name: siteName('bennu-nightingale') },
+}
+const sitePin = JSON.parse(readFileSync(resolve(here, '../content/bodies/mars.json'), 'utf8')).hotspots.find((h) => h.site && h.site !== SURFACE.mars.id) ?? null
+
 // Same observation shape as the design-migration-qa.mjs fixtures (QA data, never shown as live NASA data).
 const observation = (id, detector, observedAt, wavelength) => ({
   observation_id: id,
@@ -152,6 +161,13 @@ for (const vp of VIEWPORTS) {
     const tagText = await page.textContent('.fe-hud-object .fe-tag')
     // all three bodies ship a real texture or NASA shape model (bennu.glb), so none may claim "illustration"
     check(`${tag} ${id}: HUD labels it a 3D model`, (tagText ?? '').includes('3D MODEL'), tagText ?? '')
+    check(`${tag} ${id}: layer toggle only where the body has NASA image layers`, ((await page.$('.fe-layer-toggle')) !== null) === (id === 'mars'))
+    const walkOk = await page
+      .waitForFunction((label) => document.querySelector('.fe-hud-actions .fe-surface-btn')?.textContent.includes(label), `Walk on ${SURFACE[id].name}`, { timeout: 8000 })
+      .then(() => true)
+      .catch(() => false)
+    check(`${tag} ${id}: HUD offers its walkable surface site`, walkOk, SURFACE[id].name)
+    check(`${tag} ${id}: no sky-only Compare button in 3D mode`, !(await page.textContent('.fe-hud-actions')).includes('Compare observations'))
   }
 
   // 3. Hotspot toggle hides/shows pins (one compact button)
@@ -165,6 +181,21 @@ for (const vp of VIEWPORTS) {
   check(`${tag} hotspot toggle hides pins`, (await page.getAttribute(pinBtn, 'aria-pressed')) === 'false' && (await page.textContent('.fe-sky-title p')).includes('hotspots hidden'))
   await page.click(pinBtn)
   check(`${tag} hotspot toggle shows pins again`, (await page.getAttribute(pinBtn, 'aria-pressed')) === 'true')
+  // 3b. NASA image layer toggle (Mars: Viking colour <-> MOLA elevation), with legend and credit in the HUD
+  const layerBtn = '.fe-layer-toggle'
+  const layerText = () => page.textContent('.fe-datum-layer strong')
+  check(`${tag} layer toggle starts on the colour mosaic`, (await page.getAttribute(layerBtn, 'aria-pressed')) === 'false' && (await layerText()).includes('Colour'))
+  const elevation = page.waitForResponse((r) => r.url().includes('mars_elevation') && r.ok(), { timeout: 15000 }).then(() => true).catch(() => false)
+  await page.click(layerBtn)
+  check(`${tag} layer toggle switches to MOLA elevation`, (await page.getAttribute(layerBtn, 'aria-pressed')) === 'true' && (await layerText()).includes('Elevation'))
+  check(`${tag} elevation layer shows its colour scale`, (await page.$('.fe-layer-legend i')) !== null)
+  check(`${tag} elevation layer is credited in the Source line`, (await page.textContent('.fe-source-line')).includes('MOLA'))
+  check(`${tag} elevation texture loads`, await elevation)
+  await page.waitForFunction(() => !document.querySelector('.fe-toast'), null, { timeout: 5000 }).catch(() => {})
+  await page.waitForTimeout(800)
+  if (shots) await page.screenshot({ path: resolve(outDir, `explorer-mars-elevation-${vp.name}.png`) })
+  await page.click(layerBtn)
+  check(`${tag} layer toggle returns to the colour mosaic`, (await page.getAttribute(layerBtn, 'aria-pressed')) === 'false' && (await layerText()).includes('Colour'))
   const bodyOverlap = await overlaps(page)
   check(`${tag} 3D view chrome does not overlap`, bodyOverlap.length === 0, bodyOverlap.join(', '))
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
@@ -189,6 +220,16 @@ for (const vp of VIEWPORTS) {
     .then(() => true)
     .catch(() => false)
   check(`${tag} selected hotspot shows label + source link in HUD`, hudOk, first.id)
+  // a pin that has its own walkable site retargets the surface button
+  if (sitePin) {
+    await page.evaluate((hid) => window.__xrApp?.getState().selectHotspot(hid), sitePin.id)
+    const retargeted = await page
+      .waitForFunction((name) => document.querySelector('.fe-surface-btn')?.textContent.includes(`Walk on ${name}`), siteName(sitePin.site), { timeout: 5000 })
+      .then(() => true)
+      .catch(() => false)
+    check(`${tag} pin with a site retargets the surface button`, retargeted, `${sitePin.id} -> ${siteName(sitePin.site)}`)
+    await page.evaluate((hid) => window.__xrApp?.getState().selectHotspot(hid), first.id)
+  }
   await page.waitForFunction(() => !document.querySelector('.fe-toast'), null, { timeout: 5000 }).catch(() => {})
   if (shots && vp.name.startsWith('desktop')) await page.screenshot({ path: resolve(outDir, `explorer-mars-hotspot-${vp.name}.png`) })
   }
@@ -197,9 +238,28 @@ for (const vp of VIEWPORTS) {
   await page.click('.fe-model-switch [role="radio"]:has-text("Sky")')
   await page.waitForSelector('.sky3d-canvas', { timeout: 15000 })
   check(`${tag} Sky restores RCW 36 HUD`, (await page.textContent('.fe-hud-object h2')).includes('RCW 36'))
+  check(`${tag} Sky restores the Compare button`, (await page.textContent('.fe-hud-actions')).includes('Compare observations') && (await page.$('.fe-surface-btn')) === null)
   if (devHandle) check(`${tag} hotspot selection cleared on leave`, (await page.evaluate(() => window.__xrApp?.getState().hotspotId ?? null)) === null)
 
   check(`${tag} no page errors`, errors.length === 0, errors.slice(0, 3).join(' | '))
+  await context.close()
+}
+
+// 5b. From the 3D model: Ask the Guide carries the body as context, and the surface button opens the walkable site
+{
+  const { page, context, errors } = await openPage(VIEWPORTS[0])
+  await page.goto(`${base}/explorer?model=mars`, { waitUntil: 'domcontentloaded' })
+  await waitForModel(page, 'mars')
+  await page.click('.fe-hud-actions .fe-btn-primary')
+  const guideContext = await page.waitForSelector('.cg-window .cg-sub', { timeout: 8000 }).then((el) => el.textContent()).catch(() => null)
+  check('[guide] Ask the Guide opens with the 3D body as context', (guideContext ?? '').includes('Mars'), String(guideContext))
+  await page.keyboard.press('Escape')
+  await page.click('.fe-hud-actions .fe-surface-btn')
+  const onSurface = await page.waitForURL(`**/xr/surface/${SURFACE.mars.id}`, { timeout: 20000 }).then(() => true).catch(() => false)
+  check(`[surface] "Walk on ${SURFACE.mars.name}" opens /xr/surface/${SURFACE.mars.id}`, onSurface, page.url())
+  const hud = await page.waitForSelector('.hud--surface .crumb', { timeout: 30000 }).then((el) => el.textContent()).catch(() => null)
+  check('[surface] the walkable site loads its HUD', (hud ?? '').includes(SURFACE.mars.name), String(hud))
+  check('[surface] no page errors', errors.length === 0, errors.slice(0, 3).join(' | '))
   await context.close()
 }
 

@@ -9,10 +9,12 @@ import { cacheObservations, useXRApp } from '../../xr/store'
 import { BotIcon } from '../guide/BotIcon'
 import { SkyScene3D } from './SkyScene3D'
 import { ModelViewer3D, MODEL_BODIES, isModelBody, type ModelBodyId } from './ModelViewer3D'
-import { useBodyContent } from '../../xr/content'
+import { useBodyContent, useSitesForBody } from '../../xr/content'
 import { useDeviceCaps } from '../../xr/device'
 import { KIND_LABEL } from '../../xr/InfoCard'
 import { localHotspot } from '../../xr/i18n'
+import { askGuide } from '../../xr/events'
+import { layersFor } from '../../xr/layers'
 
 type MarkerId = 'rcw-36' | 'candidate-02' | 'demo-tile-01'
 
@@ -22,6 +24,12 @@ type ViewportModel = 'sky' | ModelBodyId
 const DEFAULT_MODEL: ViewportModel = 'sky'
 const MODEL_LABELS: Record<ViewportModel, string> = { sky: 'Sky', mars: 'Mars', moon: 'Moon', bennu: 'Bennu' }
 const BODY_TYPE_LABEL: Record<string, string> = { planet: 'Planet', moon: 'Moon', asteroid: 'Near-Earth asteroid', star: 'Star' }
+/** Walkable site offered from a 3D body when no pin with its own site is selected (content/sites/<id>.json). */
+const DEFAULT_SITE: Record<ModelBodyId, { id: string; name: string }> = {
+  mars: { id: 'jezero', name: 'Jezero Crater' },
+  moon: { id: 'apollo11', name: 'Apollo 11 site' },
+  bennu: { id: 'bennu-nightingale', name: 'Bennu surface' },
+}
 
 function parseModel(value: string | null): ViewportModel {
   if (value === 'sky') return 'sky'
@@ -81,6 +89,18 @@ export function SkyExplorerScreen() {
   const rawHotspot = bodyContent?.hotspots.find((h) => h.id === hotspotId) ?? null
   const hotspot = localHotspot(rawHotspot, lang)
   const xrIntent: 'vr' | 'ar' | null = caps.vr ? 'vr' : caps.ar ? 'ar' : null
+  // NASA image layers of the body (e.g. Mars colour / MOLA elevation), shared with the XR scene
+  const bodyLayers = layersFor(bodyModel)
+  const activeLayerId = useXRApp((s) => (bodyModel ? s.layer[bodyModel] : undefined))
+  const bodyLayer = bodyLayers.find((l) => l.id === activeLayerId) ?? bodyLayers[0] ?? null
+  const dataLayerOn = !!bodyLayer && bodyLayer.id !== bodyLayers[0]?.id
+  const bodySites = useSitesForBody(bodyModel)
+  // walkable surface site: the selected pin's own site, else the body's featured one
+  const surfaceSite = !bodyModel
+    ? null
+    : rawHotspot?.site
+      ? { id: rawHotspot.site, name: bodySites.find((site) => site.id === rawHotspot.site)?.name ?? hotspot?.title ?? rawHotspot.title }
+      : { ...DEFAULT_SITE[bodyModel], name: bodySites.find((site) => site.id === DEFAULT_SITE[bodyModel].id)?.name ?? DEFAULT_SITE[bodyModel].name }
 
   const illustrative = selectedId === 'rcw-36' ? null : ILLUSTRATIVE_TARGETS[selectedId]
   const chosenObservation = observations.find((item) => item.observation_id === searchParams.get('obs')) ?? observations[0]
@@ -185,6 +205,21 @@ export function SkyExplorerScreen() {
     notify(next ? 'Hotspots shown.' : 'Hotspots hidden.')
   }
 
+  const cycleLayer = () => {
+    if (!bodyModel || bodyLayers.length < 2) return
+    const index = bodyLayers.findIndex((l) => l.id === bodyLayer?.id)
+    const next = bodyLayers[(index + 1) % bodyLayers.length]
+    useXRApp.getState().setLayer(bodyModel, next.id)
+    notify(`NASA image layer: ${next.label}.`)
+  }
+
+  /** Stand on the surface: the walkable NASA-elevation site in the 3D scene (works on screen, in VR and AR). */
+  const handleSurface = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (!bodyModel || !surfaceSite) return
+    const origin = originOf(event.currentTarget)
+    void runWormhole({ origin }, () => navigate(`/xr/surface/${surfaceSite.id}`))
+  }
+
   /** Opens the same body in the AR/VR scene with the mode picker up, so VR/AR starts from a real tap there. */
   const handleImmersive = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (!bodyModel || !xrIntent) return
@@ -212,7 +247,24 @@ export function SkyExplorerScreen() {
   }
 
   const handleAskGuide = () => {
+    // 3D model mode: the guide gets the body (and the selected pin's own question) as context
+    if (bodyModel && !window.matchMedia('(max-width: 767px)').matches) {
+      if (rawHotspot) {
+        askGuide({ body: bodyModel, hotspotId: rawHotspot.id, guidePrompt: hotspot?.guidePrompt ?? rawHotspot.guidePrompt })
+        return
+      }
+      window.dispatchEvent(
+        new CustomEvent('cosmic:open-guide', {
+          detail: { objectId: bodyModel, objectName: bodyContent?.name || MODEL_LABELS[bodyModel] },
+        }),
+      )
+      return
+    }
     if (window.matchMedia('(max-width: 767px)').matches) {
+      if (bodyModel) {
+        navigate(`/guide/${bodyModel}`)
+        return
+      }
       navigate(`/guide/${selectedId}`)
       return
     }
@@ -345,6 +397,17 @@ export function SkyExplorerScreen() {
                 ⦿
               </button>
             )}
+            {bodyModel && bodyLayers.length > 1 && (
+              <button
+                className={`fe-icon-btn fe-layer-toggle ${dataLayerOn ? 'selected' : ''}`}
+                onClick={cycleLayer}
+                aria-pressed={dataLayerOn}
+                aria-label={`NASA image layer: ${bodyLayer?.label ?? ''}. Switch layer`}
+                title={`NASA image layer: ${bodyLayer?.label ?? ''}`}
+              >
+                ◐
+              </button>
+            )}
             {bodyModel && xrIntent && (
               <button
                 className="fe-icon-btn fe-xr-toggle"
@@ -438,6 +501,21 @@ export function SkyExplorerScreen() {
                     <span>Label</span>
                     <strong>{hotspot ? KIND_LABEL[hotspot.kind] : shapeIsIllustration ? 'Illustration' : 'NASA data'}</strong>
                   </div>
+                  {bodyLayers.length > 1 && bodyLayer && (
+                    <div className="fe-datum fe-datum-layer">
+                      <span>NASA image layer</span>
+                      <strong>{bodyLayer.label}</strong>
+                      {bodyLayer.legend && (
+                        <div className="fe-layer-legend" aria-label={`Colour scale from ${bodyLayer.legend.min} to ${bodyLayer.legend.max}`}>
+                          <i style={{ background: `linear-gradient(90deg, ${bodyLayer.legend.stops.join(', ')})` }} />
+                          <small>
+                            <span>{bodyLayer.legend.min}</span>
+                            <span>{bodyLayer.legend.max}</span>
+                          </small>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -447,6 +525,8 @@ export function SkyExplorerScreen() {
                   <a href={hotspot.source.url} target="_blank" rel="noopener noreferrer">
                     {hotspot.source.label}
                   </a>
+                ) : dataLayerOn && bodyLayer ? (
+                  bodyLayer.credit
                 ) : (
                   bodyCredit
                 )}
@@ -527,9 +607,15 @@ export function SkyExplorerScreen() {
             <button className="fe-btn-primary" onClick={handleAskGuide}>
               <span>Ask the Guide</span><span aria-hidden="true">↗</span>
             </button>
-            <button className="fe-btn-text" onClick={handleCompare}>
-              <span>Compare observations</span><span aria-hidden="true">→</span>
-            </button>
+            {bodyModel && surfaceSite ? (
+              <button className="fe-btn-text fe-surface-btn" onClick={handleSurface}>
+                <span>Walk on {surfaceSite.name}</span><span aria-hidden="true">↗</span>
+              </button>
+            ) : (
+              <button className="fe-btn-text" onClick={handleCompare}>
+                <span>Compare observations</span><span aria-hidden="true">→</span>
+              </button>
+            )}
             <button className="fe-btn-text fe-btn-gold" onClick={handleEnterXR}>
               <span>{bodyModel ? `Open ${MODEL_LABELS[bodyModel]} in 3D / XR` : 'Enter 3D Table (XR)'}</span><span aria-hidden="true">↗</span>
             </button>

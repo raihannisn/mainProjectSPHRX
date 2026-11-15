@@ -4016,3 +4016,9 @@
     transition: none;
   }
 }
+
+/* ---- Sky Explorer · 3D model mode: NASA image layer readout (appended, no older rule changed) ---- */
+.fe-datum-layer { grid-column: 1 / -1; }
+.fe-layer-legend { display: grid; gap: 3px; margin-top: 6px; }
+.fe-layer-legend i { display: block; height: 6px; border-radius: 3px; }
+.fe-layer-legend small { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 0.6rem; color: var(--muted); }
