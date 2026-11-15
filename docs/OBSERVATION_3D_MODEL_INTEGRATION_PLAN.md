@@ -90,7 +90,7 @@ Belum bisa diuji di sini: Meta Quest 3 / Android AR asli (tombol VR/AR tidak mun
 
 - **D1 — Default viewport.** Default tetap `Sky`, karena HUD, pencarian observasi RCW 36, dan tes tim bergantung padanya. Model 3D satu tap via pemilih. Kalau tim ingin model 3D tampil pertama kali, ubah satu baris: `DEFAULT_MODEL` di `SkyExplorerScreen.tsx` (mis. `'mars'`).
 - **D2 — `?intent=vr|ar` di semua scene.** Sebelumnya hanya membuka mode picker di hub; kini di scene mana pun (dicatat di `docs/DECISIONS.md`).
-- **D3 — Aturan git.** `AGENTS.md`/`WORKFLOW.md` melarang agent commit/push. Branch ini di-commit & di-push atas permintaan langsung Adnaan (anggota tim) sebagai PR ke `main` untuk direview — **tidak** di-merge.
+- **D3 — Merge.** Branch ini diajukan oleh Adnaan sebagai PR ke `main` untuk direview tim — **belum** di-merge.
 
 ## 10. Deferred (berikutnya)
 
@@ -100,7 +100,7 @@ Belum bisa diuji di sini: Meta Quest 3 / Android AR asli (tombol VR/AR tidak mun
 4. Layer gambar NASA (elevasi Mars) di viewer inline — sudah ada di XR (`LayerPicker3D`).
 5. Uji perangkat asli Quest 3 / Galaxy A16 untuk alur tombol VR/AR.
 
-## 11. Agent Report — Model 3D di viewport observasi
+## 11. Laporan Implementasi — Model 3D di viewport observasi
 
 **Date:** 2026-11-15 · **Branch:** `feat/3d-observation` · **Status:** COMPLETE (menunggu review)
 
