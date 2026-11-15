@@ -50,6 +50,7 @@
 4. `arvr/docs/PLAN.md`
 5. `docs/OBSERVATION_3D_MODEL_INTEGRATION_PLAN.md` — Model 3D AR/VR (Mars/Moon/Bennu + hotspot) di viewport Sky Explorer: rencana, hasil tes, keputusan
 6. `docs/OBSERVATION_3D_MODEL_IMPLEMENTATION_PROMPT.md` — Prompt agent untuk melanjutkan pekerjaan ini
+7. `docs/UNIFIED_EXPERIENCE_PLAN.md` — One look and one brand: XR chrome in the 2D design language, AR/VR features inside the Sky Explorer, test results, open decisions
 
 ### ?? QA
 1. `docs/QA-CHECKLIST.md`

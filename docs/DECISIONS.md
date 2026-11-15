@@ -2,6 +2,14 @@
 
 Record decisions that affect more than one workstream. Newest decisions go first.
 
+## 2026-11-15 — One look and one brand across the 2D screens and the XR scenes (proposed, owner review)
+
+- **Decision:** The team's SPHEREx app is the base. The XR chrome is re-skinned in the 2D screens' design language through `arvr/src/xr/theme.css` (loaded after `frontend.css`), the brand is "SPHEREx Cosmic Expedition" everywhere, and the Gateway is the only front door: the XR title card opens only with `?intro`. In the Sky Explorer's 3D model mode the HUD gains a NASA image layer toggle, a "Walk on <site>" action (replacing "Compare observations" in that mode only) and Ask the Guide with body / hotspot context.
+- **Reason:** The app read as two products glued together (different brand, type, colours and navigation).
+- **Alternatives considered:** Rewriting the XR HUD with `fe-*` components (large rewrite, risks the AR DOM overlay and VR flows); removing the 3D Solar System hub (drops real planet positions, the time machine and Solar System in VR/AR; left to the owner).
+- **Impact:** No API, routing, deployment or dependency change. `backend/routes/objects.py` now reads the object catalog as UTF-8 (fixes garbled DEC text on Windows). Details and test evidence: `docs/UNIFIED_EXPERIENCE_PLAN.md`.
+- **Owner:** Adnaan (approval by owner review)
+
 ## 2026-11-15 — Inline 3D body models in the Sky Explorer viewport (proposed, PR review)
 
 - **Decision:** The Sky Explorer viewport gets a compact model switch (Sky · Mars · Moon · Bennu, URL `?model=`). Body modes render the XR module's `BodyExplorer` + `Hotspots` in a separate `<Canvas>` (no WebXR session on 2D pages). One toolbar toggle shows/hides hotspots (shared `settings.pins`); a VR/AR toggle, shown only when WebXR is supported, opens `/xr/body/<id>?intent=vr|ar`, and `ModePicker` now honours `intent` on every scene, not only the hub. Default stays `Sky`.
