@@ -70,6 +70,7 @@ export function useAgentNarration({
             ? 'Berikan ringkasan dua kalimat maksimal 45 kata, hanya berdasarkan record katalog backend objek ini.'
             : 'Give a two-sentence summary of at most 45 words, based only on this object’s backend catalog record.',
           lang: isIndonesian ? 'id' : 'en',
+          timeoutMs: 15000,
         })
         if (!active) return
         setGuideLoading(false)

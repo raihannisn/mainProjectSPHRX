@@ -367,6 +367,8 @@ export interface GuideReplyRequest {
   objectName: string
   question: string
   lang: 'en' | 'id'
+  /** the object card narrates automatically, so it gives up sooner than a typed question would */
+  timeoutMs?: number
 }
 
 export type GuideReply = { ok: true; text: string } | { ok: false; error: string }
@@ -380,6 +382,7 @@ export async function requestAgentChat(
   messages: AgentChatMessage[],
   objectId: string | undefined,
   lang: 'en' | 'id',
+  timeoutMs = 45000,
 ): Promise<GuideReply> {
   try {
     const response = await fetch(toApiUrl('/api/agent/chat'), {
@@ -393,7 +396,7 @@ export async function requestAgentChat(
           content: message.content,
         })),
       }),
-      signal: AbortSignal.timeout(45000),
+      signal: AbortSignal.timeout(timeoutMs),
     })
 
     if (!response.ok) {
@@ -425,6 +428,7 @@ export async function requestGuideReply(payload: GuideReplyRequest): Promise<Gui
     [{ role: 'user', content: payload.question }],
     payload.objectId,
     payload.lang,
+    payload.timeoutMs,
   )
 }
 
@@ -457,7 +461,34 @@ export async function requestVoiceTranscript(audio: Blob, language: 'en' | 'id')
   }
 }
 
-export async function requestAgentSpeech(
+/** Voice-over clips already fetched this visit, so reopening an object or replaying an answer costs no new TTS request. */
+const speechCache = new Map<string, Blob>()
+const speechInFlight = new Map<string, Promise<ApiResult<Blob>>>()
+const SPEECH_CACHE_MAX = 24
+
+export function requestAgentSpeech(text: string, language: 'en' | 'id'): Promise<ApiResult<Blob>> {
+  const key = `${language}:${text}`
+  const cached = speechCache.get(key)
+  if (cached) return Promise.resolve({ ok: true, data: cached })
+  const pending = speechInFlight.get(key)
+  if (pending) return pending
+  const request = fetchAgentSpeech(text, language)
+    .then((result) => {
+      if (result.ok) {
+        if (speechCache.size >= SPEECH_CACHE_MAX) speechCache.delete(speechCache.keys().next().value as string)
+        speechCache.set(key, result.data)
+      }
+      return result
+    })
+    .finally(() => speechInFlight.delete(key))
+  speechInFlight.set(key, request)
+  return request
+}
+
+/** a slow or rate-limited provider must not keep the reader waiting: after this the browser voice takes over */
+const SPEECH_TIMEOUT_MS = 20000
+
+async function fetchAgentSpeech(
   text: string,
   language: 'en' | 'id',
 ): Promise<ApiResult<Blob>> {
@@ -466,7 +497,7 @@ export async function requestAgentSpeech(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, language, voicePreset: 'mission-liaison' }),
-      signal: AbortSignal.timeout(45000),
+      signal: AbortSignal.timeout(SPEECH_TIMEOUT_MS),
     })
 
     if (!response.ok) {
