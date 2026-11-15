@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 # Returns a JSON array; we take the first (most recent) entry.
 # ---------------------------------------------------------------------------
 NASA_APOD_URL = "https://science.nasa.gov/wp-json/wp/v2/apod-basic?per_page=1"
+NASA_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+}
 
 # ---------------------------------------------------------------------------
 # NeoWs — still served from api.nasa.gov and requires an API key.
@@ -49,13 +53,13 @@ async def fetch_apod() -> dict:
     The endpoint returns a JSON array. We take the first (most recent) entry and
     normalize it into the application's response contract.
 
-    Falls back to DUMMY_APOD on any network failure, HTTP error, or unexpected
-    response structure. The fallback is clearly labeled with status='error' so
-    the frontend can distinguish live data from placeholder content.
+    Falls back to DUMMY_APOD on any network failure, HTTP error (including 500),
+    or unexpected response structure. DUMMY_APOD provides prepared dummy data
+    ("NASA APOD - Offline Mode" with local nebula image and description).
     """
     try:
         if HAS_HTTPX:
-            async with httpx.AsyncClient(timeout=15.0) as client:
+            async with httpx.AsyncClient(timeout=10.0, headers=NASA_HEADERS) as client:
                 response = await client.get(NASA_APOD_URL)
                 if response.status_code == 200:
                     data = response.json()
@@ -65,20 +69,25 @@ async def fetch_apod() -> dict:
                     logger.warning("NASA APOD response was empty or not a list: %r", data)
                     return DUMMY_APOD
                 logger.warning(
-                    "NASA APOD returned HTTP %s", response.status_code
+                    "NASA APOD returned HTTP %s (upstream error). Serving offline dummy data.",
+                    response.status_code,
                 )
                 return DUMMY_APOD
         else:
-            response = requests.get(NASA_APOD_URL, timeout=15.0)
+            response = requests.get(NASA_APOD_URL, headers=NASA_HEADERS, timeout=10.0)
             if response.status_code == 200:
                 data = response.json()
                 if isinstance(data, list) and len(data) > 0:
                     return normalize_apod(data[0])
                 return DUMMY_APOD
+            logger.warning(
+                "NASA APOD returned HTTP %s (upstream error). Serving offline dummy data.",
+                response.status_code,
+            )
             return DUMMY_APOD
-    except Exception:
+    except Exception as exc:
         # Covers connection errors, timeouts, and JSON parse failures.
-        logger.exception("Failed to fetch APOD from NASA WordPress endpoint")
+        logger.warning("Failed to fetch APOD from NASA endpoint: %s. Serving offline dummy data.", exc)
         return DUMMY_APOD
 
 

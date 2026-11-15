@@ -15,6 +15,8 @@ export type WormholeOptions = {
   label?: string
   /** Minimum time the overlay stays up, in ms. Animation floor only — there is no fake progress. */
   minMs?: number
+  /** Whether to wait for XR 3D scene loading before closing. Set to false for 2D page transitions. */
+  waitForScene?: boolean
 }
 
 export type WormholeTask = () => void | Promise<void>

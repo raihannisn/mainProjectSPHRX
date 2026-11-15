@@ -3,6 +3,7 @@ import { useXRApp } from './store'
 import { isHit, loadBlinkMeta, movedArcsec, useSpherex } from './spherexState'
 import { SPHEREX_IMAGES, revealBlink } from './SpherexTable'
 import { t } from './i18n'
+import { runWormhole } from '../frontend/wormhole'
 
 /** True on a phone held upright, where the 3D console would be too small to read. */
 function useNarrow() {
@@ -65,13 +66,17 @@ export function SpherexPanel() {
       if (obsIdA) sp.set('obs', obsIdA)
       if (obsIdB) sp.set('obs2', obsIdB)
       if (band) sp.set('band', band)
-      window.location.href = `/comparison?${sp}`
+      void runWormhole({ label: 'Returning to Comparison…', waitForScene: false, minMs: 380 }, () => {
+        window.location.href = `/comparison?${sp}`
+      })
     } else {
       const sp = new URLSearchParams()
       if (target) sp.set('target', target)
       if (obsIdA) sp.set('obs', obsIdA)
       if (band) sp.set('band', band)
-      window.location.href = `/explorer?${sp}`
+      void runWormhole({ label: 'Returning to Cosmic Expedition…', waitForScene: false, minMs: 380 }, () => {
+        window.location.href = `/explorer?${sp}`
+      })
     }
   }
 

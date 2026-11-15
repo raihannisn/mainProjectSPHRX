@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { NavLink, Link, useLocation } from 'react-router-dom'
+import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
 import { fetchSystemStatus, type SystemStatus } from '../api'
 import { useXRApp } from '../../xr/store'
+import { originOf, runWormhole } from '../wormhole'
 
 type NavState = 'top' | 'island' | 'island-open'
 
@@ -12,6 +13,14 @@ const NAV_ITEMS = [
   { to: '/guide', label: 'Cosmic Guide' },
 ]
 
+const NAV_LABELS: Record<string, { en: string; id: string }> = {
+  '/': { en: 'Opening Gateway…', id: 'Membuka Gateway…' },
+  '/explorer': { en: 'Opening Sky Explorer…', id: 'Membuka Sky Explorer…' },
+  '/comparison': { en: 'Opening Spectral Comparison…', id: 'Membuka Perbandingan Spektral…' },
+  '/guide': { en: 'Opening Cosmic Guide…', id: 'Membuka Cosmic Guide…' },
+  '/xr': { en: 'Opening wormhole — preparing 3D scene…', id: 'Membuka wormhole — menyiapkan scene 3D…' },
+}
+
 function routeLabel(pathname: string) {
   if (pathname.startsWith('/explorer')) return 'Sky Explorer'
   if (pathname.startsWith('/comparison')) return 'Comparison'
@@ -20,6 +29,7 @@ function routeLabel(pathname: string) {
 }
 
 export function TopBar() {
+  const navigate = useNavigate()
   const [status, setStatus] = useState<SystemStatus | null>(null)
   const [online, setOnline] = useState<boolean>(true)
   const [scrolled, setScrolled] = useState(false)
@@ -135,19 +145,55 @@ export function TopBar() {
     }
   }, [menuOpen])
 
-  const toggleLang = () => {
-    const next = lang === 'en' ? 'id' : 'en'
-    useXRApp.setState((s) => ({
-      settings: { ...s.settings, lang: next },
-    }))
-  }
-
   const state: NavState = menuOpen ? 'island-open' : scrolled ? 'island' : 'top'
   const copy =
     lang === 'id'
       ? { open: 'Buka menu', close: 'Tutup menu', nav: 'Navigasi utama', panel: 'Menu navigasi' }
       : { open: 'Open menu', close: 'Close menu', nav: 'Main Navigation', panel: 'Menu Navigation' }
   const statusLabel = online ? (status?.engine ? 'BACKEND LIVE' : 'DEMO READY') : 'OFFLINE MODE'
+
+  const handleNav = (
+    event: React.MouseEvent<HTMLElement>,
+    to: string,
+    onClose?: () => void,
+  ) => {
+    if (to === '/guide' && window.matchMedia('(min-width: 768px)').matches) {
+      event.preventDefault()
+      onClose?.()
+      window.dispatchEvent(
+        new CustomEvent('cosmic:open-guide', {
+          detail: { returnFocus: event.currentTarget },
+        }),
+      )
+      return
+    }
+
+    const isCurrent = to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
+    if (isCurrent) {
+      event.preventDefault()
+      onClose?.()
+      return
+    }
+
+    event.preventDefault()
+    onClose?.()
+    const origin = originOf(event.currentTarget)
+    const isToXR = to.startsWith('/xr')
+    const langKey = lang === 'id' ? 'id' : 'en'
+    const label =
+      NAV_LABELS[to]?.[langKey] ||
+      (lang === 'id' ? 'Memuat halaman…' : 'Loading page…')
+
+    void runWormhole(
+      {
+        origin,
+        label,
+        waitForScene: isToXR,
+        minMs: isToXR ? 650 : 380,
+      },
+      () => navigate(to),
+    )
+  }
 
   const navLinks = (variant: 'bar' | 'panel') =>
     NAV_ITEMS.map((item) => (
@@ -157,15 +203,9 @@ export function TopBar() {
         end={item.to === '/'}
         className={({ isActive }) => `fe-nav-link ${isActive ? 'active' : ''}`}
         onClick={(event) => {
-          if (item.to === '/guide' && window.matchMedia('(min-width: 768px)').matches) {
-            event.preventDefault()
-            window.dispatchEvent(
-              new CustomEvent('cosmic:open-guide', {
-                detail: { returnFocus: event.currentTarget },
-              }),
-            )
-          }
-          if (variant === 'panel') setMenuOpen(false)
+          handleNav(event, item.to, () => {
+            if (variant === 'panel') setMenuOpen(false)
+          })
         }}
       >
         {item.label}
@@ -185,26 +225,15 @@ export function TopBar() {
     </div>
   )
 
-  const langButton = (
-    <button
-      className="fe-lang-btn"
-      onClick={toggleLang}
-      aria-label={lang === 'en' ? 'Switch to Indonesian' : 'Switch to English'}
-    >
-      {lang === 'en' ? (
-        <>
-          <strong>EN</strong> / ID
-        </>
-      ) : (
-        <>
-          EN / <strong>ID</strong>
-        </>
-      )}
-    </button>
-  )
-
   const xrLink = (
-    <Link to="/xr" className="fe-xr-badge-btn" title="Open Solar System & WebXR 3D Hub">
+    <Link
+      to="/xr"
+      className="fe-xr-badge-btn"
+      title="Open Solar System & WebXR 3D Hub"
+      onClick={(event) => {
+        handleNav(event, '/xr', () => setMenuOpen(false))
+      }}
+    >
       <span>3D / WebXR</span>
       <span aria-hidden="true">↗</span>
     </Link>
@@ -216,7 +245,13 @@ export function TopBar() {
         <div className="fe-island" ref={islandRef}>
           <div className="fe-island-bar">
             <div className="fe-brand">
-              <Link to="/" className="fe-brand-link">
+              <Link
+                to="/"
+                className="fe-brand-link"
+                onClick={(event) => {
+                  handleNav(event, '/', () => setMenuOpen(false))
+                }}
+              >
                 <span className="fe-brand-mark">S</span>
                 <span className="fe-brand-text">
                   SPHEREx <span className="fe-brand-sep fe-muted">/</span>{' '}
@@ -233,8 +268,6 @@ export function TopBar() {
             </span>
 
             <div className="fe-top-actions">
-              {connection}
-              {langButton}
               {xrLink}
             </div>
 
@@ -256,8 +289,6 @@ export function TopBar() {
               {navLinks('panel')}
             </nav>
             <div className="fe-island-panel-actions">
-              {connection}
-              {langButton}
               {xrLink}
             </div>
           </div>

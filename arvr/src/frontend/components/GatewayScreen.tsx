@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { fetchApod, type ApodData } from '../api'
 import { TopBar } from './TopBar'
 import { ParticleField } from './ParticleField'
+import { SolarSystem3D } from './SolarSystem3D'
 import { originOf, runWormhole } from '../wormhole'
+import { useXRApp } from '../../xr/store'
 
 type DeviceCaps = { ar: boolean; vr: boolean }
 
 export function GatewayScreen() {
   const navigate = useNavigate()
+  const lang = useXRApp((s) => s.settings.lang)
   const [caps, setCaps] = useState<DeviceCaps>({ ar: false, vr: false })
   const capabilitiesRef = useRef<HTMLDivElement | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -16,6 +19,15 @@ export function GatewayScreen() {
   const [apodLoading, setApodLoading] = useState(false)
   const [apod, setApod] = useState<ApodData | null>(null)
   const [apodError, setApodError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!apodOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setApodOpen(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [apodOpen])
 
   useEffect(() => {
     let active = true
@@ -56,17 +68,18 @@ export function GatewayScreen() {
     setApodLoading(true)
     setApod(null)
     setApodError(null)
-    const result = await fetchApod()
-    setApodLoading(false)
-    if (!result.ok) {
-      setApodError(result.error)
-      return
+    try {
+      const result = await fetchApod()
+      setApodLoading(false)
+      if (!result.ok) {
+        setApodError('NASA APOD sedang tidak tersedia. Silakan coba lagi.')
+        return
+      }
+      setApod(result.data)
+    } catch {
+      setApodLoading(false)
+      setApodError('NASA APOD sedang tidak tersedia. Silakan coba lagi.')
     }
-    if (result.data.status !== 'ok' || result.data.fallback) {
-      setApodError(result.data.message || 'NASA APOD is currently unavailable.')
-      return
-    }
-    setApod(result.data)
   }
 
   return (
@@ -81,16 +94,16 @@ export function GatewayScreen() {
               <linearGradient id="fe-gw-grad-1" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#4fe3d6" stopOpacity=".9" />
                 <stop offset="50%" stopColor="#38bdf8" stopOpacity=".85" />
-                <stop offset="100%" stopColor="#b18cff" stopOpacity=".8" />
+                <stop offset="100%" stopColor="#0ea5e9" stopOpacity=".8" />
               </linearGradient>
               <linearGradient id="fe-gw-grad-2" x1="100%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#b18cff" stopOpacity=".75" />
+                <stop offset="0%" stopColor="#0ea5e9" stopOpacity=".75" />
                 <stop offset="45%" stopColor="#4fe3d6" stopOpacity=".8" />
                 <stop offset="100%" stopColor="#38bdf8" stopOpacity=".7" />
               </linearGradient>
               <linearGradient id="fe-gw-grad-3" x1="0%" y1="50%" x2="100%" y2="50%">
                 <stop offset="0%" stopColor="#38bdf8" stopOpacity=".5" />
-                <stop offset="60%" stopColor="#b18cff" stopOpacity=".6" />
+                <stop offset="60%" stopColor="#0ea5e9" stopOpacity=".6" />
                 <stop offset="100%" stopColor="#4fe3d6" stopOpacity=".5" />
               </linearGradient>
             </defs>
@@ -110,7 +123,21 @@ export function GatewayScreen() {
           </p>
 
           <div className="fe-button-row">
-            <button className="fe-btn-primary" onClick={() => navigate('/explorer')}>
+            <button
+              className="fe-btn-primary"
+              onClick={(event) => {
+                const origin = originOf(event.currentTarget)
+                void runWormhole(
+                  {
+                    origin,
+                    label: lang === 'id' ? 'Menuju Cosmic Expedition…' : 'Entering Cosmic Expedition…',
+                    waitForScene: false,
+                    minMs: 450,
+                  },
+                  () => navigate('/explorer')
+                )
+              }}
+            >
               Enter expedition <span aria-hidden="true">↗</span>
             </button>
             <button className="fe-btn-text" onClick={handleCapabilities}>
@@ -122,20 +149,8 @@ export function GatewayScreen() {
           </div>
         </div>
 
-        <div className="fe-sky-art" aria-label="Illustrative solar system with planets orbiting a glowing sun">
-          <div className="fe-solar-system" aria-hidden="true">
-            <div className="fe-solar-dust" />
-            <div className="fe-planet-orbit one">
-              <i className="fe-planet" />
-            </div>
-            <div className="fe-planet-orbit two">
-              <i className="fe-planet" />
-            </div>
-            <div className="fe-planet-orbit three">
-              <i className="fe-planet" />
-            </div>
-            <div className="fe-sun" />
-          </div>
+        <div className="fe-sky-art" aria-label="Illustrative 3D solar system with 8 planets orbiting a glowing sun">
+          <SolarSystem3D />
         </div>
 
         <div className="fe-steps">
@@ -157,7 +172,22 @@ export function GatewayScreen() {
         </div>
 
         <div className="fe-capabilities" id="fe-gateway-capabilities" ref={capabilitiesRef} tabIndex={-1} aria-label="Explore in 3D, AR, or VR">
-          <button type="button" className="fe-cap" onClick={() => navigate('/explorer')}>
+          <button
+            type="button"
+            className="fe-cap"
+            onClick={(event) => {
+              const origin = originOf(event.currentTarget)
+              void runWormhole(
+                {
+                  origin,
+                  label: lang === 'id' ? 'Membuka 3D Sky Explorer…' : 'Opening 3D Sky Explorer…',
+                  waitForScene: false,
+                  minMs: 450,
+                },
+                () => navigate('/explorer')
+              )
+            }}
+          >
             <b>Desktop 3D</b>
             <small>AVAILABLE · WEBGL</small>
             <span>Explore the interactive 3D sky in the browser.</span>
@@ -199,7 +229,11 @@ export function GatewayScreen() {
       )}
 
       {apodOpen && (
-        <div className="fe-apod-backdrop" onClick={() => setApodOpen(false)}>
+        <div
+          className="fe-apod-backdrop"
+          onClick={() => setApodOpen(false)}
+          role="presentation"
+        >
           <section
             className="fe-apod-dialog"
             role="dialog"
@@ -207,27 +241,118 @@ export function GatewayScreen() {
             aria-labelledby="fe-apod-title"
             onClick={(event) => event.stopPropagation()}
           >
-            <button className="fe-modal-close" onClick={() => setApodOpen(false)} aria-label="Close APOD dialog">
+            <button
+              type="button"
+              className="fe-modal-close"
+              onClick={() => setApodOpen(false)}
+              aria-label={lang === 'id' ? 'Tutup dialog APOD' : 'Close APOD dialog'}
+            >
               ×
             </button>
             <div className="fe-eyebrow">NASA · Astronomy Picture of the Day</div>
-            <h2 id="fe-apod-title">{apodLoading ? 'Loading NASA APOD…' : apod?.title || 'NASA APOD Highlight'}</h2>
-            {apodLoading && <p role="status">Fetching the latest feature from NASA…</p>}
-            {apodError && <p className="fe-apod-error" role="alert">{apodError}</p>}
-            {apod && (
+            <h2 id="fe-apod-title">
+              {apodLoading
+                ? (lang === 'id' ? 'Memuat NASA APOD…' : 'Loading NASA APOD…')
+                : apod?.title || 'NASA APOD Highlight'}
+            </h2>
+
+            {apodLoading && (
+              <div className="fe-apod-loading" role="status">
+                <div className="fe-apod-spinner" aria-hidden="true" />
+                <p>{lang === 'id' ? 'Mengambil sorotan terbaru dari NASA…' : 'Fetching the latest feature from NASA…'}</p>
+              </div>
+            )}
+
+            {apodError && (
+              <div className="fe-apod-error-box" role="alert">
+                <div className="fe-apod-error-icon" aria-hidden="true">✦</div>
+                <div className="fe-apod-error-body">
+                  <p className="fe-apod-error-message">NASA APOD sedang tidak tersedia. Silakan coba lagi.</p>
+                  <p className="fe-apod-error-hint">
+                    {lang === 'id'
+                      ? 'Layanan NASA sedang sibuk atau offline. Anda dapat mencoba kembali beberapa saat lagi.'
+                      : 'NASA upstream service is temporarily busy or unreachable. You can try again in a moment.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="fe-btn-primary fe-apod-retry-btn"
+                  onClick={() => void openApod()}
+                >
+                  {lang === 'id' ? 'Coba Lagi ↻' : 'Try Again ↻'}
+                </button>
+              </div>
+            )}
+
+            {!apodLoading && !apodError && apod && (
               <>
                 <div className="fe-apod-meta">
-                  {apod.date && <span>{apod.date}</span>}
-                  <span>{apod.media_type === 'video' ? 'NASA video' : 'NASA image'}</span>
+                  {apod.date && (
+                    <span className="fe-apod-date">
+                      <span aria-hidden="true">📅</span> {apod.date}
+                    </span>
+                  )}
+                  {apod.fallback ? (
+                    <span className="fe-apod-badge fe-apod-badge--offline">
+                      {lang === 'id' ? '● Mode Offline' : '● Offline Mode'}
+                    </span>
+                  ) : (
+                    <span className="fe-apod-badge">
+                      {apod.media_type === 'video' ? '● NASA Video' : '● Live NASA APOD'}
+                    </span>
+                  )}
+                  {(apod.credit || apod.copyright) && (
+                    <span className="fe-apod-source">
+                      © {apod.credit || apod.copyright}
+                    </span>
+                  )}
                 </div>
-                {apod.image_url && <img className="fe-apod-image" src={apod.image_url} alt={apod.alt || apod.title || 'NASA APOD'} />}
-                <p className="fe-apod-explanation">{apod.explanation}</p>
-                <p className="fe-apod-credit">Credit: {apod.credit || apod.copyright || 'NASA'}</p>
-                {apod.article_url && (
-                  <a className="fe-btn-primary" href={apod.article_url} target="_blank" rel="noopener noreferrer">
-                    Read on NASA Science ↗
-                  </a>
+
+                {apod.fallback && (
+                  <div className="fe-apod-offline-note">
+                    <span className="fe-apod-offline-icon" aria-hidden="true">✦</span>
+                    <p>
+                      {lang === 'id'
+                        ? 'Layanan upstream NASA APOD saat ini sedang tidak tersedia (Error 500). Menampilkan arsip offline observasi Vela Molecular Ridge Nebula dari SPHEREx.'
+                        : 'NASA APOD upstream service is temporarily offline (Error 500). Displaying offline SPHEREx observation archive for the Vela Molecular Ridge Nebula.'}
+                    </p>
+                  </div>
                 )}
+
+                {(apod.image_url || apod.thumbnail_url) && (
+                  <div className="fe-apod-image-container">
+                    <img
+                      className="fe-apod-image"
+                      src={apod.image_url || apod.thumbnail_url || ''}
+                      alt={apod.alt || apod.title || 'NASA APOD'}
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+
+                {apod.explanation && (
+                  <p className="fe-apod-explanation">{apod.explanation}</p>
+                )}
+
+                <div className="fe-apod-actions">
+                  {apod.article_url && (
+                    <a
+                      className="fe-btn-primary"
+                      href={apod.article_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {lang === 'id' ? 'Buka di NASA Science ↗' : 'Read on NASA Science ↗'}
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    className="fe-btn-text"
+                    onClick={() => setApodOpen(false)}
+                  >
+                    {lang === 'id' ? 'Tutup' : 'Close'}
+                  </button>
+                </div>
               </>
             )}
           </section>

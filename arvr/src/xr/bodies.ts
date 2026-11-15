@@ -33,6 +33,6 @@ BODY_BY_ID.spherex = { id: 'spherex', name: 'SPHEREx sky', kind: 'planet', color
 
 export const KIND_COLORS = {
   fact: '#4fd1ff',
-  illustration: '#b18cff',
+  illustration: '#38bdf8',
   candidate: '#ffb347',
 } as const

@@ -8,6 +8,7 @@ import { originOf, runWormhole } from '../wormhole'
 import { cacheObservations, useXRApp } from '../../xr/store'
 import { BotIcon } from '../guide/BotIcon'
 import { SkyScene3D } from './SkyScene3D'
+import { useAmbientAudio } from '../audio/ambientAudio'
 
 type MarkerId = 'rcw-36' | 'candidate-02' | 'demo-tile-01'
 
@@ -41,7 +42,7 @@ export function SkyExplorerScreen() {
   const [rotation, setRotation] = useState({ x: 0, y: 0 })
   const [scale, setScale] = useState(1)
   const [toast, setToast] = useState<string | null>(null)
-  const [audioOn, setAudioOn] = useState(false)
+  const { isEnabled: audioOn, toggle: toggleAudio } = useAmbientAudio()
   const lang = useXRApp((s) => s.settings.lang)
   const [target, setTarget] = useState<ObjectInfo | null>(null)
   const [targetLoading, setTargetLoading] = useState(true)
@@ -186,10 +187,15 @@ export function SkyExplorerScreen() {
 
   return (
     <div className="fe-app">
-      <ParticleField />
+      <ParticleField count={140} />
       <TopBar />
 
       <main className="fe-explorer" id="explorer">
+        {/* Bottom rising star particles with linear fade */}
+        <div className="fe-particle-bottom-stream" aria-hidden="true">
+          <ParticleField count={70} variant="bottom" />
+        </div>
+
         <div
           className="fe-viewport"
           onPointerDown={handlePointerDown}
@@ -204,12 +210,21 @@ export function SkyExplorerScreen() {
         >
           <SkyScene3D selectedId={selectedId} onSelect={selectTarget} rotation={rotation} scale={scale} />
           <div className="fe-sky-title">
-            <div className="fe-eyebrow">All-sky explorer · IRSA SPHEREx field</div>
+            <div className="fe-eyebrow">
+              <span className="fe-pulse-dot" aria-hidden="true" />
+              <span>All-sky explorer · IRSA SPHEREx field</span>
+            </div>
             <h2>{selectedId === 'rcw-36' ? 'Vela Molecular Ridge' : currentName}</h2>
-            <p>
-              {selectedId === 'rcw-36' && target
-                ? `RA ${target.ra_hms || queryValue(target.ra)} · DEC ${target.dec_dms || queryValue(target.dec)}`
-                : 'Illustrative sky marker · no catalog coordinates'}
+            <p className="fe-sky-coords">
+              {selectedId === 'rcw-36' && target ? (
+                <>
+                  <span className="fe-coord-pill">RA {target.ra_hms || queryValue(target.ra)}</span>
+                  <span className="fe-coord-dot">·</span>
+                  <span className="fe-coord-pill">DEC {target.dec_dms || queryValue(target.dec)}</span>
+                </>
+              ) : (
+                <span className="fe-coord-pill fe-coord-illustrative">Illustrative sky marker · no catalog coordinates</span>
+              )}
             </p>
           </div>
           <div className="fe-toolbar">
@@ -230,9 +245,12 @@ export function SkyExplorerScreen() {
             </button>
             <button
               className={`fe-icon-btn ${audioOn ? 'selected' : ''}`}
-              onClick={() => setAudioOn((value) => !value)}
-              aria-label="Toggle audio"
-              title="Toggle audio"
+              onClick={() => {
+                const next = toggleAudio()
+                notify(next ? (lang === 'id' ? 'Musik latar aktif' : 'Ambient music enabled') : (lang === 'id' ? 'Musik latar nonaktif' : 'Ambient music muted'))
+              }}
+              aria-label={audioOn ? 'Toggle audio off' : 'Toggle audio on'}
+              title={audioOn ? (lang === 'id' ? 'Matikan musik' : 'Mute music') : (lang === 'id' ? 'Nyalakan musik' : 'Play music')}
             >
               ♫
             </button>
@@ -335,7 +353,22 @@ export function SkyExplorerScreen() {
           </div>
 
           <div className="fe-dock">
-            <button onClick={() => navigate('/')}>Exit to Gateway</button>
+            <button
+              onClick={(event) => {
+                const origin = originOf(event.currentTarget)
+                void runWormhole(
+                  {
+                    origin,
+                    label: lang === 'id' ? 'Kembali ke Gateway…' : 'Returning to Gateway…',
+                    waitForScene: false,
+                    minMs: 400,
+                  },
+                  () => navigate('/')
+                )
+              }}
+            >
+              Exit to Gateway
+            </button>
             <button
               onClick={(event) => {
                 const origin = originOf(event.currentTarget)
