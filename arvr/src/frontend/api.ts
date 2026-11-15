@@ -1,11 +1,15 @@
 /**
- * SPHEREx API client. Requests use the same-origin /api routes, proxied to
- * FastAPI by Vite during development and routed to the API service in Vercel.
+ * SPHEREx API client.
+ * Konfigurasi terpusat untuk menghubungkan Frontend ke Backend live NASA SPHEREx di Vercel:
+ * https://nasa-spherex-backend.vercel.app
+ *
+ * Catatan: Endpoint /api/agent/* tidak digunakan.
+ * Semua interaksi AI dan asisten Cosmic Guide diarahkan ke endpoint backend live: /api/ai/chat
  */
 
 export const BASE_URL: string =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ||
-  (import.meta.env.DEV ? '' : 'https://nasa-spherex-backend.vercel.app')
+  'https://nasa-spherex-backend.vercel.app'
 
 export const API_URL = BASE_URL
 
@@ -381,18 +385,17 @@ export async function requestAgentChat(
   objectId: string | undefined,
   lang: 'en' | 'id',
 ): Promise<GuideReply> {
+  // Redirect to /api/ai/chat (backend live di https://nasa-spherex-backend.vercel.app)
+  // /api/agent/chat tidak digunakan karena memerlukan env terpisah di Vercel teman.
+  const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user')
+  const question = lastUserMsg?.content ?? ''
+  const contextPrefix = objectId ? `[Target: ${objectId}] ` : ''
+
   try {
-    const response = await fetch(toApiUrl('/api/agent/chat'), {
+    const response = await fetch(toApiUrl('/api/ai/chat'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        objectId,
-        lang,
-        messages: messages.slice(-10).map((message) => ({
-          role: message.role === 'assistant' ? 'bot' : 'user',
-          content: message.content,
-        })),
-      }),
+      body: JSON.stringify({ message: `${contextPrefix}${question}` }),
       signal: AbortSignal.timeout(45000),
     })
 
@@ -408,11 +411,15 @@ export async function requestAgentChat(
     }
 
     const body: unknown = await response.json()
-    if (isRecord(body) && body.success === true && isRecord(body.data)) {
-      const answer = body.data.message
-      if (typeof answer === 'string' && answer.trim()) {
-        return { ok: true, text: answer.trim() }
-      }
+    // /api/ai/chat returns {reply: "..."}, while old /api/agent/chat returned {success:true, data:{message:"..."}}
+    if (isRecord(body)) {
+      const answer =
+        typeof body.reply === 'string'
+          ? body.reply
+          : isRecord(body.data) && typeof body.data.message === 'string'
+            ? body.data.message
+            : ''
+      if (answer.trim()) return { ok: true, text: answer.trim() }
     }
     return { ok: false, error: 'The Agent returned an invalid or empty response.' }
   } catch (error: unknown) {

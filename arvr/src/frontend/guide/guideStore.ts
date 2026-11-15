@@ -1,7 +1,8 @@
 import { create } from 'zustand'
-import { requestAgentChat } from '../api'
+import { BASE_URL, toApiUrl } from '../api'
 
-let requestGeneration = 0
+export { BASE_URL }
+export const API_URL = BASE_URL
 
 export interface GuideTarget {
   id: string
@@ -15,6 +16,34 @@ export interface ChatMessage {
   timestamp: number
 }
 
+export const DEFAULT_GUIDE_TARGET: GuideTarget = { id: 'rcw-36', name: 'RCW 36 Emission Nebula' }
+
+/**
+ * Mengirim pesan prompt ke backend /api/ai/chat
+ * Semua permintaan diarahkan ke backend live: https://nasa-spherex-backend.vercel.app
+ * Format: Method POST, headers Content-Type: application/json, body: {"message": "..."}
+ */
+export async function sendChatMessage(message: string): Promise<string> {
+  const primaryEndpoint = toApiUrl('/api/ai/chat')
+  const payload = JSON.stringify({ message })
+  const headers = { 'Content-Type': 'application/json' }
+
+  const response = await fetch(primaryEndpoint, {
+    method: 'POST',
+    headers,
+    body: payload,
+  })
+
+  if (response.ok) {
+    const data = await response.json()
+    if (typeof data?.reply === 'string' && data.reply.trim().length > 0) {
+      return data.reply.trim()
+    }
+  }
+
+  return 'Maaf, Cosmic Guide sedang sibuk. Silakan coba lagi.'
+}
+
 export interface GuideState {
   open: boolean
   target: GuideTarget | null
@@ -24,38 +53,22 @@ export interface GuideState {
   openGuide: (target?: GuideTarget) => void
   closeGuide: () => void
   setGuideTarget: (target: GuideTarget | null) => void
-  sendMessage: (message: string, lang: 'en' | 'id') => Promise<string>
+  // lang is accepted but ignored — /api/ai/chat is language-agnostic
+  sendMessage: (message: string, lang?: string) => Promise<string>
   clearMessages: () => void
 }
 
 export const useGuide = create<GuideState>((set, get) => ({
   open: false,
-  target: null,
+  target: DEFAULT_GUIDE_TARGET,
   messages: [],
   loading: false,
   error: null,
-  openGuide: (target) => {
-    if (target && target.id !== get().target?.id) {
-      requestGeneration += 1
-      set({ open: true, target, messages: [], loading: false, error: null })
-      return
-    }
-    set((state) => ({ open: true, target: target ?? state.target }))
-  },
+  openGuide: (target) => set((state) => ({ open: true, target: target ?? state.target })),
   closeGuide: () => set({ open: false }),
-  setGuideTarget: (target) => {
-    if (target?.id !== get().target?.id) {
-      requestGeneration += 1
-      set({ target, messages: [], loading: false, error: null })
-      return
-    }
-    set({ target })
-  },
-  clearMessages: () => {
-    requestGeneration += 1
-    set({ messages: [], error: null })
-  },
-  sendMessage: async (text, lang) => {
+  setGuideTarget: (target) => set({ target }),
+  clearMessages: () => set({ messages: [], error: null }),
+  sendMessage: async (text: string, _lang?: string) => {
     const cleanText = text.trim()
     if (!cleanText || get().loading) return ''
 
@@ -65,9 +78,6 @@ export const useGuide = create<GuideState>((set, get) => ({
       content: cleanText,
       timestamp: Date.now(),
     }
-    const requestMessages = [...get().messages, userMsg].slice(-10)
-    const objectId = get().target?.id
-    const generation = ++requestGeneration
 
     set((state) => ({
       messages: [...state.messages, userMsg],
@@ -76,28 +86,32 @@ export const useGuide = create<GuideState>((set, get) => ({
     }))
 
     try {
-      const result = await requestAgentChat(requestMessages, objectId, lang)
-      if (generation !== requestGeneration) return ''
-      if (!result.ok) throw new Error(result.error)
-
+      const reply = await sendChatMessage(cleanText)
       const assistantMsg: ChatMessage = {
-        id: `assistant-${Date.now()}`,
+        id: `bot-${Date.now()}`,
         role: 'assistant',
-        content: result.text,
+        content: reply,
         timestamp: Date.now(),
       }
       set((state) => ({
         messages: [...state.messages, assistantMsg],
         loading: false,
       }))
-      return result.text
-    } catch (error: unknown) {
-      if (generation !== requestGeneration) return ''
-      set({
+      return reply
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err)
+      const fallbackMsg: ChatMessage = {
+        id: `bot-${Date.now()}`,
+        role: 'assistant',
+        content: 'Maaf, Cosmic Guide sedang sibuk. Silakan coba lagi.',
+        timestamp: Date.now(),
+      }
+      set((state) => ({
+        messages: [...state.messages, fallbackMsg],
         loading: false,
-        error: error instanceof Error ? error.message : String(error),
-      })
-      return ''
+        error: errorMsg,
+      }))
+      return fallbackMsg.content
     }
   },
 }))
