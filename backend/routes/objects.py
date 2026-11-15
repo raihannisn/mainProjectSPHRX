@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException
-from pathlib import Path
-import json
-import os
+from fastapi import APIRouter
+
+from services.object_service import get_object_record
+
 
 ROUTER = APIRouter(prefix="/api/objects", tags=["Objects"])
 router = ROUTER
