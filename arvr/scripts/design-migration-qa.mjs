@@ -382,4 +382,3 @@ console.table(
   })),
 )
 console.log(`report: ${resolve(outDir, 'report.json')}`)
-

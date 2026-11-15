@@ -2,7 +2,8 @@
 __pycache__/
 *.fits
 
-# Environment variables — never commit credentials or API keys
+# Environment variables and credentials
 .env
+*.env
 .env.*
 !.env.example

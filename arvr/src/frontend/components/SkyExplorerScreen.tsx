@@ -54,14 +54,26 @@ function isMarkerId(value: string | null): value is MarkerId {
   return value === 'rcw-36' || value === 'candidate-02' || value === 'demo-tile-01'
 }
 
-/** Upstream failures can carry a whole HTML error page; show one readable line instead of raw markup. */
-function tidyError(message: string) {
-  const text = message.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-  return text.length > 150 ? `${text.slice(0, 150).trimEnd()}…` : text
-}
-
 function queryValue(value: number | undefined, precision = 4) {
   return value === undefined ? '—' : value.toFixed(precision)
+}
+
+function formatUtc(val?: string | null): string {
+  if (!val || typeof val !== 'string' || val.trim() === '') return 'Not available'
+  const match = val.trim().match(/^(\d{4}-\d{2}-\d{2})[T\s](\d{2}:\d{2})/)
+  if (match) {
+    return `${match[1]} ${match[2]} UTC`
+  }
+  return val
+}
+
+function formatErrorMessage(err?: string | null): string {
+  if (!err) return ''
+  if (/502|503|504|Proxy Error|Bad Gateway|upstream server|timeout|IRSA|query/i.test(err)) {
+    return 'NASA IRSA is temporarily unavailable. Please try again.'
+  }
+  const clean = err.replace(/<[^>]*>/g, '').trim()
+  return clean.length > 80 ? 'NASA IRSA is temporarily unavailable. Please try again.' : clean
 }
 
 export function SkyExplorerScreen() {
@@ -469,6 +481,23 @@ export function SkyExplorerScreen() {
         </div>
 
         <aside className="fe-hud" aria-live="polite">
+          <div className="fe-hud-actions">
+            <button className="fe-btn-primary" onClick={handleAskGuide}>
+              <span>Ask the Guide</span><span aria-hidden="true">↗</span>
+            </button>
+            {bodyModel && surfaceSite ? (
+              <button className="fe-btn-text fe-surface-btn" onClick={handleSurface}>
+                <span>{t('Walk on {x}', { x: t(surfaceSite.name) })}</span><span aria-hidden="true">↗</span>
+              </button>
+            ) : (
+              <button className="fe-btn-text" onClick={handleCompare}>
+                <span>Compare observations</span><span aria-hidden="true">→</span>
+              </button>
+            )}
+            <button className="fe-btn-text fe-btn-gold" onClick={handleEnterXR}>
+              <span>{bodyModel ? t('Open {x} in 3D / XR', { x: t(MODEL_LABELS[bodyModel]) }) : 'Enter 3D Table (XR)'}</span><span aria-hidden="true">↗</span>
+            </button>
+          </div>
           {bodyModel && bodyTag ? (
             <>
               <div className="fe-hud-card fe-hud-object">
@@ -550,7 +579,7 @@ export function SkyExplorerScreen() {
             </div>
             <h2>{targetLoading ? 'Loading catalog…' : currentName}</h2>
             <p>{targetLoading ? 'Fetching target information from the object catalog.' : currentDescription}</p>
-            {targetError && <p className="fe-inline-error" role="alert">Catalog unavailable: {tidyError(targetError)}</p>}
+            {targetError && <p className="fe-inline-error" role="alert">Catalog unavailable: {formatErrorMessage(targetError)}</p>}
           </div>
 
           <div className="fe-hud-card fe-hud-telemetry">
@@ -596,10 +625,14 @@ export function SkyExplorerScreen() {
               </div>
               <div className="fe-datum">
                 <span>Observed at (UTC)</span>
-                <strong>{chosenObservation?.observed_at_utc || 'Not available'}</strong>
+                <strong>{formatUtc(chosenObservation?.observed_at_utc)}</strong>
               </div>
             </div>
-            {observationsError && <p className="fe-inline-error" role="alert">Observation search failed: {tidyError(observationsError)}</p>}
+            {observationsError && (
+              <p className="fe-inline-error" role="alert">
+                {formatErrorMessage(observationsError)}
+              </p>
+            )}
             {!observationsLoading && !observationsError && selectedId === 'rcw-36' && observations.length === 0 && (
               <p className="fe-muted" role="status">No SPHEREx observation records were returned for this search.</p>
             )}
@@ -610,24 +643,6 @@ export function SkyExplorerScreen() {
           </div>
           </>
           )}
-
-          <div className="fe-hud-actions">
-            <button className="fe-btn-primary" onClick={handleAskGuide}>
-              <span>Ask the Guide</span><span aria-hidden="true">↗</span>
-            </button>
-            {bodyModel && surfaceSite ? (
-              <button className="fe-btn-text fe-surface-btn" onClick={handleSurface}>
-                <span>{t('Walk on {x}', { x: t(surfaceSite.name) })}</span><span aria-hidden="true">↗</span>
-              </button>
-            ) : (
-              <button className="fe-btn-text" onClick={handleCompare}>
-                <span>Compare observations</span><span aria-hidden="true">→</span>
-              </button>
-            )}
-            <button className="fe-btn-text fe-btn-gold" onClick={handleEnterXR}>
-              <span>{bodyModel ? t('Open {x} in 3D / XR', { x: t(MODEL_LABELS[bodyModel]) }) : 'Enter 3D Table (XR)'}</span><span aria-hidden="true">↗</span>
-            </button>
-          </div>
 
           <div className="fe-dock">
             <button onClick={() => navigate('/')}>Exit to Gateway</button>

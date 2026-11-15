@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,17 +13,24 @@ BACKEND_DIR = Path(__file__).resolve().parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
+_BACKEND_ENV = BACKEND_DIR / ".env"
+if _BACKEND_ENV.is_file():
+    load_dotenv(dotenv_path=_BACKEND_ENV)
+
 from routes.images import router as images_router
 from routes.metadata import router as metadata_router
 from routes.objects import router as objects_router
 from routes.nasa import router as nasa_router
 from routes.spherex import router as spherex_router
 from routes.system import router as system_router
+from routes.ai import router as ai_router
+from routes.agent import demo_router as agent_demo_router
+from routes.agent import router as agent_router
 
 app = FastAPI(
     title="SPHEREx Cosmic Explorer API",
     description="Backend engine untuk NASA Space Apps Challenge - Planet X & SPHEREx",
-    version="1.2.0"
+    version="1.3.0"
 )
 
 # --- CORS (Biar Vercel & WebXR bisa akses) ---
@@ -44,3 +54,6 @@ app.include_router(objects_router)
 app.include_router(nasa_router)
 app.include_router(spherex_router)
 app.include_router(system_router)
+app.include_router(ai_router)
+app.include_router(agent_router)
+app.include_router(agent_demo_router)

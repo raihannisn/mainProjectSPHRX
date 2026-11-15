@@ -3,21 +3,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#070b1f">
+  <script>window.SPHEREX_API_BASE = 'http://127.0.0.1:8000';</script>
   <title>SPHEREx Cosmic Expedition</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
     :root{--space:#070b1f;--panel:rgba(11,24,32,.88);--line:rgba(79,227,214,.27);--teal:#4fe3d6;--violet:#b18cff;--amber:#f5ae43;--white:#fff;--soft:#c7cde6;--muted:#9ba8bf;--mono:"SFMono-Regular",Consolas,monospace;--sans:system-ui,-apple-system,"Segoe UI",sans-serif;--gap:clamp(12px,2vw,24px)}
     *{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--space);color:var(--white);font-family:var(--sans);font-size:15px;line-height:1.55}button{font:inherit;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:2px solid var(--teal);outline-offset:3px}.mono{font-family:var(--mono);font-size:.78rem;letter-spacing:.02em}.eyebrow{color:var(--teal);font:700 .7rem var(--mono);letter-spacing:.15em;text-transform:uppercase}.muted{color:var(--muted)}
     .app{min-height:100vh;position:relative;overflow:hidden;background:radial-gradient(ellipse at 72% 28%,rgba(29,89,105,.22),transparent 34%),radial-gradient(ellipse at 23% 79%,rgba(65,55,129,.16),transparent 32%),var(--space)}
-    .topbar{height:76px;padding:0 clamp(18px,4vw,64px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(199,205,230,.1);position:relative;z-index:4;background:rgba(7,11,31,.76);backdrop-filter:blur(14px)}.brand{display:flex;align-items:center;gap:13px;font-size:.9rem;font-weight:650;letter-spacing:.04em}.brand-mark{width:30px;height:30px;border:1px solid var(--teal);border-radius:50%;display:grid;place-items:center;color:var(--teal);font:700 .7rem var(--mono);box-shadow:0 0 20px #4fe3d633}.top-actions{display:flex;align-items:center;gap:22px}.connection{display:flex;align-items:center;gap:8px;color:var(--soft);font-size:.77rem}.dot{width:7px;height:7px;background:var(--teal);border-radius:50%;box-shadow:0 0 10px var(--teal)}.lang{border:0;background:none;color:var(--soft);font-size:.78rem;min-height:36px;min-width:44px;display:inline-flex;align-items:center;justify-content:center;padding:6px 12px;cursor:pointer;touch-action:manipulation}.lang strong{color:var(--white)}
-    @media(pointer:coarse){
-      .lang{min-height:44px!important;min-width:44px!important;padding:8px 12px!important}
-      .tabs .tab{min-height:44px!important}
-      .back{min-height:44px!important;min-width:44px!important}
-      .toolbar .icon-btn{min-width:44px!important;min-height:44px!important}
-      #explorer .hud-actions button, #compare{min-height:44px!important}
-      #explorer .dock button{min-height:44px!important}
-    }
+    .topbar{height:76px;padding:0 clamp(18px,4vw,64px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(199,205,230,.1);position:relative;z-index:4;background:rgba(7,11,31,.76);backdrop-filter:blur(14px)}.brand{display:flex;align-items:center;gap:13px;font-size:.9rem;font-weight:650;letter-spacing:.04em}.brand-mark{width:30px;height:30px;border:1px solid var(--teal);border-radius:50%;display:grid;place-items:center;color:var(--teal);font:700 .7rem var(--mono);box-shadow:0 0 20px #4fe3d633}.top-actions{display:flex;align-items:center;gap:22px}.connection{display:flex;align-items:center;gap:8px;color:var(--soft);font-size:.77rem}.dot{width:7px;height:7px;background:var(--teal);border-radius:50%;box-shadow:0 0 10px var(--teal)}.lang{border:0;background:none;color:var(--soft);font-size:.78rem}.lang strong{color:var(--white)}
     .screen{display:none;min-height:calc(100vh - 76px);position:relative}.screen.active{display:block;animation:arrive .35s ease-out}@keyframes arrive{from{opacity:0}to{opacity:1}}
     .gateway{max-width:1440px;margin:auto;padding:clamp(34px,6vw,86px) clamp(20px,5vw,76px) 44px;display:grid;grid-template-columns:1.04fr .96fr;align-items:center;gap:clamp(35px,6vw,90px);min-height:calc(100vh - 76px)}.hero-copy{position:relative;z-index:2}.hero-copy h1{font-size:clamp(3.3rem,6.6vw,6.8rem);line-height:.97;letter-spacing:-.065em;max-width:760px;margin:19px 0 22px;font-weight:560}.hero-copy h1 span{color:var(--teal)}.lead{font-size:1.04rem;color:var(--soft);max-width:48ch;margin:0 0 28px}.button-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.primary{background:var(--teal);border:0;color:#06151a;font-weight:750;padding:14px 20px;border-radius:3px;display:inline-flex;align-items:center;gap:16px;min-height:50px}.primary:hover{background:#8ff6eb}.text-button{background:transparent;border:1px solid var(--line);padding:12px 16px;border-radius:3px;color:var(--soft);min-height:48px}.text-button:hover{border-color:var(--teal);color:var(--white)}
     .capabilities{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:34px;max-width:680px}.cap{border-top:1px solid var(--line);padding:11px 7px 0;color:var(--soft);font-size:.72rem}.cap b{display:block;color:var(--white);font-weight:550;margin-bottom:3px}.cap small{color:var(--muted);font: .65rem var(--mono)}
@@ -329,6 +322,7 @@
         <h1>Journey through <span>96</span> infrared colors.</h1>
         <p class="lead">Explore the changing infrared sky through SPHEREx observations. Navigate a celestial field, inspect targets, and compare distinct observation records.</p>
         <div class="button-row"><button class="primary" id="enter">Enter expedition <span aria-hidden="true">↗</span></button><button class="text-button" id="capInfo">Explore capabilities</button><button class="text-button" id="openApod" title="Astronomy Picture of the Day from NASA">NASA APOD Highlight ✦</button></div>
+        <div class="capabilities" id="capabilities"><div class="cap"><b>Desktop 3D</b><small>AVAILABLE</small></div><div class="cap"><b>Gyroscope</b><small>DEVICE CHECK</small></div><div class="cap"><b>WebXR AR</b><small>DEVICE CHECK</small></div><div class="cap"><b>WebXR VR</b><small>DEVICE CHECK</small></div></div>
       </div>
       <div class="sky-art" aria-label="Animated illustrative solar system with planets orbiting a glowing sun"><div class="solar-system" aria-hidden="true"><div class="solar-dust"></div><div class="planet-orbit one"><i class="planet"></i></div><div class="planet-orbit two"><i class="planet"></i></div><div class="planet-orbit three"><i class="planet"></i></div><div class="sun"></div></div></div>
       <div class="steps"><div class="step"><em>01</em><b>Navigate sky</b><span>Find a region of interest</span></div><div class="step"><em>02</em><b>Select observation</b><span>Inspect a catalog target</span></div><div class="step"><em>03</em><b>Compare records</b><span>Review distinct observations</span></div></div>
@@ -383,10 +377,12 @@
   const toast=document.getElementById('toast');let toastTimer;
   function notify(message){toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2800)}
   function showScreen(id){
+    const previous=document.querySelector('.screen.active')?.id||null;
     screens.forEach(screen=>screen.classList.toggle('active',screen.id===id));
     window.scrollTo(0,0);
     if(window.ZR && typeof window.ZR.applyScreenMode==='function') window.ZR.applyScreenMode();
     if(id==='comparison') updateComparisonScreen();
+    if(previous!==id)window.dispatchEvent(new CustomEvent('cosmic:screen-changed',{detail:{screen:id,previous}}));
   }
   document.getElementById('enter').addEventListener('click',()=>{const loader=document.getElementById('loader');loader.classList.add('show');setTimeout(()=>{loader.classList.remove('show');showScreen('explorer');selectTarget('rcw',document.querySelector('.marker[data-object="rcw"]'));if(!('xr' in navigator))notify('WebXR is unavailable here. Continuing in desktop 3D mode.')},950)});
   document.getElementById('exit').addEventListener('click',()=>showScreen('gateway'));
@@ -925,7 +921,7 @@
     }
   }));
   document.getElementById('capInfo').addEventListener('click',()=>{document.getElementById('capabilities').scrollIntoView({behavior:'smooth',block:'center'});notify('Desktop 3D is available. Immersive modes depend on the device and browser.')});
-  document.getElementById('lang').addEventListener('click',event=>{const button=event.currentTarget;const isEnglish=button.textContent.includes('EN');button.innerHTML=isEnglish?'EN / <strong>ID</strong>':'<strong>EN</strong> / ID';notify(isEnglish?'Bahasa Indonesia dipilih (label navigasi tetap dalam versi demo).':'English selected.')});
+  document.getElementById('lang').addEventListener('click',event=>{const button=event.currentTarget;const isEnglish=button.textContent.includes('EN');button.innerHTML=isEnglish?'EN / <strong>ID</strong>':'<strong>EN</strong> / ID';window.dispatchEvent(new CustomEvent('cosmic:language-changed',{detail:{language:isEnglish?'id':'en'}}));notify(isEnglish?'Bahasa Indonesia dipilih (label navigasi tetap dalam versi demo).':'English selected.')});
   document.getElementById('modalContinue').addEventListener('click',()=>document.getElementById('modal').classList.remove('open'));document.getElementById('closeModal').addEventListener('click',()=>document.getElementById('modal').classList.remove('open'));
   document.querySelectorAll('[data-message]').forEach(button=>button.addEventListener('click',()=>notify(button.dataset.message)));
   document.getElementById('modal').addEventListener('click',event=>{if(event.target.id==='modal')event.currentTarget.classList.remove('open')});
@@ -1600,6 +1596,7 @@ ZX.advance = async function(){
   cancelLoader();
   if(!go('DETAIL')) return;
   await showLayer(detailEl,true);
+  window.dispatchEvent(new CustomEvent('cosmic:detail-view-ready'));
   detailEl.querySelector('[aria-label="Back to Sky Explorer"]')?.focus();
 };
 
@@ -1685,6 +1682,7 @@ window.ZX=ZX;
       <circle cx="15" cy="16" r="1.2" fill="currentColor" stroke="none"/>
       <path d="M12 4v1M8 21h8"/>
     </svg>
+    <span class="cg-guidance-dot" id="cg-guidance-dot" hidden aria-hidden="true"></span>
     <span class="cg-fab-pulse" aria-hidden="true"></span>
   </button>
 
@@ -1706,6 +1704,13 @@ window.ZX=ZX;
         </div>
       </div>
       <div class="cg-win-actions">
+        <button class="cg-icon-btn cg-auto-guide-btn" id="cg-btn-auto-guide" type="button"
+                aria-label="Aktifkan panduan otomatis" aria-pressed="false" title="Aktifkan panduan otomatis">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="15" height="15">
+            <path d="M3 8v4h3l4 3V5L6 8H3zM14 7a4 4 0 0 1 0 6M16 5a7 7 0 0 1 0 10"/>
+          </svg>
+        </button>
         <span class="cg-badge-demo" id="cg-win-demo-badge" hidden>DEMO</span>
         <button class="cg-icon-btn" id="cg-btn-clear" title="Hapus percakapan" aria-label="Hapus percakapan">
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
@@ -1727,6 +1732,29 @@ window.ZX=ZX;
       <textarea class="cg-input" id="cg-input" rows="1"
                 placeholder="Tanya tentang objek ini…"
                 aria-label="Pesan ke Cosmic Guide" maxlength="500"></textarea>
+      <button class="cg-voice-btn" id="cg-voice-btn" type="button" aria-label="Mulai Push-to-Talk"
+              aria-pressed="false" title="Mulai Push-to-Talk">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+          <rect x="7" y="2.5" width="6" height="10" rx="3"/>
+          <path d="M4.5 9.5a5.5 5.5 0 0 0 11 0M10 15v2.5m-3 0h6"/>
+        </svg>
+      </button>
+      <button class="cg-live-btn" id="cg-live-btn" type="button"
+              aria-label="Mulai Continuous Voice" aria-pressed="false" title="Mulai Continuous Voice">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+          <path d="M2.5 10h2.2l1.5-4 3.1 8 2.2-6 1.5 2h2.5"/>
+        </svg>
+      </button>
+      <button class="cg-live-mute-btn" id="cg-live-mute-btn" type="button"
+              aria-label="Bisukan mikrofon" aria-pressed="false" title="Bisukan mikrofon" disabled>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+          <rect x="7" y="2.5" width="6" height="10" rx="3"/>
+          <path d="M4.5 9.5a5.5 5.5 0 0 0 11 0M10 15v2.5m-3 0h6"/>
+        </svg>
+      </button>
       <button class="cg-send-btn" id="cg-send-btn" aria-label="Kirim" disabled>
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
@@ -1734,6 +1762,7 @@ window.ZX=ZX;
         </svg>
       </button>
     </footer>
+    <div class="cg-voice-feedback" id="cg-voice-status" role="status" aria-live="polite" hidden></div>
     <p class="cg-disclaimer">Cosmic Guide bisa keliru. Cek sumber resmi NASA/JPL untuk data terverifikasi.</p>
   </div>
 
@@ -1751,6 +1780,13 @@ window.ZX=ZX;
         <span class="cg-page-title">Cosmic Guide</span>
         <span class="cg-page-object mono" id="cg-page-object-label"></span>
       </div>
+      <button class="cg-icon-btn cg-auto-guide-btn" id="cg-page-auto-guide" type="button"
+              aria-label="Aktifkan panduan otomatis" aria-pressed="false" title="Aktifkan panduan otomatis">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="15" height="15">
+          <path d="M3 8v4h3l4 3V5L6 8H3zM14 7a4 4 0 0 1 0 6M16 5a7 7 0 0 1 0 10"/>
+        </svg>
+      </button>
       <span class="cg-badge-demo" id="cg-page-demo-badge" hidden>DEMO</span>
     </header>
     <div class="cg-messages cg-page-messages" id="cg-page-messages"
@@ -1760,6 +1796,29 @@ window.ZX=ZX;
       <textarea class="cg-input" id="cg-page-input" rows="1"
                 placeholder="Tanya tentang objek ini…"
                 aria-label="Pesan ke Cosmic Guide" maxlength="500"></textarea>
+      <button class="cg-voice-btn" id="cg-page-voice-btn" type="button"
+              aria-label="Mulai Push-to-Talk" aria-pressed="false" title="Mulai Push-to-Talk">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+          <rect x="7" y="2.5" width="6" height="10" rx="3"/>
+          <path d="M4.5 9.5a5.5 5.5 0 0 0 11 0M10 15v2.5m-3 0h6"/>
+        </svg>
+      </button>
+      <button class="cg-live-btn" id="cg-page-live-btn" type="button"
+              aria-label="Mulai Continuous Voice" aria-pressed="false" title="Mulai Continuous Voice">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+          <path d="M2.5 10h2.2l1.5-4 3.1 8 2.2-6 1.5 2h2.5"/>
+        </svg>
+      </button>
+      <button class="cg-live-mute-btn" id="cg-page-live-mute-btn" type="button"
+              aria-label="Bisukan mikrofon" aria-pressed="false" title="Bisukan mikrofon" disabled>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+          <rect x="7" y="2.5" width="6" height="10" rx="3"/>
+          <path d="M4.5 9.5a5.5 5.5 0 0 0 11 0M10 15v2.5m-3 0h6"/>
+        </svg>
+      </button>
       <button class="cg-send-btn" id="cg-page-send-btn" aria-label="Kirim" disabled>
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
@@ -1767,6 +1826,7 @@ window.ZX=ZX;
         </svg>
       </button>
     </footer>
+    <div class="cg-voice-feedback" id="cg-page-voice-status" role="status" aria-live="polite" hidden></div>
     <p class="cg-disclaimer">Cosmic Guide bisa keliru. Cek sumber resmi NASA/JPL untuk data terverifikasi.</p>
   </div>
 </div><!-- /#cg-root -->
@@ -1798,6 +1858,8 @@ window.ZX=ZX;
 .cg-fab[aria-expanded="true"]{border-color:#4fe3d6;color:#4fe3d6;box-shadow:0 0 18px rgba(79,227,214,.35),0 2px 12px rgba(0,0,0,.4)}
 .cg-fab:focus-visible{outline:2px solid #4fe3d6;outline-offset:3px}
 .cg-fab[hidden]{display:none}
+.cg-guidance-dot{position:absolute;right:4px;top:4px;width:8px;height:8px;border-radius:50%;background:#f5ae43;box-shadow:0 0 8px rgba(245,174,67,.8);z-index:2}
+.cg-guidance-dot[hidden]{display:none}
 .cg-fab-pulse{position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:0 0 0 0 rgba(79,227,214,.5)}
 @keyframes cg-pulse-once{0%{box-shadow:0 0 0 0 rgba(79,227,214,.55)}70%{box-shadow:0 0 0 14px rgba(79,227,214,0)}100%{box-shadow:0 0 0 0 rgba(79,227,214,0)}}
 .cg-fab.cg-just-appeared .cg-fab-pulse{animation:cg-pulse-once .7s ease-out forwards}
@@ -1841,6 +1903,7 @@ window.ZX=ZX;
 .cg-icon-btn{width:30px;height:30px;border-radius:8px;border:1px solid rgba(199,205,230,.15);background:rgba(255,255,255,.04);color:#9ba8bf;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .18s,color .18s,background .18s}
 .cg-icon-btn:hover{border-color:rgba(212,175,55,.55);color:#d4af37;background:rgba(212,175,55,.08)}
 .cg-icon-btn:focus-visible{outline:2px solid #4fe3d6;outline-offset:2px}
+.cg-auto-guide-btn[aria-pressed="true"]{border-color:#4fe3d6;color:#4fe3d6;background:rgba(79,227,214,.1)}
 .cg-badge-demo{padding:2px 8px;border-radius:999px;border:1px solid rgba(245,174,67,.5);background:rgba(245,174,67,.1);color:#f5ae43;font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
 .cg-badge-demo[hidden]{display:none}
 
@@ -1857,8 +1920,10 @@ window.ZX=ZX;
 .cg-msg--bot .cg-bubble{background:rgba(13,28,51,.72);border:1px solid rgba(79,227,214,.16);border-bottom-left-radius:4px;color:#c7cde6}
 .cg-msg--user .cg-bubble{background:rgba(79,227,214,.13);border:1px solid rgba(79,227,214,.28);border-bottom-right-radius:4px;color:#fff}
 .cg-msg--system .cg-bubble{background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.22);border-radius:8px;color:#9ba8bf;font-size:.75rem;text-align:center;padding:6px 12px}
-.cg-msg-actions{margin-top:4px;display:flex;gap:6px;opacity:0;transition:opacity .18s}
-.cg-msg--bot:hover .cg-msg-actions{opacity:1}
+.cg-msg-actions{margin-top:4px;display:flex;gap:6px}
+.cg-sources{display:flex;flex-wrap:wrap;gap:5px 10px;margin:6px 4px 0;font-size:.67rem}
+.cg-sources-label{color:#9ba8bf}
+.cg-sources a{color:#4fe3d6;text-decoration:underline;text-underline-offset:2px}
 .cg-copy-btn{font-size:.65rem;color:#9ba8bf;background:none;border:1px solid rgba(199,205,230,.15);border-radius:4px;padding:2px 7px;cursor:pointer;transition:color .15s,border-color .15s}
 .cg-copy-btn:hover{color:#d4af37;border-color:rgba(212,175,55,.4)}
 
@@ -1887,6 +1952,20 @@ window.ZX=ZX;
 .cg-send-btn:not(:disabled):hover{background:#4fe3d6;border-color:#4fe3d6;color:#070b1f;transform:scale(1.06)}
 .cg-send-btn:disabled{opacity:.35;cursor:not-allowed}
 .cg-send-btn:focus-visible{outline:2px solid #4fe3d6;outline-offset:2px}
+.cg-voice-btn{width:36px;height:36px;flex-shrink:0;border-radius:999px;border:1px solid rgba(199,205,230,.22);background:rgba(255,255,255,.04);color:#c7cde6;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .18s,border-color .18s,color .18s,transform .15s}
+.cg-voice-btn:hover,.cg-voice-btn[aria-pressed="true"]{border-color:#f5ae43;background:rgba(245,174,67,.12);color:#ffd184}
+.cg-voice-btn:focus-visible{outline:2px solid #4fe3d6;outline-offset:2px}
+.cg-voice-btn:disabled{opacity:.35;cursor:not-allowed}
+.cg-live-btn{width:36px;height:36px;flex-shrink:0;border-radius:999px;border:1px solid rgba(177,140,255,.35);background:rgba(177,140,255,.08);color:#cdb6ff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .18s,border-color .18s,color .18s,transform .15s}
+.cg-live-btn:hover,.cg-live-btn[aria-pressed="true"]{border-color:#b18cff;background:rgba(177,140,255,.18);color:#fff}
+.cg-live-btn:focus-visible{outline:2px solid #4fe3d6;outline-offset:2px}
+.cg-live-btn:disabled{opacity:.35;cursor:not-allowed}
+.cg-live-mute-btn{width:36px;height:36px;flex-shrink:0;border-radius:999px;border:1px solid rgba(199,205,230,.22);background:rgba(255,255,255,.04);color:#c7cde6;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .18s,border-color .18s,color .18s}
+.cg-live-mute-btn[aria-pressed="true"]{border-color:#f5ae43;background:rgba(245,174,67,.12);color:#ffd184}
+.cg-live-mute-btn:focus-visible{outline:2px solid #4fe3d6;outline-offset:2px}
+.cg-live-mute-btn:disabled{opacity:.35;cursor:not-allowed}
+.cg-voice-feedback{padding:0 12px 6px;color:#ffd184;font-size:.7rem;line-height:1.4}
+.cg-voice-feedback[hidden]{display:none}
 .cg-disclaimer{font-size:.65rem;text-align:center;padding:0 14px 8px;line-height:1.5;flex-shrink:0;color:#9ba8bf;margin:0}
 
 /* Mobile full-page */
@@ -1925,7 +2004,39 @@ const T={
     greetingNoCtx:'Hai! Pilih sebuah objek di sky explorer untuk mulai.',
     contextSwitch:'Sekarang membahas: *{name}*',
     copy:'Salin',copied:'Disalin',back:'Kembali',demo:'DEMO',
-    demoNote:' (Data ini adalah ilustrasi/demo.)'
+    demoNote:' (Data ini adalah ilustrasi/demo.)',
+    playAudio:'Putar audio',stopAudio:'Hentikan audio',generatingAudio:'Membuat audio...',
+    audioUnavailable:'Audio tidak tersedia saat ini.',retry:'Coba lagi',
+    chatOffline:'Koneksi backend tidak tersedia. Periksa koneksi lalu coba lagi.',
+    chatTimeout:'Jawaban terlalu lama. Coba kirim ulang.',
+    chatRateLimit:'Pelan-pelan dulu ya, coba lagi sebentar lagi.',
+    chatUnavailable:'Cosmic Guide sedang tidak tersedia. Coba lagi nanti.',
+    sources:'Sumber',
+    autoGuideEnable:'Aktifkan panduan dan narasi otomatis',autoGuideDisable:'Nonaktifkan panduan dan narasi otomatis',
+    autoGuideEnabled:'Panduan dan narasi otomatis aktif.',autoGuideDisabled:'Panduan dan narasi otomatis nonaktif.',
+    autoGuideNotSaved:'Preferensi tidak dapat disimpan; pilihan berlaku selama halaman ini terbuka.',
+    proactiveCandidate:'Objek ini berlabel kandidat dan belum terkonfirmasi. Perbedaan visual saja tidak membuktikan gerak atau penemuan.',
+    proactiveDemo:'Konten ini berlabel demo/ilustrasi; jangan perlakukan sebagai observasi SPHEREx.',
+    proactiveFact:'Gunakan sumber dan metadata yang tersedia untuk memeriksa informasi objek; label tampilan saja bukan bukti.',
+    proactiveComparison:'Periksa metadata dan identitas tiap rekaman. Perbedaan visual saja tidak membuktikan gerak atau penemuan.',
+    proactiveDetail:'Ini tampilan detail 3D. Visualisasi tidak mengubah demo atau kandidat menjadi fakta terverifikasi.',
+    recordStart:'Mulai Push-to-Talk',recordStop:'Selesai bicara',
+    requestingMic:'Meminta izin mikrofon…',
+    liveMute:'Bisukan mikrofon',liveUnmute:'Aktifkan mikrofon',liveMuted:'Mikrofon dibisukan.',liveUnmuted:'Mikrofon aktif kembali.',
+    recording:'Mendengarkan… pilih tombol mikrofon untuk berhenti.',
+    transcribing:'Mengubah suara menjadi teks…',
+    micUnavailable:'Mikrofon tidak tersedia. Silakan gunakan chat teks.',
+    micPermissionDenied:'Izin mikrofon ditolak. Silakan gunakan chat teks.',
+    recordingFailed:'Rekaman gagal. Silakan coba lagi.',
+    recordingEmpty:'Tidak ada ucapan yang terekam. Silakan coba lagi.',
+    recordingLimit:'Rekaman mencapai batas 60 detik.',
+    transcriptionFailed:'Transkripsi gagal. Silakan coba lagi atau gunakan chat teks.',
+    liveStart:'Mulai Continuous Voice',liveStop:'Akhiri sesi suara',
+    liveConnecting:'Menghubungkan sesi suara…',liveListening:'Sesi suara aktif. Bicara kapan saja atau akhiri sesi.',
+    liveStopped:'Sesi suara diakhiri.',liveFailed:'Sesi suara gagal. Silakan coba lagi atau gunakan chat teks.',
+    liveUnavailable:'Audio realtime tidak didukung browser ini.',
+    liveDisabled:'Continuous Voice demo belum diaktifkan di Backend. Untuk demo lokal, atur GEMINI_LIVE_DEMO_ENABLED=true.',
+    livePermissionDenied:'Izin mikrofon ditolak. Silakan gunakan chat teks.'
   },
   en:{
     chips:['What is this object?','Why is it interesting?','How far away is it?','How does SPHEREx observe it?'],
@@ -1933,7 +2044,39 @@ const T={
     greetingNoCtx:'Hi! Select an object in the sky explorer to get started.',
     contextSwitch:'Now discussing: *{name}*',
     copy:'Copy',copied:'Copied',back:'Back',demo:'DEMO',
-    demoNote:' (This data is illustrative/demo.)'
+    demoNote:' (This data is illustrative/demo.)',
+    playAudio:'Play audio',stopAudio:'Stop audio',generatingAudio:'Generating audio...',
+    audioUnavailable:'Audio is unavailable right now.',retry:'Retry',
+    chatOffline:'The backend is unreachable. Check your connection and try again.',
+    chatTimeout:'The answer took too long. Please try again.',
+    chatRateLimit:'Please slow down and try again shortly.',
+    chatUnavailable:'Cosmic Guide is unavailable right now. Please try again later.',
+    sources:'Sources',
+    autoGuideEnable:'Enable automatic guidance and narration',autoGuideDisable:'Disable automatic guidance and narration',
+    autoGuideEnabled:'Automatic guidance and narration are on.',autoGuideDisabled:'Automatic guidance and narration are off.',
+    autoGuideNotSaved:'Could not save this preference; it will apply while this page remains open.',
+    proactiveCandidate:'This object is labeled as a candidate and is unconfirmed. Visual differences alone do not prove motion or discovery.',
+    proactiveDemo:'This content is labeled as a demo/illustration; do not treat it as a SPHEREx observation.',
+    proactiveFact:'Use the available sources and metadata to check object information; a display label alone is not evidence.',
+    proactiveComparison:'Check the metadata and identity of each record. Visual differences alone do not prove motion or discovery.',
+    proactiveDetail:'This is a 3D detail view. A visualization does not turn a demo or candidate into a verified fact.',
+    recordStart:'Start Push-to-Talk',recordStop:'Finish speaking',
+    requestingMic:'Requesting microphone permission…',
+    liveMute:'Mute microphone',liveUnmute:'Unmute microphone',liveMuted:'Microphone muted.',liveUnmuted:'Microphone unmuted.',
+    recording:'Listening… select the microphone button to stop.',
+    transcribing:'Transcribing your speech…',
+    micUnavailable:'A microphone is unavailable. Please use text chat.',
+    micPermissionDenied:'Microphone permission was denied. Please use text chat.',
+    recordingFailed:'Recording failed. Please try again.',
+    recordingEmpty:'No speech was recorded. Please try again.',
+    recordingLimit:'Recording reached the 60-second limit.',
+    transcriptionFailed:'Transcription failed. Please try again or use text chat.',
+    liveStart:'Start Continuous Voice',liveStop:'End voice session',
+    liveConnecting:'Connecting to the voice session…',liveListening:'Voice session is active. Speak any time or end the session.',
+    liveStopped:'Voice session ended.',liveFailed:'Voice session failed. Please retry or use text chat.',
+    liveUnavailable:'Realtime audio is not supported by this browser.',
+    liveDisabled:'Continuous Voice demo is not enabled on the backend. Set GEMINI_LIVE_DEMO_ENABLED=true for local testing.',
+    livePermissionDenied:'Microphone permission was denied. Please use text chat.'
   }
 };
 
@@ -1946,19 +2089,55 @@ function t(key,vars){
 
 /* ── Config & State ── */
 const CG=window.CG={
-  config:{mobileBreakpoint:768,maxMsgs:30,demoDelay:900},
-  state:{selected:null,open:false,mode:'window',threads:{},pending:false,lang:'id'}
+  config:{mobileBreakpoint:768,maxMsgs:30,requestTimeout:25000,maxRecordingMs:60000},
+  state:{selected:null,open:false,mode:'window',threads:{},pending:false,lang:'id',audio:null,recording:null,liveSession:null,liveStarting:false,liveStatusEl:null,livePendingAudioContext:null,autoGuidanceEnabled:false,autoGuidanceStorageAvailable:true,proactiveAudioController:null,unreadGuidance:false,lastProactiveAt:0,proactiveSeen:{}}
 };
 
 /* ── DOM refs ── */
 function el(id){return document.getElementById(id)}
 const fab=el('cg-fab'),win=el('cg-window'),page=el('cg-page');
+const cgRoot=el('cg-root');
 const msgsEl=el('cg-messages'),input=el('cg-input'),sendBtn=el('cg-send-btn');
+const voiceBtn=el('cg-voice-btn'),voiceStatus=el('cg-voice-status');
+const liveBtn=el('cg-live-btn');
+const liveMuteBtn=el('cg-live-mute-btn'),pageLiveMuteBtn=el('cg-page-live-mute-btn');
+const autoGuideBtn=el('cg-btn-auto-guide'),pageAutoGuideBtn=el('cg-page-auto-guide');
+const guidanceDot=el('cg-guidance-dot');
 const chipsRow=el('cg-chips-row'),clearBtn=el('cg-btn-clear'),closeBtn=el('cg-btn-close');
 const pageMsgs=el('cg-page-messages'),pageInput=el('cg-page-input'),pageSend=el('cg-page-send-btn');
+const pageVoiceBtn=el('cg-page-voice-btn'),pageVoiceStatus=el('cg-page-voice-status');
+const pageLiveBtn=el('cg-page-live-btn');
 const pageBack=el('cg-page-back'),pageChips=el('cg-page-chips');
 
 function isMobile(){return window.innerWidth<CG.config.mobileBreakpoint}
+
+try{
+  CG.state.autoGuidanceEnabled=window.localStorage.getItem('spherex-cosmic-guide-auto-guidance')==='true';
+}catch(_error){
+  CG.state.autoGuidanceStorageAvailable=false;
+}
+window.addEventListener('cosmic:agent-guidance',event=>{
+  if(event.detail&&typeof event.detail.message==='string')notify(event.detail.message);
+});
+window.addEventListener('cosmic:agent-audio-unavailable',()=>{
+  notify(t('audioUnavailable'));
+});
+window.addEventListener('cosmic:language-changed',event=>{
+  const language=event.detail&&event.detail.language;
+  if(language==='id'||language==='en'){
+    CG.state.lang=language;
+    updateAutoGuidanceControls();
+    updateVoiceControls(CG.state.recording);
+    updateLiveControls();
+  }
+});
+window.addEventListener('cosmic:screen-changed',event=>{
+  if(event.detail&&event.detail.screen==='comparison')
+    showProactiveGuidance('comparison_opened',CG.state.selected);
+});
+window.addEventListener('cosmic:detail-view-ready',()=>{
+  showProactiveGuidance('detail_view_ready',CG.state.selected);
+});
 
 /* ──────────────────────────────────────────────────────────────────
    getSelectedObjectContext()
@@ -1991,7 +2170,13 @@ function getSelectedObjectContext(){
     // "<strong>EN</strong> / ID" → English active
     lang=/strong>EN<\/strong/.test(html)?'en':'id';
   }
+  const languageChanged=CG.state.lang!==lang;
   CG.state.lang=lang;
+  if(languageChanged){
+    updateAutoGuidanceControls();
+    updateVoiceControls(CG.state.recording);
+    updateLiveControls();
+  }
 
   return{
     id:objId.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40)||'obj-1',
@@ -2020,7 +2205,10 @@ if(hudEl){
 
 // Marker clicks
 document.querySelectorAll('.marker[data-object]').forEach(node=>{
-  node.addEventListener('click',()=>setTimeout(pollContext,80));
+  node.addEventListener('click',()=>setTimeout(()=>{
+    pollContext();
+    showProactiveGuidance('object_selected',CG.state.selected);
+  },80));
 });
 
 // Custom event from existing #askGuide handler
@@ -2040,6 +2228,7 @@ function onObjectSelected(ctx){
 
 function showFab(){
   if(!fab.hidden)return;
+  cgRoot.setAttribute('aria-hidden','false');
   fab.hidden=false;
   fab.classList.add('cg-entering','cg-just-appeared');
   fab.addEventListener('animationend',()=>{
@@ -2050,7 +2239,10 @@ function showFab(){
 function hideFab(){
   if(fab.hidden)return;
   fab.classList.add('cg-exiting');
-  fab.addEventListener('animationend',()=>{fab.hidden=true;fab.classList.remove('cg-exiting');},{once:true});
+  fab.addEventListener('animationend',()=>{
+    fab.hidden=true;fab.classList.remove('cg-exiting');
+    if(!CG.state.open)cgRoot.setAttribute('aria-hidden','true');
+  },{once:true});
 }
 
 /* Attempt to sit FAB inside the existing toolbar */
@@ -2077,7 +2269,29 @@ function buildBubble(msg){
   bubble.className='cg-bubble';
   bubble.innerHTML=escapeHtml(msg.text).replace(/\*([^*\n]+)\*/g,'<em>$1</em>');
   wrap.appendChild(bubble);
-  if(msg.role==='bot'&&msg.text.length>10){
+  if(msg.role==='bot'&&Array.isArray(msg.sources)&&msg.sources.length){
+    const sources=document.createElement('div');
+    sources.className='cg-sources';
+    const label=document.createElement('span');
+    label.className='cg-sources-label';label.textContent=t('sources')+':';
+    sources.appendChild(label);
+    msg.sources.slice(0,5).forEach(source=>{
+      if(!source||typeof source.title!=='string'||typeof source.url!=='string'||
+        !/^\/api\/objects\/[a-z0-9][a-z0-9_-]{0,79}$/.test(source.url))return;
+      const link=document.createElement('a');
+      link.href=getAgentApiUrl(source.url);link.target='_blank';link.rel='noopener noreferrer';
+      link.textContent=source.title;sources.appendChild(link);
+    });
+    if(sources.childElementCount>1)wrap.appendChild(sources);
+  }
+  if(msg.role==='bot'&&msg.error){
+    const actions=document.createElement('div');
+    actions.className='cg-msg-actions';
+    const retry=document.createElement('button');
+    retry.className='cg-copy-btn';retry.textContent=t('retry');
+    retry.addEventListener('click',()=>sendMessage(msg.retryText));
+    actions.appendChild(retry);wrap.appendChild(actions);
+  } else if(msg.role==='bot'&&msg.text.length>10){
     const actions=document.createElement('div');
     actions.className='cg-msg-actions';
     const cp=document.createElement('button');
@@ -2087,6 +2301,12 @@ function buildBubble(msg){
       cp.textContent=t('copied');setTimeout(()=>cp.textContent=t('copy'),1800);
     });
     actions.appendChild(cp);wrap.appendChild(actions);
+    if(msg.text.length<=500){
+      const speak=document.createElement('button');
+      speak.className='cg-copy-btn';speak.textContent=t('playAudio');
+      speak.addEventListener('click',()=>playMessageAudio(msg,speak));
+      actions.appendChild(speak);
+    }
   }
   return wrap;
 }
@@ -2113,6 +2333,8 @@ function renderChips(container,ctx){
 /* ── Open / close ── */
 function openChatbot(ctx){
   CG.state.open=true;
+  CG.state.unreadGuidance=false;
+  updateGuidanceIndicator();
   CG.state.mode=isMobile()?'page':'window';
   fab.setAttribute('aria-expanded','true');
   const id=ctx?ctx.id:'__none__';
@@ -2124,6 +2346,9 @@ function openChatbot(ctx){
   else openWindow(ctx);
 }
 function closeChatbot(){
+  cancelVoiceRecording();
+  stopLiveVoiceSession();
+  stopCurrentAudio();
   CG.state.open=false;fab.setAttribute('aria-expanded','false');
   if(!win.hidden)closeWindow();
   if(!page.hidden)closePage();
@@ -2165,9 +2390,97 @@ function updateLabels(ctx,mode){
     el('cg-page-back-label').textContent=t('back');
   }
 }
+function updateGuidanceIndicator(){
+  if(guidanceDot)guidanceDot.hidden=!CG.state.unreadGuidance;
+}
+function updateAutoGuidanceControls(){
+  const enabled=CG.state.autoGuidanceEnabled;
+  [autoGuideBtn,pageAutoGuideBtn].forEach(button=>{
+    if(!button)return;
+    const label=t(enabled?'autoGuideDisable':'autoGuideEnable');
+    button.setAttribute('aria-pressed',String(enabled));
+    button.setAttribute('aria-label',label);
+    button.title=label;
+  });
+}
+function toggleAutoGuidance(statusEl){
+  CG.state.autoGuidanceEnabled=!CG.state.autoGuidanceEnabled;
+  let saved=CG.state.autoGuidanceStorageAvailable;
+  if(saved){
+    try{
+      window.localStorage.setItem(
+        'spherex-cosmic-guide-auto-guidance',
+        String(CG.state.autoGuidanceEnabled)
+      );
+    }catch(_error){
+      CG.state.autoGuidanceStorageAvailable=false;
+      saved=false;
+    }
+  }
+  updateAutoGuidanceControls();
+  if(!CG.state.autoGuidanceEnabled){
+    CG.state.unreadGuidance=false;
+    updateGuidanceIndicator();
+    if(CG.state.proactiveAudioController){
+      CG.state.proactiveAudioController.abort();
+      CG.state.proactiveAudioController=null;
+    }
+    if(CG.state.audio&&CG.state.audio.message.proactive)stopCurrentAudio();
+  }
+  setVoiceStatus(
+    statusEl,
+    saved
+      ?t(CG.state.autoGuidanceEnabled?'autoGuideEnabled':'autoGuideDisabled')
+      :t('autoGuideNotSaved')
+  );
+}
+function showProactiveGuidance(eventName,ctx){
+  if(!CG.state.autoGuidanceEnabled||
+    CG.state.pending||CG.state.recording||CG.state.liveSession||CG.state.liveStarting||CG.state.audio)return;
+  const now=Date.now();
+  const objectId=ctx?ctx.id:'__none__';
+  const dedupeKey=`${eventName}:${objectId}`;
+  if(now-CG.state.lastProactiveAt<10000||
+    now-(CG.state.proactiveSeen[dedupeKey]||0)<120000)return;
+  let messageKey;
+  if(eventName==='object_selected'){
+    if(!ctx)return;
+    messageKey=ctx.classification==='Candidate'?'proactiveCandidate'
+      :ctx.isDemo?'proactiveDemo':'proactiveFact';
+  }else if(eventName==='comparison_opened'){
+    messageKey='proactiveComparison';
+  }else if(eventName==='detail_view_ready'){
+    messageKey='proactiveDetail';
+  }else{
+    return;
+  }
+  const message={role:'bot',text:t(messageKey),lang:CG.state.lang,proactive:true,ts:now};
+  pushMsg(objectId,message);
+  CG.state.proactiveSeen[dedupeKey]=now;
+  CG.state.lastProactiveAt=now;
+  CG.state.unreadGuidance=!CG.state.open;
+  updateGuidanceIndicator();
+  if(CG.state.open&&CG.state.selected?.id===objectId)
+    renderThread(CG.state.mode==='page'?pageMsgs:msgsEl,ctx);
+  window.dispatchEvent(new CustomEvent('cosmic:agent-guidance',{detail:{message:message.text}}));
+  playProactiveGuidanceAudio(message,objectId);
+}
+function playProactiveGuidanceAudio(message,objectId){
+  if(!CG.state.autoGuidanceEnabled)return;
+  let button=document.createElement('button');
+  if(CG.state.open&&CG.state.selected?.id===objectId){
+    const container=CG.state.mode==='page'?pageMsgs:msgsEl;
+    const actions=container.lastElementChild?.querySelector('.cg-msg-actions');
+    const buttons=actions?actions.querySelectorAll('button'):[];
+    if(buttons.length)button=buttons[buttons.length-1];
+  }
+  playMessageAudio(message,button,true);
+}
 function updateChatContext(ctx){
   if(!ctx)return;
-  const prev=CG.state.selected?.id;CG.state.selected=ctx;
+  const prev=CG.state.selected?.id;
+  if(CG.state.liveSession&&prev!==ctx.id)stopLiveVoiceSession(t('liveStopped'));
+  CG.state.selected=ctx;
   if(prev&&prev!==ctx.id)pushMsg(ctx.id,{role:'system',text:t('contextSwitch',{name:ctx.name}),ts:Date.now()});
   updateLabels(ctx,CG.state.mode);
   const cont=CG.state.mode==='page'?pageMsgs:msgsEl;
@@ -2175,18 +2488,670 @@ function updateChatContext(ctx){
 }
 
 /* ── Send ── */
-function sendMessage(text){
-  text=(text||'').trim();if(!text||CG.state.pending)return;
+async function sendMessage(text){
+  text=(text||'').trim();
+  if(!text||CG.state.pending||CG.state.recording||CG.state.liveSession||CG.state.liveStarting)return;
   const ctx=CG.state.selected;const id=ctx?ctx.id:'__none__';
   pushMsg(id,{role:'user',text,ts:Date.now()});
   CG.state.pending=true;setTyping(true);updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+  updateVoiceControls(CG.state.recording);updateLiveControls();
   input.value='';pageInput.value='';autoGrow(input);autoGrow(pageInput);
   const cont=CG.state.mode==='page'?pageMsgs:msgsEl;renderThread(cont,ctx);
-  demoRespond(text,ctx).then(reply=>{
-    pushMsg(id,{role:'bot',text:reply,ts:Date.now()});
+  try{
+    const messages=getThread(id)
+      .filter(message=>!message.error&&(message.role==='user'||message.role==='bot'))
+      .slice(-10)
+      .map(message=>({role:message.role,content:message.text}));
+    const reply=await requestAgentReply(messages,ctx);
+    pushMsg(id,{role:'bot',text:reply.message,sources:reply.sources,lang:CG.state.lang,ts:Date.now()});
+  }catch(error){
+    pushMsg(id,{
+      role:'bot',
+      text:chatErrorMessage(error),
+      error:true,
+      retryText:text,
+      ts:Date.now()
+    });
+  }finally{
     CG.state.pending=false;setTyping(false);updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+    updateVoiceControls(CG.state.recording);updateLiveControls();
     renderThread(CG.state.mode==='page'?pageMsgs:msgsEl,ctx);
+  }
+}
+
+function getAgentApiUrl(path){
+  const base=typeof window.SPHEREX_API_BASE==='string'
+    ?window.SPHEREX_API_BASE.trim().replace(/\/+$/,'')
+    :'';
+  return `${base}${path}`;
+}
+
+async function requestAgentReply(messages,ctx){
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),CG.config.requestTimeout);
+  let response;
+  try{
+    response=await fetch(getAgentApiUrl('/api/agent/chat'),{
+      method:'POST',
+      headers:{'Accept':'application/json','Content-Type':'application/json'},
+      body:JSON.stringify({
+        objectId:ctx?ctx.id:null,
+        lang:CG.state.lang,
+        messages
+      }),
+      signal:controller.signal
+    });
+  }catch(error){
+    if(error.name==='AbortError')error.status=504;
+    else error.status=0;
+    throw error;
+  }finally{
+    clearTimeout(timeout);
+  }
+
+  if(!response.ok){
+    const error=new Error(`Agent request failed (${response.status})`);
+    error.status=response.status;
+    throw error;
+  }
+  const result=await response.json();
+  const message=result&&result.data&&result.data.message;
+  if(result.success!==true||typeof message!=='string'||!message.trim()){
+    const error=new Error('Agent response was invalid.');
+    error.status=502;
+    throw error;
+  }
+  const sources=Array.isArray(result.data.sources)
+    ?result.data.sources.filter(source=>source&&typeof source.title==='string'&&
+      typeof source.url==='string'&&/^\/api\/objects\/[a-z0-9][a-z0-9_-]{0,79}$/.test(source.url)).slice(0,5)
+    :[];
+  return {message:message.trim(),sources};
+}
+
+function updateVoiceControls(recording){
+  [voiceBtn,pageVoiceBtn].forEach(button=>{
+    if(!button)return;
+    const active=Boolean(recording&&recording.phase==='recording');
+    button.setAttribute('aria-pressed',String(active));
+    button.setAttribute('aria-label',active?t('recordStop'):t('recordStart'));
+    button.title=active?t('recordStop'):t('recordStart');
+    button.disabled=Boolean(
+      CG.state.pending||CG.state.liveSession||CG.state.liveStarting||
+      recording&&recording.phase!=='recording'
+    );
   });
+}
+
+function updateLiveControls(){
+  const session=CG.state.liveSession;
+  const active=Boolean(session||CG.state.liveStarting);
+  [liveBtn,pageLiveBtn].forEach(button=>{
+    if(!button)return;
+    button.setAttribute('aria-pressed',String(active));
+    button.setAttribute('aria-label',active?t('liveStop'):t('liveStart'));
+    button.title=active?t('liveStop'):t('liveStart');
+    button.disabled=Boolean(CG.state.pending||CG.state.recording);
+  });
+  updateLiveMuteControls();
+}
+
+function updateLiveMuteControls(){
+  const session=CG.state.liveSession;
+  const muted=Boolean(session&&session.muted);
+  [liveMuteBtn,pageLiveMuteBtn].forEach(button=>{
+    if(!button)return;
+    const label=t(muted?'liveUnmute':'liveMute');
+    button.disabled=!session;
+    button.setAttribute('aria-pressed',String(muted));
+    button.setAttribute('aria-label',label);
+    button.title=label;
+  });
+}
+
+function toggleLiveMute(statusEl){
+  const session=CG.state.liveSession;
+  if(!session)return;
+  session.muted=!session.muted;
+  session.stream.getAudioTracks().forEach(track=>{track.enabled=!session.muted});
+  updateLiveMuteControls();
+  setVoiceStatus(statusEl,t(session.muted?'liveMuted':'liveUnmuted'));
+}
+
+function setVoiceStatus(statusEl,message){
+  if(!statusEl)return;
+  statusEl.textContent=message;
+  statusEl.hidden=!message;
+}
+function reportProactiveAudioFailure(){
+  if(CG.state.open)
+    setVoiceStatus(CG.state.mode==='page'?pageVoiceStatus:voiceStatus,t('audioUnavailable'));
+  else
+    window.dispatchEvent(new CustomEvent('cosmic:agent-audio-unavailable'));
+}
+
+function stopVoiceRecording(recording){
+  if(!recording||recording.phase!=='recording')return;
+  recording.phase='transcribing';
+  clearTimeout(recording.timer);
+  setVoiceStatus(recording.statusEl,t('transcribing'));
+  updateVoiceControls(recording);
+  if(recording.recorder.state==='recording')recording.recorder.stop();
+}
+
+function cancelVoiceRecording(){
+  const recording=CG.state.recording;
+  if(!recording)return;
+  recording.cancelled=true;
+  if(recording.phase==='requesting'){
+    CG.state.recording=null;
+    updateVoiceControls(null);updateLiveControls();
+    updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+    setVoiceStatus(recording.statusEl,'');
+    return;
+  }
+  clearTimeout(recording.timer);
+  if(recording.controller)recording.controller.abort();
+  recording.stream.getTracks().forEach(track=>track.stop());
+  if(recording.recorder.state==='recording')recording.recorder.stop();
+  CG.state.recording=null;
+  updateVoiceControls(null);
+  updateLiveControls();
+  updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+  setVoiceStatus(recording.statusEl,'');
+}
+
+async function togglePushToTalk(button,statusEl){
+  if(CG.state.pending||CG.state.liveSession||CG.state.liveStarting)return;
+  if(CG.state.recording){
+    if(CG.state.recording.phase==='recording')stopVoiceRecording(CG.state.recording);
+    else if(CG.state.recording.phase==='requesting')cancelVoiceRecording();
+    return;
+  }
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||
+    typeof MediaRecorder==='undefined'){
+    setVoiceStatus(statusEl,t('micUnavailable'));
+    return;
+  }
+
+  const request={phase:'requesting',statusEl,cancelled:false};
+  CG.state.recording=request;
+  updateVoiceControls(request);updateLiveControls();
+  updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+  setVoiceStatus(statusEl,t('requestingMic'));
+  let stream,recording;
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    if(CG.state.recording!==request||request.cancelled||!CG.state.open){
+      stream.getTracks().forEach(track=>track.stop());
+      return;
+    }
+    const preferredType=['audio/webm;codecs=opus','audio/mp4','audio/ogg;codecs=opus']
+      .find(type=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(type));
+    const recorder=preferredType
+      ?new MediaRecorder(stream,{mimeType:preferredType})
+      :new MediaRecorder(stream);
+    recording={
+      recorder,stream,chunks:[],statusEl,phase:'recording',
+      language:CG.state.lang,cancelled:false,timer:null,controller:null
+    };
+    CG.state.recording=recording;
+    recorder.addEventListener('dataavailable',event=>{
+      if(event.data&&event.data.size)recording.chunks.push(event.data);
+    });
+    recorder.addEventListener('error',()=>{
+      if(CG.state.recording===recording)cancelVoiceRecording();
+      setVoiceStatus(statusEl,t('recordingFailed'));
+    });
+    recorder.addEventListener('stop',()=>finishPushToTalk(recording));
+    recorder.start(250);
+    recording.timer=setTimeout(()=>{
+      if(CG.state.recording===recording){
+        setVoiceStatus(statusEl,t('recordingLimit'));
+        stopVoiceRecording(recording);
+      }
+    },CG.config.maxRecordingMs);
+    setVoiceStatus(statusEl,t('recording'));
+    updateVoiceControls(recording);
+    updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+  }catch(error){
+    if(stream)stream.getTracks().forEach(track=>track.stop());
+    if(CG.state.recording!==request&&CG.state.recording!==recording)return;
+    CG.state.recording=null;
+    updateVoiceControls(null);updateLiveControls();
+    updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+    setVoiceStatus(
+      statusEl,
+      error&&['NotAllowedError','SecurityError'].includes(error.name)
+        ?t('micPermissionDenied')
+        :t('micUnavailable')
+    );
+    updateVoiceControls(null);
+  }
+}
+
+async function finishPushToTalk(recording){
+  clearTimeout(recording.timer);
+  recording.stream.getTracks().forEach(track=>track.stop());
+  if(recording.cancelled)return;
+  const mimeType=(recording.recorder.mimeType||'audio/webm').split(';',1)[0].toLowerCase();
+  const audioBlob=new Blob(recording.chunks,{type:mimeType});
+  if(!audioBlob.size){
+    CG.state.recording=null;updateVoiceControls(null);
+    updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+    setVoiceStatus(recording.statusEl,t('recordingEmpty'));
+    return;
+  }
+
+  const controller=new AbortController();
+  recording.controller=controller;
+  const timeout=setTimeout(()=>controller.abort(),45000);
+  try{
+    const response=await fetch(
+      getAgentApiUrl('/api/agent/voice/transcribe?language='+encodeURIComponent(recording.language)),
+      {
+        method:'POST',
+        headers:{'Accept':'application/json','Content-Type':mimeType},
+        body:audioBlob,
+        signal:controller.signal
+      }
+    );
+    if(!response.ok){
+      let detail='';
+      try{
+        const payload=await response.json();
+        if(payload&&typeof payload.detail==='string')detail=payload.detail;
+      }catch(_error){}
+      const error=new Error(detail||'Voice transcription failed.');
+      error.status=response.status;
+      error.detail=detail;
+      throw error;
+    }
+    const result=await response.json();
+    const transcript=result&&result.data&&result.data.transcript;
+    if(result.success!==true||typeof transcript!=='string'||!transcript.trim()){
+      throw new Error('Voice transcription response was invalid.');
+    }
+    if(recording.cancelled)return;
+    CG.state.recording=null;updateVoiceControls(null);
+    updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+    setVoiceStatus(recording.statusEl,'');
+    await sendMessage(transcript.trim());
+  }catch(error){
+    if(!recording.cancelled){
+      CG.state.recording=null;updateVoiceControls(null);
+      updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+      const fallback=error.name==='AbortError'?t('chatTimeout')
+        :error instanceof TypeError?t('chatOffline'):t('transcriptionFailed');
+      const detail=typeof error.detail==='string'?error.detail:'';
+      const status=Number.isInteger(error.status)?`HTTP ${error.status}`:'';
+      const diagnostic=detail?`${status?status+': ':''}${detail}`:status;
+      setVoiceStatus(recording.statusEl,diagnostic?`${fallback} (${diagnostic})`:fallback);
+    }
+  }finally{
+    clearTimeout(timeout);
+  }
+}
+
+function mergeLiveTranscript(current,text){
+  const previous=(current||'').trim();
+  const next=(text||'').trim();
+  if(!next)return previous;
+  if(!previous||next.startsWith(previous))return next;
+  if(previous.endsWith(next))return previous;
+  return `${previous} ${next}`;
+}
+
+function stopLiveAudioPlayback(session){
+  session.audioSources.forEach(source=>{
+    try{source.stop()}catch(_error){}
+  });
+  session.audioSources.clear();
+  session.playbackCursor=session.audioContext?session.audioContext.currentTime:0;
+}
+
+function playLiveAudio(session,encodedAudio){
+  if(!session.audioContext||session.audioContext.state==='closed')return;
+  const binary=atob(encodedAudio);
+  const sampleCount=Math.floor(binary.length/2);
+  if(!sampleCount)return;
+  const pcm=new DataView(new ArrayBuffer(sampleCount*2));
+  for(let index=0;index<sampleCount;index++)
+    pcm.setInt16(index*2,binary.charCodeAt(index*2)|(binary.charCodeAt(index*2+1)<<8),true);
+  const audioBuffer=session.audioContext.createBuffer(1,sampleCount,24000);
+  const channel=audioBuffer.getChannelData(0);
+  for(let index=0;index<sampleCount;index++)channel[index]=pcm.getInt16(index*2,true)/32768;
+  const source=session.audioContext.createBufferSource();
+  source.buffer=audioBuffer;source.connect(session.audioContext.destination);
+  const startAt=Math.max(session.audioContext.currentTime,session.playbackCursor);
+  session.playbackCursor=startAt+audioBuffer.duration;
+  session.audioSources.add(source);
+  source.addEventListener('ended',()=>session.audioSources.delete(source),{once:true});
+  source.start(startAt);
+}
+
+function startLiveAudioCapture(session){
+  if(!session.audioContext.audioWorklet||typeof AudioWorkletNode==='undefined')
+    throw new Error('AudioWorklet is unavailable.');
+  const processorSource=`
+    class CGPcmCapture extends AudioWorkletProcessor {
+      constructor(){
+        super();
+        this.outputSamples=new Int16Array(1600);
+        this.outputIndex=0;
+        this.inputSamples=0;
+        this.nextOutputAt=sampleRate/16000;
+        this.sum=0;
+        this.count=0;
+      }
+      process(inputs,outputs){
+        const input=inputs[0]&&inputs[0][0];
+        const output=outputs[0]&&outputs[0][0];
+        if(output)output.fill(0);
+        if(!input)return true;
+        for(let index=0;index<input.length;index++){
+          this.sum+=input[index];this.count++;this.inputSamples++;
+          if(this.inputSamples>=this.nextOutputAt){
+            const value=Math.max(-1,Math.min(1,this.sum/this.count));
+            this.outputSamples[this.outputIndex++]=Math.round(value<0?value*32768:value*32767);
+            this.sum=0;this.count=0;this.nextOutputAt+=sampleRate/16000;
+            if(this.outputIndex===this.outputSamples.length){
+              const samples=this.outputSamples;
+              this.port.postMessage(samples.buffer,[samples.buffer]);
+              this.outputSamples=new Int16Array(1600);this.outputIndex=0;
+            }
+          }
+        }
+        return true;
+      }
+    }
+    registerProcessor('cg-pcm-capture',CGPcmCapture);
+  `;
+  session.workletUrl=URL.createObjectURL(
+    new Blob([processorSource],{type:'application/javascript'})
+  );
+  return session.audioContext.audioWorklet.addModule(session.workletUrl).then(()=>{
+    if(session.stopping)return;
+    const source=session.audioContext.createMediaStreamSource(session.stream);
+    const processor=new AudioWorkletNode(session.audioContext,'cg-pcm-capture');
+    const mute=session.audioContext.createGain();mute.gain.value=0;
+    source.connect(processor);processor.connect(mute);mute.connect(session.audioContext.destination);
+    processor.port.onmessage=event=>{
+      if(session.stopping||session.muted||!session.ready||session.socket.readyState!==WebSocket.OPEN)return;
+      const bytes=new Uint8Array(event.data);
+      let binary='';
+      for(let offset=0;offset<bytes.length;offset+=0x8000)
+        binary+=String.fromCharCode(...bytes.subarray(offset,offset+0x8000));
+      session.socket.send(JSON.stringify({
+        realtimeInput:{
+          audio:{data:btoa(binary),mimeType:'audio/pcm;rate=16000'}
+        }
+      }));
+    };
+    session.audioSource=source;session.audioProcessor=processor;session.audioMute=mute;
+  });
+}
+
+function handleLiveVoiceMessage(session,message){
+  if(message.setupComplete&&!session.ready){
+    session.ready=true;
+    if(session.history.length){
+      session.socket.send(JSON.stringify({
+        clientContent:{
+          turns:session.history.map(item=>({
+            role:item.role==='bot'?'model':'user',
+            parts:[{text:item.content}]
+          })),
+          turnComplete:false
+        }
+      }));
+    }
+    startLiveAudioCapture(session).then(()=>{
+      if(!session.stopping)setVoiceStatus(session.statusEl,t('liveListening'));
+    }).catch(()=>stopLiveVoiceSession(t('liveFailed')));
+    return;
+  }
+  if(message.error){
+    stopLiveVoiceSession(t('liveFailed'));
+    return;
+  }
+  const content=message.serverContent;
+  if(!content)return;
+  if(content.interrupted){
+    stopLiveAudioPlayback(session);
+    session.assistantText='';
+  }
+  if(content.inputTranscription&&typeof content.inputTranscription.text==='string')
+    session.userText=mergeLiveTranscript(session.userText,content.inputTranscription.text);
+  if(content.outputTranscription&&typeof content.outputTranscription.text==='string')
+    session.assistantText=mergeLiveTranscript(session.assistantText,content.outputTranscription.text);
+
+  const parts=content.modelTurn&&Array.isArray(content.modelTurn.parts)
+    ?content.modelTurn.parts:[];
+  parts.forEach(part=>{
+    const inlineData=part.inlineData||part.inline_data;
+    if(inlineData&&typeof inlineData.data==='string')playLiveAudio(session,inlineData.data);
+  });
+
+  if(content.turnComplete){
+    const threadId=session.objectId||'__none__';
+    if(session.userText)
+      pushMsg(threadId,{role:'user',text:session.userText,ts:Date.now()});
+    if(session.assistantText)
+      pushMsg(threadId,{
+        role:'bot',text:session.assistantText,sources:session.sources,
+        lang:session.language,ts:Date.now()
+      });
+    session.userText='';session.assistantText='';
+    renderThread(CG.state.mode==='page'?pageMsgs:msgsEl,session.context);
+  }
+}
+
+async function toggleLiveVoice(button,statusEl){
+  if(CG.state.liveSession){
+    stopLiveVoiceSession(t('liveStopped'));
+    return;
+  }
+  if(CG.state.liveStarting){
+    stopLiveVoiceSession(t('liveStopped'));
+    return;
+  }
+  if(CG.state.pending||CG.state.recording)return;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||
+    typeof WebSocket==='undefined'||typeof AudioWorkletNode==='undefined'){
+    setVoiceStatus(statusEl,t('liveUnavailable'));
+    return;
+  }
+  const AudioContextConstructor=window.AudioContext||window.webkitAudioContext;
+  if(!AudioContextConstructor){
+    setVoiceStatus(statusEl,t('liveUnavailable'));
+    return;
+  }
+
+  CG.state.liveStarting=true;CG.state.liveStatusEl=statusEl;
+  updateVoiceControls(CG.state.recording);updateLiveControls();
+  updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+  setVoiceStatus(statusEl,t('liveConnecting'));
+  let audioContext,stream;
+  try{
+    audioContext=new AudioContextConstructor();
+    await audioContext.resume();
+    CG.state.livePendingAudioContext=audioContext;
+  }catch(_error){
+    if(audioContext&&audioContext.state!=='closed')audioContext.close().catch(()=>{});
+    CG.state.livePendingAudioContext=null;
+    CG.state.liveStarting=false;CG.state.liveStatusEl=null;
+    updateVoiceControls(CG.state.recording);updateLiveControls();
+    updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+    setVoiceStatus(statusEl,t('liveUnavailable'));
+    return;
+  }
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({
+      audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
+    });
+  }catch(error){
+    if(audioContext.state!=='closed')audioContext.close().catch(()=>{});
+    CG.state.livePendingAudioContext=null;
+    if(!CG.state.liveStarting)return;
+    CG.state.liveStarting=false;CG.state.liveStatusEl=null;
+    updateVoiceControls(CG.state.recording);updateLiveControls();
+    updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+    setVoiceStatus(
+      statusEl,
+      error&&['NotAllowedError','SecurityError'].includes(error.name)
+        ?t('livePermissionDenied')
+        :t('micUnavailable')
+    );
+    return;
+  }
+  if(!CG.state.liveStarting||!CG.state.open){
+    stream.getTracks().forEach(track=>track.stop());
+    if(audioContext.state!=='closed')audioContext.close().catch(()=>{});
+    CG.state.livePendingAudioContext=null;
+    return;
+  }
+  const context=CG.state.selected;
+  const objectId=context?context.id:null;
+  const thread=getThread(objectId||'__none__');
+  const history=thread
+    .filter(message=>!message.error&&(message.role==='user'||message.role==='bot'))
+    .slice(-10)
+    .map(message=>({role:message.role,content:message.text}));
+  const session={
+    phase:'connecting',stream,statusEl,language:CG.state.lang,objectId,
+    context,mode:CG.state.mode,history,sources:[],socket:null,
+    audioContext,audioSources:new Set(),
+    playbackCursor:0,userText:'',assistantText:'',ready:false,
+    muted:false,stopping:false,controller:new AbortController(),timer:null,workletUrl:null
+  };
+  CG.state.livePendingAudioContext=null;
+  CG.state.liveStarting=false;CG.state.liveStatusEl=null;
+  CG.state.liveSession=session;
+  updateVoiceControls(CG.state.recording);updateLiveControls();
+  updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+  setVoiceStatus(statusEl,t('liveConnecting'));
+
+  try{
+    const response=await fetch(getAgentApiUrl('/api/agent/voice/session'),{
+      method:'POST',
+      headers:{'Accept':'application/json','Content-Type':'application/json'},
+      body:JSON.stringify({objectId,lang:session.language,messages:history}),
+      signal:session.controller.signal
+    });
+    if(!response.ok){
+      let detail='';
+      try{
+        const payload=await response.json();
+        if(payload&&typeof payload.detail==='string')detail=payload.detail;
+      }catch(_error){}
+      const error=new Error(detail||'Live session request failed.');
+      error.status=response.status;
+      error.detail=detail;
+      throw error;
+    }
+    const result=await response.json();
+    const data=result&&result.data;
+    if(result.success!==true||!data||typeof data.token!=='string'||
+      typeof data.model!=='string'||!data.config||!Array.isArray(data.history)){
+      throw new Error('Live session response was invalid.');
+    }
+    session.history=data.history.filter(item=>item&&
+      ['user','bot'].includes(item.role)&&typeof item.content==='string');
+    session.sources=Array.isArray(data.sources)
+      ?data.sources.filter(source=>source&&typeof source.title==='string'&&
+        typeof source.url==='string'&&/^\/api\/objects\/[a-z0-9][a-z0-9_-]{0,79}$/.test(source.url)).slice(0,5)
+      :[];
+    const socketUrl='wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token='+
+      encodeURIComponent(data.token);
+    session.socket=new WebSocket(socketUrl);
+    await new Promise((resolve,reject)=>{
+      let settled=false;
+      const startupTimer=setTimeout(()=>{
+        if(!settled){settled=true;reject(new Error('Live session setup timed out.'))}
+      },20000);
+      session.socket.onopen=()=>{
+        session.socket.send(JSON.stringify({
+          setup:{model:data.model,...data.config}
+        }));
+      };
+      session.socket.onmessage=event=>{
+        let message;
+        try{message=JSON.parse(event.data)}catch(_error){return}
+        handleLiveVoiceMessage(session,message);
+        if(message.setupComplete&&!settled){
+          settled=true;clearTimeout(startupTimer);resolve();
+        }
+      };
+      session.socket.onerror=()=>{
+        if(!settled){settled=true;clearTimeout(startupTimer);reject(new Error('Live socket failed.'))}
+      };
+      session.socket.onclose=()=>{
+        if(!settled){settled=true;clearTimeout(startupTimer);reject(new Error('Live socket closed.'))}
+        if(!session.stopping)stopLiveVoiceSession(t('liveFailed'));
+      };
+    });
+    if(session.stopping)return;
+    session.phase='listening';
+    const expiresIn=Math.max(0,new Date(data.expiresAt).getTime()-Date.now());
+    session.timer=setTimeout(()=>stopLiveVoiceSession(t('liveStopped')),expiresIn);
+  }catch(error){
+    if(!session.stopping){
+      const detail=typeof error.detail==='string'?error.detail:'';
+      const disabled=error.status===503&&/demo is disabled/i.test(detail);
+      const fallback=error.name==='AbortError'?t('liveStopped')
+        :disabled?t('liveDisabled'):t('liveFailed');
+      const status=Number.isInteger(error.status)?`HTTP ${error.status}`:'';
+      const diagnostic=detail&& !disabled
+        ?`${status?status+': ':''}${detail}`
+        :status&&!disabled?status:'';
+      const message=diagnostic?`${fallback} (${diagnostic})`:fallback;
+      stopLiveVoiceSession(message);
+    }
+  }
+}
+
+function stopLiveVoiceSession(statusMessage){
+  const session=CG.state.liveSession;
+  if(!session){
+    if(!CG.state.liveStarting)return;
+    const statusEl=CG.state.liveStatusEl;
+    const pendingContext=CG.state.livePendingAudioContext;
+    if(pendingContext&&pendingContext.state!=='closed')pendingContext.close().catch(()=>{});
+    CG.state.livePendingAudioContext=null;
+    CG.state.liveStarting=false;CG.state.liveStatusEl=null;
+    updateVoiceControls(CG.state.recording);updateLiveControls();
+    updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+    setVoiceStatus(statusEl,statusMessage||t('liveStopped'));
+    return;
+  }
+  session.stopping=true;
+  clearTimeout(session.timer);
+  session.controller.abort();
+  if(session.audioProcessor)session.audioProcessor.disconnect();
+  if(session.audioSource)session.audioSource.disconnect();
+  if(session.audioMute)session.audioMute.disconnect();
+  stopLiveAudioPlayback(session);
+  session.stream.getTracks().forEach(track=>track.stop());
+  if(session.socket&&session.socket.readyState===WebSocket.OPEN){
+    try{session.socket.send(JSON.stringify({realtimeInput:{audioStreamEnd:true}}))}catch(_error){}
+    session.socket.close();
+  }else if(session.socket&&session.socket.readyState===WebSocket.CONNECTING){
+    session.socket.close();
+  }
+  if(session.audioContext&&session.audioContext.state!=='closed')
+    session.audioContext.close().catch(()=>{});
+  if(session.workletUrl)URL.revokeObjectURL(session.workletUrl);
+  CG.state.liveSession=null;
+  updateVoiceControls(CG.state.recording);updateLiveControls();
+  updateSend(input,sendBtn);updateSend(pageInput,pageSend);
+  setVoiceStatus(session.statusEl,statusMessage||t('liveStopped'));
+}
+
+function chatErrorMessage(error){
+  if(error.status===0)return t('chatOffline');
+  if(error.status===504)return t('chatTimeout');
+  if(error.status===429)return t('chatRateLimit');
+  return t('chatUnavailable');
 }
 
 let _typingEl=null;
@@ -2201,34 +3166,100 @@ function setTyping(on){
   } else if(!on&&_typingEl){_typingEl.remove();_typingEl=null;}
 }
 
-/* ── Demo responder ── */
-async function demoRespond(question,ctx){
-  await new Promise(r=>setTimeout(r,CG.config.demoDelay+Math.random()*400));
-  const lang=CG.state.lang;const name=ctx?ctx.name:'this object';
-  const dn=ctx&&ctx.isDemo?t('demoNote'):'';
-  if(/apa|what|adalah|object|ini/i.test(question))
-    return lang==='id'
-      ?`*${name}* adalah objek astronomi target observasi SPHEREx.${dn} SPHEREx mengamati seluruh langit dalam 96 pita inframerah untuk memahami distribusi galaksi dan awal semesta.`
-      :`*${name}* is an astronomical target observed by SPHEREx.${dn} SPHEREx surveys the full sky in 96 infrared bands to map galaxies and probe the early universe.`;
-  if(/jauh|far|distance|jarak/i.test(question))
-    return lang==='id'
-      ?`Jarak pasti ke *${name}* memerlukan data spektroskopi terverifikasi.${dn} SPHEREx mengukur redshift galaksi untuk memetakan jarak kosmologi secara statistik.`
-      :`The precise distance to *${name}* requires verified spectroscopic data.${dn} SPHEREx measures galaxy redshifts to statistically map cosmological distances.`;
-  if(/menarik|interesting|kenapa|why/i.test(question))
-    return lang==='id'
-      ?`*${name}* menarik karena berada dalam bidang inframerah unik SPHEREx.${dn} Cahaya inframerah menembus debu antar-bintang, mengungkap struktur yang tak terlihat secara optis.`
-      :`*${name}* is interesting because it lies in SPHEREx\u2019s unique infrared survey field.${dn} Infrared light penetrates interstellar dust, revealing structure invisible in optical light.`;
-  if(/spherex|amati|observe|bagaimana|how/i.test(question))
-    return lang==='id'
-      ?`SPHEREx menggunakan 96 filter panjang gelombang inframerah (0,75\u20135\u00a0\u03bcm) untuk mengamati *${name}*.${dn} Setiap pita menangkap emisi berbeda\u2014dari hidrogen molekuler hingga CO\u2082 beku.`
-      :`SPHEREx uses 96 infrared wavelength filters (0.75\u20135\u00a0\u03bcm) to observe *${name}*.${dn} Each band captures different emissions\u2014from molecular hydrogen to frozen CO\u2082.`;
-  return lang==='id'
-    ?`Pertanyaan bagus tentang *${name}*!${dn} Saya belum punya data spesifik untuk itu\u2014kunjungi sumber resmi NASA/JPL untuk informasi terverifikasi.`
-    :`Great question about *${name}*!${dn} I don\u2019t have specific data for that right now\u2014visit official NASA/JPL sources for verified information.`;
+async function playMessageAudio(message,button,automatic=false){
+  if(CG.state.audio){
+    const active=CG.state.audio;
+    active.audio.pause();active.audio.currentTime=0;
+    active.button.textContent=t('playAudio');
+    CG.state.audio=null;
+    if(active.message===message)return;
+  }
+
+  if(!message.audioUrl){
+    const controller=new AbortController();
+    if(automatic)CG.state.proactiveAudioController=controller;
+    const timeout=setTimeout(()=>controller.abort(),50000);
+    button.disabled=true;button.textContent=t('generatingAudio');
+    try{
+      const response=await fetch(getAgentApiUrl('/api/agent/voiceover/text'),{
+        method:'POST',
+        headers:{'Accept':'audio/wav','Content-Type':'application/json'},
+        body:JSON.stringify({
+          text:message.text,
+          language:message.lang||CG.state.lang,
+          voicePreset:'mission-liaison'
+        }),
+        signal:controller.signal
+      });
+      if(!response.ok)throw new Error(`TTS request failed (${response.status})`);
+      const audioBlob=await response.blob();
+      if(!audioBlob.type.includes('audio/wav'))throw new Error('Backend returned a non-WAV audio file.');
+      message.audioUrl=URL.createObjectURL(audioBlob);
+    }catch(_error){
+      button.textContent=t('audioUnavailable');
+      setTimeout(()=>{if(button.isConnected)button.textContent=t('playAudio')},2200);
+      if(automatic&&_error.name!=='AbortError')reportProactiveAudioFailure();
+      return;
+    }finally{
+      clearTimeout(timeout);
+      button.disabled=false;
+      if(CG.state.proactiveAudioController===controller)
+        CG.state.proactiveAudioController=null;
+    }
+  }
+
+  if(automatic&&!CG.state.autoGuidanceEnabled)return;
+  const audio=new Audio(message.audioUrl);
+  CG.state.audio={audio,message,button};
+  button.textContent=t('stopAudio');
+  const finish=()=>{
+    if(CG.state.audio&&CG.state.audio.audio===audio){
+      button.textContent=t('playAudio');
+      CG.state.audio=null;
+    }
+  };
+  audio.addEventListener('ended',finish,{once:true});
+  audio.addEventListener('error',finish,{once:true});
+  try{
+    await audio.play();
+  }catch(_error){
+    finish();
+    button.textContent=t('playAudio');
+    if(automatic)reportProactiveAudioFailure();
+  }
+}
+
+function clearThreadAudio(thread){
+  if(CG.state.audio&&thread.includes(CG.state.audio.message)){
+    CG.state.audio.audio.pause();CG.state.audio.audio.currentTime=0;
+    CG.state.audio=null;
+  }
+  thread.forEach(message=>{
+    if(message.audioUrl){
+      URL.revokeObjectURL(message.audioUrl);
+      delete message.audioUrl;
+    }
+  });
+}
+
+function stopCurrentAudio(){
+  if(CG.state.proactiveAudioController){
+    CG.state.proactiveAudioController.abort();
+    CG.state.proactiveAudioController=null;
+  }
+  if(!CG.state.audio)return;
+  const active=CG.state.audio;
+  active.audio.pause();active.audio.currentTime=0;
+  if(active.button.isConnected)active.button.textContent=t('playAudio');
+  CG.state.audio=null;
 }
 
 /* ── Helpers ── */
-function updateSend(inp,btn){if(!inp||!btn)return;btn.disabled=!inp.value.trim()||CG.state.pending}
+function updateSend(inp,btn){
+  if(!inp||!btn)return;
+  btn.disabled=!inp.value.trim()||CG.state.pending||
+    Boolean(CG.state.recording||CG.state.liveSession||CG.state.liveStarting);
+}
 function autoGrow(ta){if(!ta)return;ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,100)+'px'}
 
 /* ── FAB ── */
@@ -2240,7 +3271,9 @@ fab.addEventListener('click',()=>{
 /* ── Window events ── */
 closeBtn.addEventListener('click',closeChatbot);
 clearBtn.addEventListener('click',()=>{
+  stopLiveVoiceSession();
   const ctx=CG.state.selected;const id=ctx?ctx.id:'__none__';
+  clearThreadAudio(getThread(id));
   CG.state.threads[id]=[];
   if(ctx)pushMsg(id,{role:'bot',text:t('greeting',{name:ctx.name}),ts:Date.now()});
   renderThread(msgsEl,ctx);renderChips(chipsRow,ctx);
@@ -2252,19 +3285,32 @@ win.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
 input.addEventListener('input',()=>{autoGrow(input);updateSend(input,sendBtn)});
 input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage(input.value)}});
 sendBtn.addEventListener('click',()=>sendMessage(input.value));
+voiceBtn.addEventListener('click',()=>togglePushToTalk(voiceBtn,voiceStatus));
+liveBtn.addEventListener('click',()=>toggleLiveVoice(liveBtn,voiceStatus));
+liveMuteBtn.addEventListener('click',()=>toggleLiveMute(voiceStatus));
+autoGuideBtn.addEventListener('click',()=>toggleAutoGuidance(voiceStatus));
 
 /* ── Page events ── */
-pageBack.addEventListener('click',()=>{closePage();CG.state.open=false;fab.setAttribute('aria-expanded','false')});
+pageBack.addEventListener('click',()=>{cancelVoiceRecording();stopLiveVoiceSession();stopCurrentAudio();closePage();CG.state.open=false;fab.setAttribute('aria-expanded','false')});
 pageInput.addEventListener('input',()=>{autoGrow(pageInput);updateSend(pageInput,pageSend)});
 pageInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage(pageInput.value)}});
 pageSend.addEventListener('click',()=>sendMessage(pageInput.value));
+pageVoiceBtn.addEventListener('click',()=>togglePushToTalk(pageVoiceBtn,pageVoiceStatus));
+pageLiveBtn.addEventListener('click',()=>toggleLiveVoice(pageLiveBtn,pageVoiceStatus));
+pageLiveMuteBtn.addEventListener('click',()=>toggleLiveMute(pageVoiceStatus));
+pageAutoGuideBtn.addEventListener('click',()=>toggleAutoGuidance(pageVoiceStatus));
 
 /* ── Hash routing ── */
 window.addEventListener('hashchange',()=>{
   if(!location.hash.startsWith('#/guide/')&&CG.state.open&&CG.state.mode==='page'){
+    cancelVoiceRecording();
+    stopLiveVoiceSession();
+    stopCurrentAudio();
     page.hidden=true;CG.state.open=false;fab.setAttribute('aria-expanded','false');
   }
 });
+window.addEventListener('pagehide',()=>{cancelVoiceRecording();stopLiveVoiceSession();stopCurrentAudio();});
+window.addEventListener('pagehide',cancelVoiceRecording);
 
 /* ── Responsive mode switch ── */
 const mq=window.matchMedia('(max-width:767px)');
@@ -2279,9 +3325,12 @@ mq.addEventListener('change',()=>{
 });
 
 // Run an initial poll after the existing marker-click JS has had a chance to set the HUD
+updateAutoGuidanceControls();
+updateVoiceControls(null);
+updateLiveControls();
 setTimeout(pollContext,400);
 
-console.log('CG ready – Cosmic Guide loaded (demo mode).');
+console.log('CG ready – Cosmic Guide loaded.');
 })();
 </script>
 
@@ -2614,17 +3663,12 @@ console.log('CG ready – Cosmic Guide loaded (demo mode).');
   .zr-sheet__body{overflow-y:auto}
   .zr-hint{bottom:calc(var(--zr-dock) + 10px)}
   body #explorer .dock[data-zr="dock"]{justify-content:center;gap:10px;padding-left:env(safe-area-inset-left,0px)}
-  body #explorer .dock[data-zr="dock"] button{flex:0 0 auto;min-width:60px;min-height:44px}
+  body #explorer .dock[data-zr="dock"] button{flex:0 0 auto;min-width:60px}
   body #explorer .dock[data-zr="dock"] #exit{margin-left:18px}
-  .zr-sheet [data-zr="objcard"] p{display:block!important}
-  .zr-sheet [data-zr="meta"]{display:grid!important}
-  .zr-sheet [data-zr="source"]{display:block!important}
-  .zr-sheet [data-zr="actions"]{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
-  .zr-sheet [data-zr="actions"] button{min-height:44px!important}
 }
 /* ── Tablet 768–1023: only fix collisions ── */
 @media(min-width:768px) and (max-width:1023px){
-  #explorer .hud-head{max-width:100%;width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-sizing:border-box}
+  #explorer .hud-head{max-width:min(240px,calc(100% - 96px))}
   #explorer .hud>div:nth-child(2){width:min(240px,calc(100% - 40px))}
   #explorer .data-grid{width:min(280px,calc(100% - 40px))}
   #explorer .hud-actions{width:min(190px,calc(100% - 40px))}
@@ -3025,7 +4069,7 @@ window.ZR.getState=()=>state;
 </style>
 <script>
 (()=>{
-  const R={(a,b)=>a+Math.random()*(b-a)};
+  const R=(a,b)=>a+Math.random()*(b-a);
   function build(){
     const cards=[...document.querySelectorAll('#explorer .hud > .hud-head, #explorer .hud > div:nth-child(2), #explorer .hud > .data-grid, #explorer .hud > .source-line, #explorer .hud > .hud-actions, #explorer .hud > .dock')];
     cards.forEach((card,i)=>{
@@ -3059,401 +4103,4 @@ window.ZR.getState=()=>state;
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ready,{once:true}); else ready();
 })();
 </script>
-
-<!-- ═══════════════════════════════════════════════════════════════════
-     HC HOLOGRAPHIC CAPABILITY CARDS — additive only, prefix hc-
-     Applies holographic glass effects to Gateway .cap cards only.
-     ═══════════════════════════════════════════════════════════════════ -->
-<style id="hc-styles">
-/* Enhanced glass surface */
-#gateway .cap{
-  position:relative;
-  isolation:isolate;
-  overflow:hidden;
-  background:linear-gradient(145deg,rgba(13,28,51,.48),rgba(8,17,32,.32));
-  border:1px solid rgba(197,227,227,.18);
-  border-radius:10px;
-  box-shadow:0 6px 18px rgba(1,4,13,.18),inset 0 1px rgba(255,255,255,.06);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  transition:transform .28s ease,border-color .28s ease,box-shadow .28s ease;
-}
-
-/* Top scan-line gradient */
-#gateway .cap::before{
-  content:'';
-  position:absolute;
-  top:0;left:0;right:0;
-  height:2px;
-  background:linear-gradient(90deg,#4fe3d6 0%,#38bdf8 35%,#d4af37 70%,rgba(212,175,55,0) 100%);
-  opacity:.75;
-  pointer-events:none;
-}
-
-/* Corner accent pips */
-#gateway .cap::after{
-  content:'';
-  position:absolute;
-  top:6px;left:6px;
-  width:3px;height:3px;
-  border-radius:50%;
-  background:var(--hc-accent,#4fe3d6);
-  box-shadow:0 0 6px var(--hc-accent,#4fe3d6),
-             calc(100vw - 12px - 6px) calc(100% - 12px - 6px) 0 0 var(--hc-accent,#4fe3d6),
-             calc(100vw - 12px - 6px) calc(100% - 12px - 6px) 0 0 var(--hc-accent,#4fe3d6) inset;
-  opacity:.6;
-  pointer-events:none;
-}
-
-/* Staggered entrance */
-@keyframes hc-arrive{
-  from{opacity:0;transform:scale(.92)}
-  to{opacity:1;transform:scale(1)}
-}
-#gateway .cap{
-  animation:hc-arrive .5s ease-out backwards;
-}
-#gateway .cap:nth-child(1){animation-delay:.05s}
-#gateway .cap:nth-child(2){animation-delay:.15s}
-#gateway .cap:nth-child(3){animation-delay:.25s}
-#gateway .cap:nth-child(4){animation-delay:.35s}
-
-/* Continuous float drift */
-@keyframes hc-float{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-4px)}
-}
-@media(prefers-reduced-motion:no-preference){
-  #gateway .cap{
-    animation:hc-arrive .5s ease-out backwards,hc-float 5s ease-in-out infinite;
-  }
-  #gateway .cap:nth-child(1){animation-delay:.05s,1.2s}
-  #gateway .cap:nth-child(2){animation-delay:.15s,2.8s}
-  #gateway .cap:nth-child(3){animation-delay:.25s,.4s}
-  #gateway .cap:nth-child(4){animation-delay:.35s,2s}
-}
-
-/* Per-card accent colors */
-#gateway .cap:nth-child(1){--hc-accent:#4fe3d6}/* teal Desktop 3D */
-#gateway .cap:nth-child(2){--hc-accent:#8a8f9e}/* steel Gyroscope */
-#gateway .cap:nth-child(3){--hc-accent:#b18cff}/* violet WebXR AR */
-#gateway .cap:nth-child(4){--hc-accent:#d4af37}/* gold WebXR VR */
-
-/* Hover lift + accent glow */
-#gateway .cap:hover{
-  transform:translateY(-3px);
-  border-color:var(--hc-accent);
-  box-shadow:0 8px 24px rgba(1,4,13,.28),
-             0 0 18px var(--hc-accent),
-             inset 0 1px rgba(255,255,255,.1),
-             inset 0 0 40px var(--hc-accent);
-}
-
-/* Prismatic edge shimmer on hover */
-#gateway .cap .hc-shimmer{
-  position:absolute;
-  inset:-1px;
-  background:linear-gradient(135deg,transparent 0%,rgba(255,255,255,.16) 48%,rgba(255,255,255,.24) 52%,transparent 100%);
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .28s ease;
-  border-radius:10px;
-}
-#gateway .cap:hover .hc-shimmer{
-  opacity:1;
-}
-
-/* Badge pop on hover */
-#gateway .cap small{
-  transition:transform .22s ease;
-  display:inline-block;
-  color:var(--hc-accent);
-  font-weight:650;
-}
-#gateway .cap:hover small{
-  transform:scale(1.08);
-}
-
-/* Sweep line container */
-#gateway .cap .hc-sweep{
-  position:absolute;
-  top:0;left:0;right:0;bottom:0;
-  overflow:hidden;
-  pointer-events:none;
-  border-radius:10px;
-}
-#gateway .cap .hc-sweep-line{
-  position:absolute;
-  left:0;right:0;
-  height:1px;
-  background:linear-gradient(90deg,transparent,var(--hc-accent),transparent);
-  box-shadow:0 0 8px var(--hc-accent);
-  opacity:0;
-  animation:hc-sweep-move 5s ease-in-out infinite;
-  animation-play-state:paused;
-}
-@keyframes hc-sweep-move{
-  0%{top:-1px;opacity:0}
-  8%{opacity:.7}
-  92%{opacity:.7}
-  100%{top:100%;opacity:0}
-}
-@media(prefers-reduced-motion:reduce){
-  #gateway .cap{animation:hc-arrive .5s ease-out backwards!important}
-  #gateway .cap .hc-sweep-line{animation:none!important}
-}
-</style>
-
-<script>
-(()=>{
-  const injectSweeps=()=>{
-    const caps=document.querySelectorAll('#gateway .cap');
-    caps.forEach((cap,i)=>{
-      if(cap.querySelector('.hc-shimmer')) return;
-      const shimmer=document.createElement('div');
-      shimmer.className='hc-shimmer';
-      cap.appendChild(shimmer);
-      
-      const sweep=document.createElement('div');
-      sweep.className='hc-sweep';
-      const line=document.createElement('div');
-      line.className='hc-sweep-line';
-      line.style.animationDelay=(i*1.3)+'s';
-      sweep.appendChild(line);
-      cap.appendChild(sweep);
-      
-      if(window.matchMedia('(prefers-reduced-motion:no-preference)').matches){
-        setTimeout(()=>{line.style.animationPlayState='running'},800+i*200);
-      }
-    });
-  };
-  if(document.readyState==='loading')
-    document.addEventListener('DOMContentLoaded',injectSweeps,{once:true});
-  else injectSweeps();
-  console.log('HC ready – holographic capability cards enhanced.');
-})();
-</script>
-<!-- ═══════════════════════════════════════════════════════════════════
-     MODULE AX — Layout Containment & Responsive Overlap Repair
-     Additive layer (prefix: ax-). No existing rule is removed; every
-     selector below is a later, scoped override of a broken state.
-       desktop : document no longer drifts under the topbar, the status
-                 chip no longer covers the sky title, the right column
-                 cannot self-collide on short viewports
-       tablet  : 768–1023 HUD becomes a real side rail instead of
-                 absolutely placed cards spilling over the map
-       phone   : capability chips recover their padding, comparison
-                 tabs stay on one row, peek sheet fades instead of
-                 slicing a text line in half
-     ═══════════════════════════════════════════════════════════════════ -->
-<style id="ax-styles">
-  /* ── 1. containment ──────────────────────────────────────────── */
-  html{ -webkit-text-size-adjust:100%; }
-  body{ overflow-x:hidden; }
-
-  /* The explorer is a fixed 100vh canvas. Overlays that live outside it
-     (toast, gesture buttons) added a document scroll which pushed the
-     topbar upwards and left a permanent scrollbar. Lock the document
-     only while the explorer screen owns the viewport. */
-  @media (min-width:768px){
-    html:has(#explorer.active),
-    body:has(#explorer.active){ overflow:hidden !important; height:100%; }
-  }
-
-  /* ── 2. capability chips: restore padding, stop text clipping ── */
-  #gateway .cap{ padding:12px 12px 13px; min-height:64px; }
-  #gateway .cap b{ line-height:1.3; }
-  #gateway .cap small{ margin-top:5px; line-height:1.35; }
-  #gateway .cap{
-    border:1px solid rgba(79,227,214,.34);
-    border-radius:12px;
-    background:rgba(79,227,214,.05);
-    color:var(--teal);
-  }
-  #gateway .cap b,
-  #gateway .cap small{ color:var(--teal); }
-
-  @media (max-width:767px){
-    #gateway .capabilities{ gap:10px; }
-    #gateway .cap{ padding:11px 11px 12px; min-height:62px; max-width:100%; }
-    #gateway .cap b{ font-size:.79rem; letter-spacing:.01em; }
-    #gateway .cap small{ font-size:.56rem; letter-spacing:.05em; }
-  }
-
-  /* ── 3. desktop / large laptop ───────────────────────────────── */
-  @media (min-width:1024px){
-    /* the status chip used to sit exactly on top of the sky title */
-    #explorer .hud-head{
-      left:50%; right:auto; top:24px; transform:translateX(-50%);
-      width:auto; max-width:min(348px, calc(100% - 380px));
-      display:flex; align-items:center; gap:10px; flex-wrap:nowrap;
-    }
-    #explorer .hud-head > *{ min-width:0; }
-    #explorer .hud-head #statusTag,
-    #explorer .hud-head .status-tag,
-    #explorer .hud-head .tag{ white-space:nowrap; }
-
-    /* a phone→desktop rotation can leave the ZR offset behind on the
-       title, pushing it ~60px out of the top-left corner */
-    #explorer .sky-title{ transform:none !important; }
-  }
-
-  /* short desktop (<=720px tall): the vertical rail (3 icons + Guide orb)
-     is ~207px tall and grows down into the centred action stack, so the
-     orb ends up sitting on the corner of "Ask the Guide". Lay the rail out
-     as one row first (same buttons, same place, 52px tall). */
-  @media (min-width:1024px) and (max-height:720px){
-    /* The horizontal rail (3 icons + Guide orb) is ~207px tall. On short
-       laptops it grows down into the centred action stack, so the orb ends
-       up sitting on the corner of "Ask the Guide". Lay the rail out as one
-       row instead: same buttons, same place, 52px tall. */
-    #explorer .toolbar{
-      display:flex; flex-direction:row; flex-wrap:nowrap;
-      gap:6px; padding:6px;
-    }
-    #explorer .toolbar .icon-btn{ flex:0 0 auto; }
-  }
-  /* short desktop: toolbar 156, action stack, metadata card at H-241 —
-     a 152px single column no longer fits between them. Lay the stack out
-     2-up (3 buttons => 2 rows) and keep it inside the band. */
-  @media (min-width:1024px) and (max-height:720px){
-    #explorer .hud-actions{
-      top:clamp(166px, 50%, calc(100% - 308px));
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0, 1fr));
-      gap:7px;
-      width:266px;
-    }
-    #explorer .hud-actions button{
-      min-height:38px; padding:7px 8px;
-      font-size:.68rem; line-height:1.15;
-      white-space:normal; text-align:center; justify-content:center;
-    }
-    #explorer .hud-actions #backSource{ grid-column:1 / -1; }
-  }
-  @media (min-width:1024px) and (max-height:760px){
-    #explorer .source-line{ bottom:74px; }
-  }
-
-  /* ── 4. tablet: HUD becomes a real side rail ─────────────────── */
-  @media (min-width:768px) and (max-width:1023px){
-    #explorer.active{ height:calc(100dvh - 76px); }
-    #explorer .explorer{
-      display:grid;
-      grid-template-columns:minmax(0,1fr) clamp(280px,34vw,320px);
-      height:100%; min-height:0;
-    }
-    #explorer .viewport{ position:relative; inset:auto; height:100%; min-height:0; }
-    #explorer .sky-disc{ width:min(94%,520px); }
-    #explorer .toolbar{ display:grid; top:16px; right:14px; }
-    #explorer .sky-title{ top:16px; left:14px; max-width:calc(100% - 92px); transform:none !important; }
-    #explorer .view-hint{ left:14px; bottom:14px; }
-
-    #explorer .hud{
-      position:relative; inset:auto; transform:none !important;
-      display:flex; flex-direction:column;
-      gap:10px; width:auto; max-width:none; max-height:none; height:100%;
-      margin:0; padding:14px 12px;
-      overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
-      border:0; border-left:1px solid rgba(197,227,227,.16); border-radius:0;
-      background:linear-gradient(180deg,rgba(9,19,36,.93),rgba(6,16,32,.97));
-      box-shadow:none;
-      backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
-      z-index:6;
-    }
-    #explorer .hud > *{
-      position:relative !important; inset:auto !important;
-      left:auto !important; right:auto !important;
-      top:auto !important; bottom:auto !important;
-      transform:none !important; width:auto !important; max-width:none !important;
-      min-width:0; margin:0 !important; flex:0 0 auto;
-    }
-    #explorer .hud-head{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:8px; padding:2px 2px 4px;
-    }
-    #explorer .hud-head #statusTag,
-    #explorer .hud-head .status-tag,
-    #explorer .hud-head .tag{ white-space:nowrap; }
-    #explorer .hud-actions{
-      display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:9px;
-    }
-    #explorer .hud-actions button{
-      white-space:normal; text-align:center; justify-content:center; min-height:42px;
-    }
-    #explorer .hud-actions #backSource{ grid-column:1 / -1; }
-    #explorer .dock{
-      display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:8px; margin-top:auto !important;
-    }
-    #explorer .dock button{ min-width:0; white-space:nowrap; }
-  }
-
-  /* ── 5. phone ────────────────────────────────────────────────── */
-  @media (max-width:767px){
-    /* peek state: fade the sheet body instead of hard-cutting a line */
-    .zr-sheet[data-state="peek"] .zr-sheet__body{
-      overflow:hidden;
-      -webkit-mask-image:linear-gradient(180deg,#000 66%,transparent);
-      mask-image:linear-gradient(180deg,#000 66%,transparent);
-    }
-    .zr-sheet[data-state="peek"] #objectDescription{
-      display:-webkit-box; -webkit-box-orient:vertical;
-      -webkit-line-clamp:2; overflow:hidden;
-    }
-  }
-
-  /* landscape phone: the details side panel spans top-to-bottom and slid
-     underneath the floating toolbar row, covering its icons. Start the
-     panel below the rail instead. */
-  @media (orientation:landscape) and (max-height:500px) and (max-width:767px){
-    .zr-sheet{ top:calc(44px + 60px + env(safe-area-inset-top,0px)); }
-  }
-
-  @media (max-width:680px){
-    /* three filters belong on one segmented row, not three stacked bars */
-    .tabs{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
-    .tab{ min-width:0; padding:10px 4px; font-size:.63rem; line-height:1.2; text-align:center; }
-  }
-
-  @media (max-width:480px){
-    .brand{ min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .top-actions{ flex-shrink:0; }
-  }
-</style>
-
-<script id="ax-sheet-resume">
-/* AX-FIX — when the user leaves the explorer and comes back (Gateway →
-   Explorer, Comparison → Sky Explorer), ZR can leave the mobile sheet at
-   data-state="hidden", which removes the whole object card on phones.
-   Re-open it through the public ZR API on re-entry only: a sheet the user
-   closed by hand stays closed, because no screen class change fires then. */
-(function () {
-  if (window.axSheetResume) return;
-  window.axSheetResume = true;
-
-  var mq = window.matchMedia('(max-width:767px)');
-  var exp = document.getElementById('explorer');
-  if (!exp) return;
-
-  function resume() {
-    if (!mq.matches) return;
-    if (!exp.classList.contains('active')) return;
-    if (!window.ZR || typeof window.ZR.getState !== 'function') return;
-    if (window.ZR.getState() !== 'hidden') return;
-    try { window.ZR.open(); } catch (e) {}
-  }
-
-  var queued = false;
-  new MutationObserver(function () {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(function () { queued = false; resume(); });
-  }).observe(exp, { attributes: true, attributeFilter: ['class'] });
-
-  window.addEventListener('pageshow', resume);
-  requestAnimationFrame(resume);
-})();
-</script>
-
 </body></html>

@@ -115,4 +115,3 @@ Not executed / not proven in this pass:
 2. The `Sample · illustrative` marker label can clip at the sky/rail boundary in short landscape (marker sits at 70% of a ~520px-wide sky). Acceptable, or should illustrative markers get per-breakpoint positions?
 3. Capability cards ship as the reference's plain hairline grid rather than the `hc-` holographic treatment. If holographic styling is wanted, it should be a separate phase with reduced-motion and mobile-cost review.
 4. `docs/DESIGN_MIGRATION_REPORT.md` + `arvr/scripts/design-migration-qa.mjs` + `docs/design-migration/` are new untracked files; commit them with the source changes or keep them local?
-

@@ -276,6 +276,8 @@ export function fetchApod() {
   return getJson('/api/nasa/apod', 20000, parseApod)
 }
 
+// Re-export Mission Liaison Agent API client
+export * from './agentApi'
 /* ------------------------------------------------------------------ *
  * Cosmic Guide (floating chat)
  *
@@ -332,4 +334,3 @@ export async function requestGuideReply(payload: GuideReplyRequest): Promise<Gui
     return { ok: false, error: error instanceof Error ? error.message : String(error) }
   }
 }
-

@@ -96,9 +96,11 @@ Not tested here: real Meta Quest 3 / Android AR devices (emulator only).
 - **D1: the 3D Solar System hub.** Kept as a scene opened from "3D / WebXR" and "Solar System Hub",
   restyled. The alternative is to remove it and reach Mars / Moon / Bennu only from the Sky Explorer,
   which drops the real planet positions, the time machine and "Solar System in VR / on your table".
-- **D2: base branch.** `origin/main` (Mission Liaison agent) and `origin/integrasi` (wormhole, guide window)
-  have diverged. This branch is based on `integrasi`. Merging with `main` will conflict in `TopBar.tsx`,
-  `frontend.css`, `SkyExplorerScreen.tsx` and the guide files.
+- **D2: base branch (resolved).** `origin/main` moved to `4f51bd6` (their Mission Liaison agent, the latest UI/UX design
+  migration, and our 3D viewport). It is merged into this branch; conflicts were only in `SkyExplorerScreen.tsx`
+  (their HUD now puts the actions first, so our "Walk on…" / guided-tour entries live in their layout), `frontend.css`
+  (kept both) and `objects.py` (took their `object_service`, which already reads UTF-8). After the merge: build OK,
+  3D viewport 135/135, unified look all pass, XR emulator 30/0, backend 51 passed (needs `python-dotenv`).
 
 ## 7. Deferred
 

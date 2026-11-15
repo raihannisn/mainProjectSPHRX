@@ -73,7 +73,7 @@ def test_quality_flags():
     flag = cal_dr1["quality_flag"]
     assert flag == 2097152, f"Expected flag 2097152, got {flag}"
     assert flag == (1 << 21), "Flag 2097152 must equal bit 21 (1 << 21)"
-    
+
     # Check that bits 0-20 are strictly 0
     lower_bits = flag & ((1 << 21) - 1)
     assert lower_bits == 0, f"Expected lower bits 0..20 to be 0, got {lower_bits}"
@@ -98,7 +98,7 @@ async def test_shared_normalization():
     print("\n--- 5. Testing Shared Normalization Previews ---")
     # Cutout URL from DR1
     url = "https://irsa.ipac.caltech.edu/ibe/cutout?ra=134.8708&dec=-43.7533&size=0.05&path=spherex/dr1/level2/2025W22_2B/l2b-v27-2026-200/4/level2_2025W22_2B_0536_1D4_spx_l2b-v27-2026-200.fits"
-    
+
     png_bytes, meta = await generate_fits_preview(
         fits_url=url,
         ra=134.8708,

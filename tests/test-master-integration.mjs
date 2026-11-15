@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url';
 const playwrightPath = path.resolve('arvr/node_modules/playwright-core/index.mjs');
 const { chromium } = await import(pathToFileURL(playwrightPath).href);
 
-const targetUrl = 'http://localhost:5173';
+const targetUrl = process.env.BASE_URL || 'http://localhost:5173';
 const screenshotDir = path.resolve('scratch/screenshots/integration');
 fs.mkdirSync(screenshotDir, { recursive: true });
 
