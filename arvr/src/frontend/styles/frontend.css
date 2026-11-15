@@ -3407,6 +3407,128 @@
   color: #fff;
 }
 
+/* Markdown Rendering in Cosmic Guide */
+.cg-markdown {
+  white-space: normal;
+}
+
+.cg-markdown p {
+  margin: 0 0 8px 0;
+  line-height: 1.55;
+}
+
+.cg-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.cg-markdown h1,
+.cg-markdown h2,
+.cg-markdown h3,
+.cg-markdown h4 {
+  color: var(--text-title, #f8fafc);
+  font-weight: 600;
+  margin: 10px 0 6px 0;
+  line-height: 1.35;
+}
+
+.cg-markdown h1:first-child,
+.cg-markdown h2:first-child,
+.cg-markdown h3:first-child,
+.cg-markdown h4:first-child {
+  margin-top: 0;
+}
+
+.cg-markdown h1 { font-size: 1.05rem; }
+.cg-markdown h2 { font-size: 0.95rem; }
+.cg-markdown h3 { font-size: 0.88rem; color: #93c5fd; }
+.cg-markdown h4 { font-size: 0.84rem; }
+
+.cg-markdown strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.cg-markdown em {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cg-markdown ul,
+.cg-markdown ol {
+  margin: 4px 0 8px 0;
+  padding-left: 20px;
+}
+
+.cg-markdown li {
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+
+.cg-markdown li:last-child {
+  margin-bottom: 0;
+}
+
+.cg-markdown code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.78rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #93c5fd;
+}
+
+.cg-markdown pre {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 8px 0;
+  overflow-x: auto;
+}
+
+.cg-markdown pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #e2e8f0;
+}
+
+.cg-markdown blockquote {
+  border-left: 3px solid #3b82f6;
+  margin: 6px 0;
+  padding: 4px 10px;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(59, 130, 246, 0.08);
+  border-radius: 0 6px 6px 0;
+}
+
+.cg-markdown hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  margin: 10px 0;
+}
+
+.cg-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 0.76rem;
+}
+
+.cg-markdown th,
+.cg-markdown td {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 5px 8px;
+  text-align: left;
+}
+
+.cg-markdown th {
+  background: rgba(255, 255, 255, 0.06);
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
 .cg-chips {
   display: flex;
   gap: 6px;

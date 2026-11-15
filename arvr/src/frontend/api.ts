@@ -3,6 +3,19 @@
  * FastAPI by Vite during development and routed to the API service in Vercel.
  */
 
+export const BASE_URL: string =
+  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ||
+  (import.meta.env.DEV ? 'http://127.0.0.1:8000' : 'https://nasa-spherex-backend.vercel.app')
+
+export const API_URL = BASE_URL
+
+export function toApiUrl(path: string): string {
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  const base = BASE_URL.replace(/\/+$/, '')
+  const cleanPath = path.startsWith('/') ? path : `/${path}`
+  return `${base}${cleanPath}`
+}
+
 export interface SystemStatus {
   status: string
   data_source?: string
@@ -103,7 +116,8 @@ function requiredNumber(value: unknown, field: string): number {
 
 async function getJson<T>(path: string, timeoutMs: number, parse: Parser<T>): Promise<ApiResult<T>> {
   try {
-    const response = await fetch(path, { signal: AbortSignal.timeout(timeoutMs) })
+    const fullUrl = toApiUrl(path)
+    const response = await fetch(fullUrl, { signal: AbortSignal.timeout(timeoutMs) })
     if (!response.ok) {
       let detail = ''
       try {
@@ -279,37 +293,37 @@ export interface GuideReplyRequest {
 
 export type GuideReply = { ok: true; text: string } | { ok: false; error: string }
 
-const GUIDE_ENDPOINT: string = (import.meta.env.VITE_GUIDE_ENDPOINT as string | undefined)?.trim() || ''
+const GUIDE_ENDPOINT: string =
+  (import.meta.env.VITE_GUIDE_ENDPOINT as string | undefined)?.trim() || toApiUrl('/api/ai/chat')
 
-/** True once `VITE_GUIDE_ENDPOINT` points at the LLM service. */
-export const GUIDE_SERVICE_READY = GUIDE_ENDPOINT.length > 0
+/** True once `VITE_GUIDE_ENDPOINT` points at the LLM service or backend /api/ai/chat is ready. */
+export const GUIDE_SERVICE_READY = true
 
 export async function requestGuideReply(payload: GuideReplyRequest): Promise<GuideReply> {
-  if (!GUIDE_SERVICE_READY) return { ok: false, error: 'not-configured' }
-
   try {
+    const promptMessage = payload.question
+      ? `[Target: ${payload.objectName || payload.objectId}] ${payload.question}`
+      : `Halo Cosmic Guide, jelaskan tentang ${payload.objectName || payload.objectId}.`
+
     const response = await fetch(GUIDE_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        object_id: payload.objectId,
-        object_name: payload.objectName,
-        question: payload.question,
-        lang: payload.lang,
+        message: promptMessage,
       }),
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(45000),
     })
     if (!response.ok) return { ok: false, error: `HTTP ${response.status}` }
 
     const body: unknown = await response.json()
     if (isRecord(body)) {
       const answer =
-        typeof body.answer === 'string'
-          ? body.answer
-          : typeof body.text === 'string'
-            ? body.text
-            : typeof body.reply === 'string'
-              ? body.reply
+        typeof body.reply === 'string'
+          ? body.reply
+          : typeof body.answer === 'string'
+            ? body.answer
+            : typeof body.text === 'string'
+              ? body.text
               : ''
       if (answer.trim()) return { ok: true, text: answer.trim() }
     }

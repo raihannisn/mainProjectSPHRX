@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { createPortal } from 'react-dom'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { ASK_GUIDE_EVENT } from '../../xr/events'
 import type { GuideRequest } from '../../xr/types'
 import { useXRApp } from '../../xr/store'
 import { BotIcon } from '../guide/BotIcon'
+import { useGuide } from '../guide/guideStore'
 
 interface CosmicGuideWindowProps {
   fullPage?: boolean
@@ -21,11 +24,13 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
   const [open, setOpen] = useState(fullPage)
   const [context, setContext] = useState(initialObjectId ?? '')
   const [draft, setDraft] = useState('')
-  const [notice, setNotice] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const panelRef = useRef<HTMLElement>(null)
+  const threadRef = useRef<HTMLDivElement>(null)
   const returnFocusRef = useRef<HTMLElement | null>(null)
   const isIndonesian = lang === 'id'
+
+  const { messages, loading, sendMessage } = useGuide()
 
   const close = useCallback(() => {
     setOpen(false)
@@ -41,7 +46,6 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
         detail?.returnFocus ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null)
       setContext(detail?.objectName || detail?.objectId || '')
       setDraft('')
-      setNotice('')
       setOpen(true)
     }
     const openForXRRequest = (event: Event) => {
@@ -49,7 +53,6 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
       returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
       setContext([body, hotspotId].filter(Boolean).join(' · '))
       setDraft(guidePrompt || '')
-      setNotice('')
       setOpen(true)
     }
 
@@ -64,6 +67,12 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
   useEffect(() => {
     if (!fullPage) setContext(initialObjectId ?? '')
   }, [fullPage, initialObjectId])
+
+  useEffect(() => {
+    if (threadRef.current) {
+      threadRef.current.scrollTop = threadRef.current.scrollHeight
+    }
+  }, [messages, loading])
 
   useEffect(() => {
     if (!open || fullPage) return
@@ -83,14 +92,16 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
     }
   }, [open, fullPage, close])
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!draft.trim()) return
-    setNotice(
-      isIndonesian
-        ? 'API LLM eksternal belum terhubung. Pertanyaan belum dikirim.'
-        : 'The external LLM API is not connected yet. Your question was not sent.',
-    )
+    const text = draft.trim()
+    if (!text || loading) return
+    setDraft('')
+    await sendMessage(context ? `[Konteks: ${context}] ${text}` : text)
+  }
+
+  const handleChipClick = (chipText: string) => {
+    sendMessage(context ? `[Konteks: ${context}] ${chipText}` : chipText)
   }
 
   if (!open) return null
@@ -107,7 +118,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
         <span className="cg-head-icon"><BotIcon /></span>
         <span className="cg-head-text">
           <h1 className="cg-title" id="cg-title">Cosmic Guide</h1>
-          <p className="cg-sub">{context || (isIndonesian ? 'Asisten eksplorasi' : 'Exploration assistant')}</p>
+          <p className="cg-sub">{context || (isIndonesian ? 'Asisten AI SPHEREx' : 'SPHEREx AI Assistant')}</p>
         </span>
         {!fullPage && (
           <button type="button" className="cg-icon-btn cg-icon-btn--close" aria-label={isIndonesian ? 'Tutup' : 'Close'} onClick={close}>
@@ -116,18 +127,64 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
         )}
       </header>
 
-      <div className="cg-thread" role="status" aria-live="polite">
-        <p className="cg-msg cg-msg--bot">
-          {notice ||
-            (isIndonesian
-              ? 'Panel agent siap. Sambungan ke API LLM eksternal belum dikonfigurasi; tidak ada jawaban lokal yang dibuat.'
-              : 'The agent panel is ready. The external LLM API is not configured; no local answers are generated.')}
-        </p>
+      <div className="cg-thread" ref={threadRef} role="status" aria-live="polite">
+        {messages.length === 0 ? (
+          <div className="cg-msg cg-msg--bot cg-markdown">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {isIndonesian
+                ? 'Halo Explorer! Saya **Cosmic Guide AI** bertenaga Gemini 3.5 Flash. Tanyakan apa saja seputar pengamatan SPHEREx, peta langit inframerah, atau objek tata surya!'
+                : 'Hello Explorer! I am **Cosmic Guide AI** powered by Gemini 3.5 Flash. Ask me anything about SPHEREx observations, infrared sky maps, or solar system targets!'}
+            </ReactMarkdown>
+          </div>
+        ) : (
+          messages.map((msg) =>
+            msg.role === 'user' ? (
+              <p key={msg.id} className="cg-msg cg-msg--user">
+                {msg.content}
+              </p>
+            ) : (
+              <div key={msg.id} className="cg-msg cg-msg--bot cg-markdown">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {msg.content}
+                </ReactMarkdown>
+              </div>
+            )
+          )
+        )}
+        {loading && (
+          <p className="cg-msg cg-msg--bot" style={{ opacity: 0.7, fontStyle: 'italic' }}>
+            {isIndonesian ? 'Cosmic Guide sedang berpikir…' : 'Cosmic Guide is thinking…'}
+          </p>
+        )}
+      </div>
+
+      <div className="cg-chips">
+        <button
+          type="button"
+          className="cg-chip"
+          onClick={() => handleChipClick('Apa misi utama dari teleskop SPHEREx?')}
+        >
+          {isIndonesian ? 'Misi SPHEREx' : 'SPHEREx Mission'}
+        </button>
+        <button
+          type="button"
+          className="cg-chip"
+          onClick={() => handleChipClick('Bagaimana SPHEREx mendeteksi air dan molekul es di ruang angkasa?')}
+        >
+          {isIndonesian ? 'Pencarian Air' : 'Water Ice Search'}
+        </button>
+        <button
+          type="button"
+          className="cg-chip"
+          onClick={() => handleChipClick('Apa keunggulan spektroskopi seluruh langit 102 pita inframerah?')}
+        >
+          {isIndonesian ? 'Spektroskopi Inframerah' : 'Infrared All-Sky'}
+        </button>
       </div>
 
       <p className="cg-note">
-        <span className="cg-note-tag">{isIndonesian ? 'API EKSTERNAL' : 'EXTERNAL API'}</span>
-        {isIndonesian ? 'Pertanyaan tidak dikirim sampai layanan LLM tersambung.' : 'Questions are not sent until the LLM service is connected.'}
+        <span className="cg-note-tag">GEMINI 3.5</span>
+        {isIndonesian ? 'Terhubung langsung ke backend SPHEREx API' : 'Connected directly to SPHEREx API backend'}
       </p>
 
       <form className="cg-form" onSubmit={submit}>
@@ -135,14 +192,12 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
           ref={inputRef}
           className="cg-input"
           value={draft}
-          onChange={(event) => {
-            setDraft(event.target.value)
-            setNotice('')
-          }}
-          placeholder={isIndonesian ? 'Tulis pertanyaan…' : 'Write a question…'}
+          disabled={loading}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder={isIndonesian ? 'Tulis pertanyaan ke Cosmic Guide…' : 'Ask Cosmic Guide a question…'}
           aria-label={isIndonesian ? 'Pertanyaan untuk Cosmic Guide' : 'Question for Cosmic Guide'}
         />
-        <button type="submit" className="cg-send" disabled={!draft.trim()} aria-label={isIndonesian ? 'Kirim' : 'Send'}>
+        <button type="submit" className="cg-send" disabled={!draft.trim() || loading} aria-label={isIndonesian ? 'Kirim' : 'Send'}>
           ↗
         </button>
       </form>
