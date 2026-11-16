@@ -93,7 +93,7 @@ def create_live_session_token(
     if not api_key:
         raise HTTPException(
             status_code=503,
-            detail="Gemini Live belum dikonfigurasi. Atur GEMINI_API_KEY pada environment backend.",
+            detail="Gemini Live is not configured. Set GEMINI_API_KEY in the backend environment.",
         )
 
     payload = build_live_token_payload(language, object_id, object_record)
@@ -107,13 +107,13 @@ def create_live_session_token(
     except httpx.TimeoutException as exc:
         raise HTTPException(
             status_code=504,
-            detail="Permintaan sesi Gemini Live melewati batas waktu.",
+            detail="The Gemini Live session request timed out.",
         ) from exc
     except httpx.RequestError as exc:
         logger.warning("Gemini Live token request failed: %s", type(exc).__name__)
         raise HTTPException(
             status_code=502,
-            detail="Tidak dapat menghubungi layanan Gemini Live.",
+            detail="Could not connect to the Gemini Live service.",
         ) from exc
 
     if response.is_error:
@@ -125,16 +125,16 @@ def create_live_session_token(
         if response.status_code == 429:
             raise HTTPException(
                 status_code=429,
-                detail="Batas penggunaan sesi Gemini Live tercapai. Silakan coba kembali nanti.",
+                detail="The Gemini Live session usage limit has been reached. Please try again later.",
             )
         if response.status_code == 403:
             raise HTTPException(
                 status_code=503,
-                detail="Gemini Live tidak tersedia untuk project ini. Periksa akses dan billing.",
+                detail="Gemini Live is unavailable for this project. Check access and billing.",
             )
         raise HTTPException(
             status_code=502,
-            detail="Gemini gagal membuat sesi suara realtime.",
+            detail="Gemini could not create a real-time voice session.",
         )
 
     try:
@@ -142,14 +142,14 @@ def create_live_session_token(
     except ValueError as exc:
         raise HTTPException(
             status_code=502,
-            detail="Gemini Live mengembalikan respons sesi yang tidak dapat dibaca.",
+            detail="Gemini Live returned an unreadable session response.",
         ) from exc
 
     token = response_data.get("name") if isinstance(response_data, dict) else None
     if not isinstance(token, str) or not token:
         raise HTTPException(
             status_code=502,
-            detail="Gemini Live tidak mengembalikan token sesi.",
+            detail="Gemini Live did not return a session token.",
         )
 
     return {

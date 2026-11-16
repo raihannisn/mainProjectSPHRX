@@ -70,7 +70,6 @@ export function SkyExplorerScreen() {
   const [scale, setScale] = useState(1)
   const [toast, setToast] = useState<string | null>(null)
   const { isEnabled: audioOn, toggle: toggleAudio } = useAmbientAudio()
-  const lang = useXRApp((s) => s.settings.lang)
   const [target, setTarget] = useState<ObjectInfo | null>(null)
   const [targetLoading, setTargetLoading] = useState(true)
   const [targetError, setTargetError] = useState<string | null>(null)
@@ -323,7 +322,7 @@ export function SkyExplorerScreen() {
     void runWormhole(
       {
         origin,
-        label: lang === 'id' ? 'Membuka Solar System Hub…' : 'Opening the Solar System Hub…',
+        label: 'Opening the Solar System Hub…',
         waitForScene: false,
         minMs: 580,
       },
@@ -452,17 +451,17 @@ export function SkyExplorerScreen() {
               className={`fe-icon-btn ${audioOn ? 'selected' : ''}`}
               onClick={() => {
                 const next = toggleAudio()
-                notify(next ? (lang === 'id' ? 'Musik latar aktif' : 'Ambient music enabled') : (lang === 'id' ? 'Musik latar nonaktif' : 'Ambient music muted'))
+                notify(next ? 'Ambient music enabled' : 'Ambient music muted')
               }}
               aria-label={audioOn ? 'Toggle audio off' : 'Toggle audio on'}
-              title={audioOn ? (lang === 'id' ? 'Matikan musik' : 'Mute music') : (lang === 'id' ? 'Nyalakan musik' : 'Play music')}
+              title={audioOn ? 'Mute music' : 'Play music'}
             >
               ♫
             </button>
             <button
               className="fe-icon-btn cg-fab"
               onClick={handleAskGuide}
-              aria-label={lang === 'id' ? 'Buka Cosmic Guide' : 'Open Cosmic Guide'}
+              aria-label="Open Cosmic Guide"
               title="Cosmic Guide"
             >
               <BotIcon />
@@ -784,7 +783,7 @@ export function SkyExplorerScreen() {
                 void runWormhole(
                   {
                     origin,
-                    label: lang === 'id' ? 'Kembali ke Gateway…' : 'Returning to Gateway…',
+                    label: 'Returning to Gateway…',
                     waitForScene: false,
                     minMs: 400,
                   },
@@ -800,7 +799,7 @@ export function SkyExplorerScreen() {
                 void runWormhole(
                   {
                     origin,
-                    label: lang === 'id' ? 'Membuka Solar System Hub…' : 'Opening the Solar System Hub…',
+                    label: 'Opening the Solar System Hub…',
                     waitForScene: false,
                     minMs: 580,
                   },

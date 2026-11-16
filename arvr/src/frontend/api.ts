@@ -299,11 +299,11 @@ export function searchSpherexObservations(ra: number, dec: number, radius = 0.05
 export const OFFLINE_APOD_DATA: ApodData = {
   status: 'ok',
   fallback: true,
-  message: 'NASA APOD sedang berjalan dalam mode offline.',
+  message: 'NASA APOD is running in offline mode.',
   title: 'NASA APOD - Offline Mode',
   date: '2026-11-15',
   explanation:
-    'Layanan live NASA APOD saat ini sedang tidak dapat dijangkau dari server upstream (NASA Error 500). Sebagai gantinya, ditampilkan arsip observasi astronomi spektakuler Vela Molecular Ridge Nebula dari teleskop ruang angkasa SPHEREx dalam spektrum inframerah.',
+    'The live NASA APOD service is currently unreachable (NASA Error 500). An archived SPHEREx infrared observation of the Vela Molecular Ridge Nebula is shown instead.',
   media_type: 'image',
   image_url: '/spherex/vela.jpg',
   thumbnail_url: '/spherex/vela.jpg',
@@ -313,7 +313,7 @@ export const OFFLINE_APOD_DATA: ApodData = {
   copyright: 'NASA / JPL-Caltech',
 }
 
-export const APOD_FALLBACK_ERROR = 'NASA APOD sedang tidak tersedia. Silakan coba lagi.'
+export const APOD_FALLBACK_ERROR = 'NASA APOD is unavailable. Please try again.'
 
 export async function fetchApod(): Promise<ApiResult<ApodData>> {
   const primaryUrl = toApiUrl('/api/nasa/apod')
@@ -466,13 +466,13 @@ const speechCache = new Map<string, Blob>()
 const speechInFlight = new Map<string, Promise<ApiResult<Blob>>>()
 const SPEECH_CACHE_MAX = 24
 
-export function requestAgentSpeech(text: string, language: 'en' | 'id'): Promise<ApiResult<Blob>> {
-  const key = `${language}:${text}`
+export function requestAgentSpeech(text: string): Promise<ApiResult<Blob>> {
+  const key = `en:${text}`
   const cached = speechCache.get(key)
   if (cached) return Promise.resolve({ ok: true, data: cached })
   const pending = speechInFlight.get(key)
   if (pending) return pending
-  const request = fetchAgentSpeech(text, language)
+  const request = fetchAgentSpeech(text)
     .then((result) => {
       if (result.ok) {
         if (speechCache.size >= SPEECH_CACHE_MAX) speechCache.delete(speechCache.keys().next().value as string)
@@ -485,18 +485,15 @@ export function requestAgentSpeech(text: string, language: 'en' | 'id'): Promise
   return request
 }
 
-/** a slow or rate-limited provider must not keep the reader waiting: after this the browser voice takes over */
+/** A slow or rate-limited provider returns an error so the caller can report it instead of switching voices. */
 const SPEECH_TIMEOUT_MS = 20000
 
-async function fetchAgentSpeech(
-  text: string,
-  language: 'en' | 'id',
-): Promise<ApiResult<Blob>> {
+async function fetchAgentSpeech(text: string): Promise<ApiResult<Blob>> {
   try {
     const response = await fetch(toApiUrl('/api/agent/voiceover/text'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, language, voicePreset: 'mission-liaison' }),
+      body: JSON.stringify({ text, language: 'en', voicePreset: 'mission-liaison' }),
       signal: AbortSignal.timeout(SPEECH_TIMEOUT_MS),
     })
 

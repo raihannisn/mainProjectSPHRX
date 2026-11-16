@@ -60,11 +60,11 @@ export interface XRSettings {
   heightOffset: number
   /** read the guided tour aloud (only while Sound is on) */
   narration: boolean
-  /** interface + info-pin language */
+  /** Interface and info-pin language. The application is English-only. */
   lang: 'en' | 'id'
 }
 
-export const DEFAULT_SETTINGS: XRSettings = { labels: 1, pins: true, exposure: 1, haze: 1, moveSpeed: 1, turn: 'snap30', showFps: false, quality: 'auto', timeOfDay: 0.38, sound: false, musicVolume: 0.6, sfxVolume: 0.8, vignette: true, seated: false, locomotion: 'teleport', heightOffset: 0, narration: true, lang: typeof navigator !== 'undefined' && /^id|^in/i.test(navigator.language) ? 'id' : 'en' }
+export const DEFAULT_SETTINGS: XRSettings = { labels: 1, pins: true, exposure: 1, haze: 1, moveSpeed: 1, turn: 'snap30', showFps: false, quality: 'auto', timeOfDay: 0.38, sound: false, musicVolume: 0.6, sfxVolume: 0.8, vignette: true, seated: false, locomotion: 'teleport', heightOffset: 0, narration: true, lang: 'en' }
 
 /**
  * Shared app state for the XR module. The web viewer can read/write the same store
@@ -166,9 +166,13 @@ function saveJSON(key: string, value: unknown) {
 }
 function loadSettings(): XRSettings {
   try {
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}') }
+    return {
+      ...DEFAULT_SETTINGS,
+      ...JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}'),
+      lang: 'en',
+    }
   } catch {
-    return { ...DEFAULT_SETTINGS }
+    return { ...DEFAULT_SETTINGS, lang: 'en' }
   }
 }
 
@@ -226,7 +230,10 @@ export const useXRApp = create<XRAppState>((set) => ({
   requestGoTo: (goTo) => set({ goTo }),
   setSetting: (key, value) =>
     set((s) => {
-      const settings = { ...s.settings, [key]: value }
+      const settings: XRSettings =
+        key === 'lang'
+          ? { ...s.settings, lang: 'en' }
+          : { ...s.settings, [key]: value }
       try {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
       } catch {

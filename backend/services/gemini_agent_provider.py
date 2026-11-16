@@ -23,7 +23,7 @@ def build_request_payload(prompt: str, system_instruction: str) -> dict:
 
 def extract_text_response(response_data: dict) -> str:
     if not isinstance(response_data, dict):
-        raise HTTPException(status_code=502, detail="Gemini Agent mengembalikan respons yang tidak valid.")
+        raise HTTPException(status_code=502, detail="Gemini Agent returned an invalid response.")
 
     text_blocks = []
     steps = response_data.get("steps")
@@ -44,7 +44,7 @@ def extract_text_response(response_data: dict) -> str:
 
     result = "\n".join(block.strip() for block in text_blocks if block.strip()).strip()
     if not result:
-        raise HTTPException(status_code=502, detail="Gemini Agent tidak mengembalikan jawaban teks.")
+        raise HTTPException(status_code=502, detail="Gemini Agent did not return a text answer.")
     return result
 
 
@@ -53,7 +53,7 @@ def generate_text(prompt: str, system_instruction: str) -> str:
     if not api_key:
         raise HTTPException(
             status_code=503,
-            detail="Gemini Agent belum dikonfigurasi. Atur GEMINI_API_KEY pada environment backend.",
+            detail="Gemini Agent is not configured. Set GEMINI_API_KEY in the backend environment.",
         )
 
     try:
@@ -66,13 +66,13 @@ def generate_text(prompt: str, system_instruction: str) -> str:
     except httpx.TimeoutException as exc:
         raise HTTPException(
             status_code=504,
-            detail="Permintaan ke Gemini Agent melewati batas waktu. Silakan coba kembali.",
+            detail="The Gemini Agent request timed out. Please try again.",
         ) from exc
     except httpx.RequestError as exc:
         logger.warning("Gemini Agent request failed: %s", type(exc).__name__)
         raise HTTPException(
             status_code=502,
-            detail="Tidak dapat menghubungi layanan Gemini Agent.",
+            detail="Could not connect to the Gemini Agent service.",
         ) from exc
 
     if response.is_error:
@@ -98,16 +98,16 @@ def generate_text(prompt: str, system_instruction: str) -> str:
         if response.status_code == 429:
             raise HTTPException(
                 status_code=429,
-                detail="Batas penggunaan Gemini Agent tercapai. Silakan coba kembali nanti.",
+                detail="The Gemini Agent usage limit has been reached. Please try again later.",
             )
         if response.status_code == 403:
             raise HTTPException(
                 status_code=503,
-                detail="Gemini Agent tidak tersedia untuk project ini. Periksa akses dan billing Gemini.",
+                detail="Gemini Agent is unavailable for this project. Check Gemini access and billing.",
             )
         raise HTTPException(
             status_code=502,
-            detail="Gemini Agent gagal memproses permintaan. Silakan coba kembali.",
+            detail="Gemini Agent could not process the request. Please try again.",
         )
 
     try:
@@ -115,7 +115,7 @@ def generate_text(prompt: str, system_instruction: str) -> str:
     except ValueError as exc:
         raise HTTPException(
             status_code=502,
-            detail="Gemini Agent mengembalikan respons yang tidak dapat dibaca.",
+            detail="Gemini Agent returned an unreadable response.",
         ) from exc
 
     return extract_text_response(response_data)

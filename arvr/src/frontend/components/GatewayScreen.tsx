@@ -5,13 +5,11 @@ import { TopBar } from './TopBar'
 import { ParticleField } from './ParticleField'
 import { SolarSystem3D } from './SolarSystem3D'
 import { originOf, runWormhole } from '../wormhole'
-import { useXRApp } from '../../xr/store'
 
 type DeviceCaps = { ar: boolean; vr: boolean }
 
 export function GatewayScreen() {
   const navigate = useNavigate()
-  const lang = useXRApp((s) => s.settings.lang)
   const [caps, setCaps] = useState<DeviceCaps>({ ar: false, vr: false })
   const capabilitiesRef = useRef<HTMLDivElement | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -72,13 +70,13 @@ export function GatewayScreen() {
       const result = await fetchApod()
       setApodLoading(false)
       if (!result.ok) {
-        setApodError('NASA APOD sedang tidak tersedia. Silakan coba lagi.')
+        setApodError('NASA APOD is unavailable. Please try again.')
         return
       }
       setApod(result.data)
     } catch {
       setApodLoading(false)
-      setApodError('NASA APOD sedang tidak tersedia. Silakan coba lagi.')
+      setApodError('NASA APOD is unavailable. Please try again.')
     }
   }
 
@@ -130,7 +128,7 @@ export function GatewayScreen() {
                 void runWormhole(
                   {
                     origin,
-                    label: lang === 'id' ? 'Menuju Cosmic Expedition…' : 'Entering Cosmic Expedition…',
+                    label: 'Entering Cosmic Expedition…',
                     waitForScene: false,
                     minMs: 450,
                   },
@@ -180,7 +178,7 @@ export function GatewayScreen() {
               void runWormhole(
                 {
                   origin,
-                  label: lang === 'id' ? 'Membuka Solar System Hub…' : 'Opening the Solar System Hub…',
+                  label: 'Opening the Solar System Hub…',
                   waitForScene: false,
                   minMs: 450,
                 },
@@ -201,7 +199,7 @@ export function GatewayScreen() {
               void runWormhole(
                 {
                   origin,
-                  label: lang === 'id' ? 'Membuka Solar System Hub…' : 'Opening the Solar System Hub…',
+                  label: 'Opening the Solar System Hub…',
                   waitForScene: false,
                   minMs: 580,
                 },
@@ -222,7 +220,7 @@ export function GatewayScreen() {
               void runWormhole(
                 {
                   origin,
-                  label: lang === 'id' ? 'Membuka Solar System Hub…' : 'Opening the Solar System Hub…',
+                  label: 'Opening the Solar System Hub…',
                   waitForScene: false,
                   minMs: 580,
                 },
@@ -261,21 +259,21 @@ export function GatewayScreen() {
               type="button"
               className="fe-modal-close"
               onClick={() => setApodOpen(false)}
-              aria-label={lang === 'id' ? 'Tutup dialog APOD' : 'Close APOD dialog'}
+              aria-label="Close APOD dialog"
             >
               ×
             </button>
             <div className="fe-eyebrow">NASA · Astronomy Picture of the Day</div>
             <h2 id="fe-apod-title">
               {apodLoading
-                ? (lang === 'id' ? 'Memuat NASA APOD…' : 'Loading NASA APOD…')
+                ? 'Loading NASA APOD…'
                 : apod?.title || 'NASA APOD Highlight'}
             </h2>
 
             {apodLoading && (
               <div className="fe-apod-loading" role="status">
                 <div className="fe-apod-spinner" aria-hidden="true" />
-                <p>{lang === 'id' ? 'Mengambil sorotan terbaru dari NASA…' : 'Fetching the latest feature from NASA…'}</p>
+                <p>Fetching the latest feature from NASA…</p>
               </div>
             )}
 
@@ -283,11 +281,9 @@ export function GatewayScreen() {
               <div className="fe-apod-error-box" role="alert">
                 <div className="fe-apod-error-icon" aria-hidden="true">✦</div>
                 <div className="fe-apod-error-body">
-                  <p className="fe-apod-error-message">NASA APOD sedang tidak tersedia. Silakan coba lagi.</p>
+                  <p className="fe-apod-error-message">NASA APOD is unavailable. Please try again.</p>
                   <p className="fe-apod-error-hint">
-                    {lang === 'id'
-                      ? 'Layanan NASA sedang sibuk atau offline. Anda dapat mencoba kembali beberapa saat lagi.'
-                      : 'NASA upstream service is temporarily busy or unreachable. You can try again in a moment.'}
+                    NASA's upstream service is temporarily busy or unreachable. You can try again in a moment.
                   </p>
                 </div>
                 <button
@@ -295,7 +291,7 @@ export function GatewayScreen() {
                   className="fe-btn-primary fe-apod-retry-btn"
                   onClick={() => void openApod()}
                 >
-                  {lang === 'id' ? 'Coba Lagi ↻' : 'Try Again ↻'}
+                  Try Again ↻
                 </button>
               </div>
             )}
@@ -310,7 +306,7 @@ export function GatewayScreen() {
                   )}
                   {apod.fallback ? (
                     <span className="fe-apod-badge fe-apod-badge--offline">
-                      {lang === 'id' ? '● Mode Offline' : '● Offline Mode'}
+                      ● Offline Mode
                     </span>
                   ) : (
                     <span className="fe-apod-badge">
@@ -328,9 +324,7 @@ export function GatewayScreen() {
                   <div className="fe-apod-offline-note">
                     <span className="fe-apod-offline-icon" aria-hidden="true">✦</span>
                     <p>
-                      {lang === 'id'
-                        ? 'Layanan upstream NASA APOD saat ini sedang tidak tersedia (Error 500). Menampilkan arsip offline observasi Vela Molecular Ridge Nebula dari SPHEREx.'
-                        : 'NASA APOD upstream service is temporarily offline (Error 500). Displaying offline SPHEREx observation archive for the Vela Molecular Ridge Nebula.'}
+                      NASA APOD is temporarily offline (Error 500). Displaying an archived SPHEREx observation of the Vela Molecular Ridge Nebula.
                     </p>
                   </div>
                 )}
@@ -358,7 +352,7 @@ export function GatewayScreen() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {lang === 'id' ? 'Buka di NASA Science ↗' : 'Read on NASA Science ↗'}
+                      Read on NASA Science ↗
                     </a>
                   )}
                   <button
@@ -366,7 +360,7 @@ export function GatewayScreen() {
                     className="fe-btn-text"
                     onClick={() => setApodOpen(false)}
                   >
-                    {lang === 'id' ? 'Tutup' : 'Close'}
+                    Close
                   </button>
                 </div>
               </>

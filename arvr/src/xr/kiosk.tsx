@@ -52,9 +52,7 @@ function resetForNextVisitor() {
   stopSpeaking()
   void xrStore.getState().session?.end()
   const app = useXRApp.getState()
-  const lang = app.settings.lang
   for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) app.setSetting(k as never, v as never)
-  app.setSetting('lang', lang) // the stand's language stays as set up
   app.setSetting('sound', false)
   app.resetMissions()
   resetControllerHints()

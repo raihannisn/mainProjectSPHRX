@@ -34,7 +34,7 @@ def get_object_info(object_id: str):
     if not os.path.exists(JSON_KAMUS):
         if obj_key in ("rcw-36", "rcw", "rcw36"):
             return DEFAULT_RCW36
-        raise HTTPException(status_code=404, detail=f"File database '{JSON_KAMUS}' tidak ditemukan di folder")
+        raise HTTPException(status_code=404, detail=f"Object catalog file '{JSON_KAMUS}' was not found.")
         
     try:
         with open(JSON_KAMUS, "r") as file:
@@ -43,7 +43,7 @@ def get_object_info(object_id: str):
                 return data[obj_key]
             if obj_key in ("rcw-36", "rcw", "rcw36"):
                 return DEFAULT_RCW36
-            raise HTTPException(status_code=404, detail=f"Objek '{object_id}' tidak ada di database")
+            raise HTTPException(status_code=404, detail=f"Object '{object_id}' was not found in the catalog.")
     except HTTPException:
         raise
     except Exception as e:

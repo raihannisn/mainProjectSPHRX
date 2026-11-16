@@ -17,6 +17,7 @@ from routes.agent import (
     create_spoken_text,
     transcribe_voice_input,
 )
+from routes.ai import ChatRequest, chat_with_gemini
 from services.agent_service import (
     SYSTEM_INSTRUCTIONS,
     build_agent_system_instruction,
@@ -99,11 +100,11 @@ class AgentServiceTests(unittest.TestCase):
             },
         )
 
-        self.assertIn("Catatan katalog backend", prompt)
+        self.assertIn("Backend catalog record", prompt)
         self.assertIn('"object_id": "mars"', prompt)
         self.assertIn("Mars", prompt)
         self.assertNotIn("vela-ridge", prompt)
-        self.assertIn("tidak tepercaya", prompt)
+        self.assertIn("untrusted", prompt)
 
     def test_conversation_prompt_marks_unknown_backend_object(self):
         prompt = build_conversation_prompt(
@@ -112,16 +113,17 @@ class AgentServiceTests(unittest.TestCase):
             "rcw-36",
         )
 
-        self.assertIn("tidak ditemukan di katalog backend", prompt)
+        self.assertIn("was not found in the backend catalog", prompt)
 
-    def test_agent_service_selects_requested_language_instructions(self):
-        messages = [{"role": "user", "content": "Apa itu SPHEREx?"}]
+    def test_agent_service_always_uses_english_instructions(self):
+        messages = [{"role": "user", "content": "What is SPHEREx?"}]
 
         with patch("services.agent_service.generate_text", return_value="Jawaban") as generate:
             answer = generate_agent_response(messages, "id")
 
         self.assertEqual(answer, "Jawaban")
-        self.assertEqual(generate.call_args.args[1], SYSTEM_INSTRUCTIONS["id"])
+        self.assertEqual(generate.call_args.args[1], SYSTEM_INSTRUCTIONS["en"])
+        self.assertIn("Always answer in English", generate.call_args.args[1])
 
     def test_agent_instructions_clarify_a_target_that_conflicts_with_selection(self):
         instruction = build_agent_system_instruction(
@@ -153,9 +155,29 @@ class AgentRequestTests(unittest.TestCase):
     def test_agent_router_is_registered_in_fastapi_app(self):
         routes = app.openapi()["paths"]
 
+        self.assertIn("/api/ai/chat", routes)
         self.assertIn("/api/agent/chat", routes)
         self.assertIn("/api/agent/voice/transcribe", routes)
         self.assertIn("/api/agent/voice/session", routes)
+
+    def test_legacy_chat_uses_shared_english_agent(self):
+        with patch("routes.ai.generate_agent_response", return_value="English answer") as generate:
+            response = chat_with_gemini(ChatRequest(message="  What is SPHEREx?  "))
+
+        self.assertEqual(response, {"reply": "English answer"})
+        self.assertEqual(
+            generate.call_args.kwargs,
+            {
+                "messages": [{"role": "user", "content": "What is SPHEREx?"}],
+                "language": "en",
+            },
+        )
+
+    def test_legacy_chat_rejects_blank_messages(self):
+        with self.assertRaises(HTTPException) as error:
+            chat_with_gemini(ChatRequest(message="   "))
+
+        self.assertEqual(error.exception.status_code, 422)
 
     def test_chat_request_rejects_non_user_final_message(self):
         with self.assertRaises(ValueError):
@@ -192,12 +214,13 @@ class AgentRequestTests(unittest.TestCase):
 
     def test_chat_route_returns_agent_message_and_sources(self):
         request = AgentChatRequest(
-            lang="en",
+            lang="id",
             messages=[AgentMessage(role="user", content="What is SPHEREx?")],
         )
-        with patch("routes.agent.generate_agent_response", return_value="A sky survey mission."):
+        with patch("routes.agent.generate_agent_response", return_value="A sky survey mission.") as generate:
             result = create_agent_response(request)
 
+        self.assertEqual(generate.call_args.kwargs["language"], "en")
         self.assertEqual(
             result,
             {
@@ -591,7 +614,7 @@ class AgentLiveVoiceTests(unittest.TestCase):
     def test_live_session_route_passes_validated_record_and_chat_history(self):
         request = AgentLiveSessionRequest(
             objectId="Mars",
-            lang="en",
+            lang="id",
             messages=[AgentMessage(role="user", content="Tell me about Mars.")],
         )
         session = {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -61,48 +61,38 @@
   <main>
     <h1>SPHEREx Voice-over Test</h1>
     <p>
-      Halaman uji terpisah untuk mengirim naskah yang disediakan backend ke Gemini TTS.
-      API key tetap berada di backend dan tidak dikirim ke browser.
+      A standalone test page for sending backend-provided scripts to Gemini TTS.
+      The API key remains on the backend and is never sent to the browser.
     </p>
 
     <form id="voiceoverForm">
-      <label for="language">Bahasa</label>
-      <select id="language" name="language">
-        <option value="id">Bahasa Indonesia</option>
-        <option value="en">English</option>
-      </select>
-
-      <label for="scriptId">Naskah</label>
+      <label for="scriptId">Script</label>
       <select id="scriptId" name="scriptId"></select>
       <p id="scriptText" aria-live="polite"></p>
 
-      <label for="voicePreset">Preset suara</label>
-      <select id="voicePreset" name="voicePreset">
-        <option value="mission-liaison">Mission Liaison (Rasalgethi)</option>
-        <option value="warm-guide">Warm Guide (Sulafat)</option>
-      </select>
+      <p><strong>Voice:</strong> Mission Liaison (Kore)</p>
 
       <button id="generateButton" type="submit">Buat audio</button>
     </form>
 
     <p id="status" role="status" aria-live="polite"></p>
     <audio id="audioPlayer" controls hidden></audio>
-    <button id="stopButton" type="button" hidden>Hentikan audio</button>
+    <button id="stopButton" type="button" hidden>Stop audio</button>
 
     <details>
-      <summary>Menjalankan demo lokal</summary>
+      <summary>Run the local demo</summary>
       <p>
-        Atur <code>GEMINI_API_KEY</code> di environment backend, jalankan
-        <code>uvicorn main:app --reload --port 8000</code> dari folder
-        <code>backend</code>, lalu buka <code>http://localhost:8000/voiceover-test</code>.
-        Jangan menaruh API key di halaman ini atau commit ke Git.
+        Set <code>GEMINI_API_KEY</code> in the backend environment, run
+        <code>uvicorn main:app --reload --port 8000</code> from the
+        <code>backend</code> folder, then open
+        <code>http://localhost:8000/voiceover-test</code>.
+        Do not put the API key on this page or commit it to Git.
       </p>
     </details>
   </main>
 
   <script>
     const form = document.getElementById("voiceoverForm");
-    const languageSelect = document.getElementById("language");
     const scriptSelect = document.getElementById("scriptId");
     const scriptText = document.getElementById("scriptText");
     const status = document.getElementById("status");
@@ -135,10 +125,10 @@
 
     async function loadScripts() {
       const response = await fetch(
-        `/api/agent/voiceover/scripts?language=${encodeURIComponent(languageSelect.value)}`
+        "/api/agent/voiceover/scripts"
       );
       if (!response.ok) {
-        throw new Error("Daftar naskah tidak dapat dimuat dari backend.");
+        throw new Error("The script list could not be loaded from the backend.");
       }
       const result = await response.json();
       currentScripts = result.data.scripts;
@@ -155,46 +145,36 @@
       updateScriptText();
     }
 
-    languageSelect.addEventListener("change", async () => {
-      try {
-        await loadScripts();
-        releaseAudio();
-        setStatus("");
-      } catch (error) {
-        setStatus(error.message, true);
-      }
-    });
-
     scriptSelect.addEventListener("change", updateScriptText);
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       releaseAudio();
       generateButton.disabled = true;
-      setStatus("Sedang membuat audio...");
+      setStatus("Generating audio...");
       try {
         const response = await fetch("/api/agent/voiceover", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             scriptId: scriptSelect.value,
-            language: languageSelect.value,
-            voicePreset: document.getElementById("voicePreset").value
+            language: "en",
+            voicePreset: "mission-liaison"
           })
         });
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
-          throw new Error(error.detail || `Permintaan gagal (${response.status}).`);
+          throw new Error(error.detail || `Request failed (${response.status}).`);
         }
         const audioBlob = await response.blob();
         if (!audioBlob.type.includes("audio/wav")) {
-          throw new Error("Backend tidak mengembalikan audio WAV.");
+          throw new Error("The backend did not return WAV audio.");
         }
         activeAudioUrl = URL.createObjectURL(audioBlob);
         audioPlayer.src = activeAudioUrl;
         audioPlayer.hidden = false;
         stopButton.hidden = false;
-        setStatus("Audio siap. Gunakan kontrol pemutar untuk mendengarkan.");
+        setStatus("Audio is ready. Use the player controls to listen.");
       } catch (error) {
         setStatus(error.message, true);
       } finally {
@@ -205,7 +185,7 @@
     stopButton.addEventListener("click", () => {
       audioPlayer.pause();
       audioPlayer.currentTime = 0;
-      setStatus("Pemutaran dihentikan.");
+      setStatus("Playback stopped.");
     });
 
     window.addEventListener("beforeunload", releaseAudio);

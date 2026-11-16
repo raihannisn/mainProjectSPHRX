@@ -158,7 +158,6 @@ export function BodyExplorer({
   const q = useQuality()
   const sites = useSitesForBody(vr ? id : null)
   const info = BODY_BY_ID[id]
-  const lang = useXRApp((s) => s.settings.lang)
   const spin = useRef<Group>(null)
   const manip = useRef<Group>(null)
   useBodyManipulation(manip)
@@ -215,7 +214,8 @@ export function BodyExplorer({
           objectName={content?.name ?? info?.name ?? id}
           objectType={content?.type ?? info?.kind ?? ''}
           contentReady={content !== undefined}
-          localDescription={content?.description?.[lang] ?? content?.description?.en ?? ''}
+          localDescription={content?.description?.en ?? ''}
+          narrationDescription={content?.description?.en ?? ''}
           hidden={hideObjectCard}
         />
       )}

@@ -9,10 +9,6 @@ const COPY = {
     entering: 'Opening wormhole — preparing the 3D scene…',
     ambience: 'Ambience',
   },
-  id: {
-    entering: 'Membuka wormhole — menyiapkan scene 3D…',
-    ambience: 'Ambience',
-  },
 } as const
 
 type Phase = 'idle' | 'in' | 'hold' | 'out'
@@ -33,9 +29,8 @@ function readAmbience() {
 export function WormholeOverlay() {
   const navigate = useNavigate()
   const location = useLocation()
-  const lang = useXRApp((s) => s.settings.lang)
   const inXR = location.pathname.startsWith('/xr')
-  const copy = COPY[lang === 'id' ? 'id' : 'en']
+  const copy = COPY.en
 
   const rootRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)

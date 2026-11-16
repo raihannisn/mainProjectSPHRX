@@ -89,19 +89,21 @@ Server akan aktif di `http://localhost:8000`.
 
 ### 5. Uji SPHEREx Voice-over (Gemini TTS)
 
-Demo terpisah ini menyediakan naskah statis Bahasa Indonesia dan Inggris yang
-disimpan di Backend. Browser hanya menerima audio WAV; Gemini API key tetap
-berada di environment Backend.
+Demo terpisah ini menyediakan naskah statis berbahasa Inggris yang disimpan di
+Backend. Keluaran Cosmic Guide, voice-over, dan Gemini Live selalu berbahasa
+Inggris. Bahasa antarmuka dan transkripsi input mikrofon tetap dapat memakai
+Bahasa Indonesia. Browser hanya menerima audio WAV; Gemini API key tetap berada
+di environment Backend.
 
 | Method | Endpoint | Deskripsi |
 | :--- | :--- | :--- |
 | `GET` | `/voiceover-test` | Halaman uji mandiri untuk memilih naskah/bahasa/suara dan memutar audio. |
-| `GET` | `/api/agent/voiceover/scripts?language=id` | Mengambil naskah yang disediakan Backend (`id` atau `en`). |
-| `POST` | `/api/agent/voiceover` | Menghasilkan dan mengembalikan audio WAV untuk naskah yang diizinkan. |
-| `POST` | `/api/agent/chat` | Menghasilkan jawaban Cosmic Guide Bahasa Indonesia/Inggris melalui Gemini. |
+| `GET` | `/api/agent/voiceover/scripts` | Mengambil naskah voice-over berbahasa Inggris. |
+| `POST` | `/api/agent/voiceover` | Menghasilkan audio WAV berbahasa Inggris untuk naskah yang diizinkan. |
+| `POST` | `/api/agent/chat` | Menghasilkan jawaban Cosmic Guide berbahasa Inggris melalui Gemini. |
 | `POST` | `/api/agent/voice/transcribe?language=id` | Mentranskripsikan klip PTT (maks. 8 MB) tanpa menyimpan audio di aplikasi. |
-| `POST` | `/api/agent/voice/session` | Menerbitkan token ephemeral untuk sesi Continuous Voice Gemini Live demo. |
-| `POST` | `/api/agent/voiceover/text` | Menghasilkan audio WAV dari jawaban Agent (maksimum 500 karakter). |
+| `POST` | `/api/agent/voice/session` | Menerbitkan token ephemeral untuk sesi Gemini Live yang menjawab dalam bahasa Inggris. |
+| `POST` | `/api/agent/voiceover/text` | Menghasilkan audio WAV berbahasa Inggris dari jawaban Agent (maksimum 500 karakter). |
 
 Chat mengirim maksimal 10 pesan terakhir, dengan batas 500 karakter per pesan.
 Push-to-Talk mengunggah audio hanya setelah pengguna menghentikan rekaman;

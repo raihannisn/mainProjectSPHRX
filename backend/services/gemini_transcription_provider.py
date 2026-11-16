@@ -31,7 +31,7 @@ def build_transcription_payload(file_uri: str, mime_type: str, language: str) ->
 
 def extract_transcript(response_data: dict) -> str:
     if not isinstance(response_data, dict):
-        raise HTTPException(status_code=502, detail="Gemini mengembalikan respons transkripsi yang tidak valid.")
+        raise HTTPException(status_code=502, detail="Gemini returned an invalid transcription response.")
 
     output_text = response_data.get("output_text")
     if isinstance(output_text, str) and output_text.strip():
@@ -67,11 +67,11 @@ def extract_transcript(response_data: dict) -> str:
         text.strip() for text in text_blocks if text and text.strip()
     ).strip()
     if not transcript:
-        raise HTTPException(status_code=422, detail="Tidak ada ucapan yang dapat dikenali.")
+        raise HTTPException(status_code=422, detail="No speech could be recognized.")
     if len(transcript) > 500:
         raise HTTPException(
             status_code=422,
-            detail="Transkrip melebihi batas 500 karakter. Rekam ucapan yang lebih singkat.",
+            detail="The transcript exceeds the 500-character limit. Record a shorter utterance.",
         )
     return transcript
 
@@ -111,16 +111,16 @@ def _raise_provider_error(response: httpx.Response, stage: str) -> None:
     if response.status_code == 429:
         raise HTTPException(
             status_code=429,
-            detail="Batas penggunaan transkripsi Gemini tercapai. Silakan coba kembali nanti.",
+            detail="The Gemini transcription usage limit has been reached. Please try again later.",
         )
     if response.status_code == 403:
         raise HTTPException(
             status_code=503,
-            detail="Transkripsi Gemini tidak tersedia untuk project ini. Periksa akses dan billing.",
+            detail="Gemini transcription is unavailable for this project. Check access and billing.",
         )
     raise HTTPException(
         status_code=502,
-        detail="Gemini gagal memproses transkripsi. Silakan coba kembali.",
+        detail="Gemini could not process the transcription. Please try again.",
     )
 
 
@@ -130,12 +130,12 @@ def _response_json(response: httpx.Response) -> dict:
     except ValueError as exc:
         raise HTTPException(
             status_code=502,
-            detail="Gemini mengembalikan respons transkripsi yang tidak dapat dibaca.",
+            detail="Gemini returned an unreadable transcription response.",
         ) from exc
     if not isinstance(data, dict):
         raise HTTPException(
             status_code=502,
-            detail="Gemini mengembalikan respons transkripsi yang tidak valid.",
+            detail="Gemini returned an invalid transcription response.",
         )
     return data
 
@@ -145,7 +145,7 @@ def transcribe_audio(audio: bytes, mime_type: str, language: str) -> str:
     if not api_key:
         raise HTTPException(
             status_code=503,
-            detail="Transkripsi Gemini belum dikonfigurasi. Atur GEMINI_API_KEY pada environment backend.",
+            detail="Gemini transcription is not configured. Set GEMINI_API_KEY in the backend environment.",
         )
 
     file_name = None
@@ -175,7 +175,7 @@ def transcribe_audio(audio: bytes, mime_type: str, language: str) -> str:
             ):
                 raise HTTPException(
                     status_code=502,
-                    detail="Gemini mengembalikan alamat unggah yang tidak valid.",
+                    detail="Gemini returned an invalid upload URL.",
                 )
 
             upload_response = client.post(
@@ -194,7 +194,7 @@ def transcribe_audio(audio: bytes, mime_type: str, language: str) -> str:
             if not isinstance(file_info, dict):
                 raise HTTPException(
                     status_code=502,
-                    detail="Gemini tidak mengonfirmasi unggahan audio.",
+                    detail="Gemini did not confirm the audio upload.",
                 )
             file_name = file_info.get("name")
             file_uri = file_info.get("uri")
@@ -208,7 +208,7 @@ def transcribe_audio(audio: bytes, mime_type: str, language: str) -> str:
             ):
                 raise HTTPException(
                     status_code=502,
-                    detail="Gemini mengembalikan referensi audio yang tidak valid.",
+                    detail="Gemini returned an invalid audio reference.",
                 )
 
             interaction = client.post(
@@ -222,13 +222,13 @@ def transcribe_audio(audio: bytes, mime_type: str, language: str) -> str:
     except httpx.TimeoutException as exc:
         raise HTTPException(
             status_code=504,
-            detail="Transkripsi Gemini melewati batas waktu. Silakan coba kembali.",
+            detail="Gemini transcription timed out. Please try again.",
         ) from exc
     except httpx.RequestError as exc:
         logger.warning("Gemini transcription request failed: %s", type(exc).__name__)
         raise HTTPException(
             status_code=502,
-            detail="Tidak dapat menghubungi layanan transkripsi Gemini.",
+            detail="Could not connect to the Gemini transcription service.",
         ) from exc
     finally:
         if file_name:

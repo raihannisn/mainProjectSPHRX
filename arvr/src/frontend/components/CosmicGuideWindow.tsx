@@ -4,7 +4,6 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { ASK_GUIDE_EVENT } from '../../xr/events'
 import type { GuideRequest } from '../../xr/types'
-import { useXRApp } from '../../xr/store'
 import { BotIcon } from '../guide/BotIcon'
 import { useGuide } from '../guide/guideStore'
 import { MicIcon } from '../guide/MicIcon'
@@ -23,8 +22,12 @@ interface OpenGuideDetail {
   returnFocus?: HTMLElement
 }
 
+const voiceInputLanguage: 'en' | 'id' =
+  typeof navigator !== 'undefined' && /^(id|in)(-|$)/i.test(navigator.language)
+    ? 'id'
+    : 'en'
+
 export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicGuideWindowProps) {
-  const lang = useXRApp((state) => state.settings.lang)
   const [open, setOpen] = useState(fullPage)
   const [context, setContext] = useState(initialObjectId ?? '')
   const [draft, setDraft] = useState('')
@@ -32,14 +35,12 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
   const panelRef = useRef<HTMLElement>(null)
   const threadRef = useRef<HTMLDivElement>(null)
   const returnFocusRef = useRef<HTMLElement | null>(null)
-  const isIndonesian = lang === 'id'
-
   const { messages, loading, error, sendMessage, setGuideTarget } = useGuide()
-  const voice = useGuideSpeech(messages, lang, open)
+  const voice = useGuideSpeech(messages, open)
   // Push-to-talk: the spoken question is sent as typed text would be, and its answer is read aloud
-  const mic = useVoiceInput(isIndonesian ? 'id' : 'en', (text) => {
+  const mic = useVoiceInput(voiceInputLanguage, (text) => {
     voice.speakNext()
-    void sendMessage(text, lang)
+    void sendMessage(text)
   })
   const micCancel = mic.cancel
   useEffect(() => {
@@ -118,11 +119,15 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
     const text = draft.trim()
     if (!text || loading) return
     setDraft('')
-    await sendMessage(text, lang)
+    voice.unlock()
+    await sendMessage(text)
   }
 
   const handleChipClick = (chipText: string) => {
-    if (!loading) void sendMessage(chipText, lang)
+    if (!loading) {
+      voice.unlock()
+      void sendMessage(chipText)
+    }
   }
 
   if (!open) return null
@@ -139,7 +144,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
         <span className="cg-head-icon"><BotIcon /></span>
         <span className="cg-head-text">
           <h1 className="cg-title" id="cg-title">Cosmic Guide</h1>
-          <p className="cg-sub">{context || (isIndonesian ? 'Asisten AI SPHEREx' : 'SPHEREx AI Assistant')}</p>
+          <p className="cg-sub">{context || 'SPHEREx AI Assistant'}</p>
         </span>
         <button
           type="button"
@@ -160,7 +165,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
           <SpeakerIcon />
         </button>
         {!fullPage && (
-          <button type="button" className="cg-icon-btn cg-icon-btn--close" aria-label={isIndonesian ? 'Tutup' : 'Close'} onClick={close}>
+          <button type="button" className="cg-icon-btn cg-icon-btn--close" aria-label="Close" onClick={close}>
             ×
           </button>
         )}
@@ -169,13 +174,9 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
       <div className="cg-thread" ref={threadRef} role="status" aria-live="polite">
         {messages.length === 0 ? (
           <p className="cg-empty" role="status">
-            {isIndonesian
-              ? context
-                ? `Tanyakan sesuatu tentang ${context}.`
-                : 'Ajukan pertanyaan tentang SPHEREx atau objek yang tersedia di katalog.'
-              : context
-                ? `Ask a question about ${context}.`
-                : 'Ask about SPHEREx or an object available in the catalog.'}
+            {context
+              ? `Ask a question about ${context}.`
+              : 'Ask about SPHEREx or an object available in the catalog.'}
           </p>
         ) : (
           messages.map((msg) =>
@@ -194,9 +195,10 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
         )}
         {error && <p className="cg-error" role="alert">{error}</p>}
         {mic.error && <p className="cg-error" role="alert">{mic.error}</p>}
+        {voice.error && <p className="cg-error" role="alert">Voice playback is temporarily unavailable. Please try again later.</p>}
         {loading && (
           <p className="cg-msg cg-msg--bot" style={{ opacity: 0.7, fontStyle: 'italic' }}>
-            {isIndonesian ? 'Cosmic Guide sedang berpikir…' : 'Cosmic Guide is thinking…'}
+            Cosmic Guide is thinking…
           </p>
         )}
       </div>
@@ -206,33 +208,31 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
           type="button"
           className="cg-chip"
           disabled={loading}
-          onClick={() => handleChipClick('Apa misi utama dari teleskop SPHEREx?')}
+          onClick={() => handleChipClick('What is SPHEREx’s primary mission?')}
         >
-          {isIndonesian ? 'Misi SPHEREx' : 'SPHEREx Mission'}
+          SPHEREx Mission
         </button>
         <button
           type="button"
           className="cg-chip"
           disabled={loading}
-          onClick={() => handleChipClick('Bagaimana SPHEREx mendeteksi air dan molekul es di ruang angkasa?')}
+          onClick={() => handleChipClick('How does SPHEREx detect water and ice molecules in space?')}
         >
-          {isIndonesian ? 'Pencarian Air' : 'Water Ice Search'}
+          Water Ice Search
         </button>
         <button
           type="button"
           className="cg-chip"
           disabled={loading}
-          onClick={() => handleChipClick('Apa keunggulan spektroskopi seluruh langit 102 pita inframerah?')}
+          onClick={() => handleChipClick('What are the advantages of all-sky spectroscopy across 102 infrared bands?')}
         >
-          {isIndonesian ? 'Spektroskopi Inframerah' : 'Infrared All-Sky'}
+          Infrared All-Sky
         </button>
       </div>
 
       <p className="cg-note">
         <span className="cg-note-tag">MISSION AGENT</span>
-        {isIndonesian
-          ? 'Jawaban memakai record katalog backend bila tersedia; data yang tidak tersedia tidak akan ditebak.'
-          : 'Answers use backend catalog records when available; missing data is not guessed.'}
+        Answers use backend catalog records when available; missing data is not guessed.
       </p>
 
       <form className="cg-form" onSubmit={submit}>
@@ -248,11 +248,9 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
               ? 'Listening… tap the mic to send'
               : mic.status === 'transcribing'
                 ? 'Transcribing your question…'
-                : isIndonesian
-                  ? 'Tulis pertanyaan ke Cosmic Guide…'
-                  : 'Ask Cosmic Guide a question…'
+                : 'Ask Cosmic Guide a question…'
           }
-          aria-label={isIndonesian ? 'Pertanyaan untuk Cosmic Guide' : 'Question for Cosmic Guide'}
+          aria-label="Question for Cosmic Guide"
         />
         {voiceInputSupported() && (
           <button
@@ -267,7 +265,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
             <MicIcon />
           </button>
         )}
-        <button type="submit" className="cg-send" disabled={!draft.trim() || loading} aria-label={isIndonesian ? 'Kirim' : 'Send'}>
+        <button type="submit" className="cg-send" disabled={!draft.trim() || loading} aria-label="Send">
           ↗
         </button>
       </form>

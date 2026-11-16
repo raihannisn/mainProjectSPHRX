@@ -138,5 +138,5 @@ async def fetch_neows() -> dict:
     except Exception as exc:
         raise HTTPException(
             status_code=502,
-            detail=f"Gagal menghubungi server NASA NeoWs: {str(exc)}"
+            detail=f"Could not connect to the NASA NeoWs server: {str(exc)}"
         )

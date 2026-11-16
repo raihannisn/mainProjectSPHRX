@@ -817,7 +817,7 @@
         </div>
         <h2>Interactive API Documentation</h2>
         <p>
-          Jelajahi dan uji langsung seluruh endpoint backend <strong>SPHEREx Cosmic Explorer</strong>. Console ini menghubungkan visualisasi inframerah SPHEREx, integrasi NASA Open APIs (APOD & Near-Earth Asteroid Feed), metadata biner FITS observasi asli, dan ensiklopedia astronomi untuk keperluan Frontend dan WebXR/AR.
+          Explore and test every <strong>SPHEREx Cosmic Explorer</strong> backend endpoint. This console connects SPHEREx infrared visualizations, NASA Open APIs (APOD and the Near-Earth Asteroid Feed), metadata from original FITS observations, and an astronomy encyclopedia for the frontend and WebXR/AR.
         </p>
       </section>
 
@@ -831,7 +831,7 @@
           <span class="category-tag">System Health</span>
         </div>
         <p class="storytelling">
-          Pemeriksaan kesehatan sistem (health check) backend SPHEREx API, status koneksi data IRSA, serta kapabilitas engine astrofisika yang aktif.
+          Check the SPHEREx API backend health, IRSA data connection, and active astrophysics engine capabilities.
         </p>
         <div class="action-row">
           <button class="btn-action" onclick="executeApi('/api/status', 'term-status', 'stat-status')">
@@ -857,7 +857,7 @@
               </button>
             </div>
           </div>
-          <pre class="code-view"><code class="language-json" id="term-status">// Klik 'Execute Request' untuk menguji endpoint...</code></pre>
+          <pre class="code-view"><code class="language-json" id="term-status">// Click 'Execute Request' to test the endpoint...</code></pre>
         </div>
       </section>
 
@@ -871,7 +871,7 @@
           <span class="category-tag">NASA APOD</span>
         </div>
         <p class="storytelling">
-          Mengambil Astronomy Picture of the Day resmi dari NASA, dilengkapi sistem graceful degradation (fallback dummy JSON) otomatis jika server NASA sedang down.
+          Fetch NASA's official Astronomy Picture of the Day, with an automatic JSON fallback if NASA's server is unavailable.
         </p>
         <div class="action-row">
           <button class="btn-action" onclick="executeApi('/api/nasa/apod', 'term-apod', 'stat-apod', handleApodPreview)">

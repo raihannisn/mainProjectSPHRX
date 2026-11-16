@@ -13,12 +13,12 @@ const NAV_ITEMS = [
   { to: '/guide', label: 'Cosmic Guide' },
 ]
 
-const NAV_LABELS: Record<string, { en: string; id: string }> = {
-  '/': { en: 'Opening Gateway…', id: 'Membuka Gateway…' },
-  '/explorer': { en: 'Opening Sky Explorer…', id: 'Membuka Sky Explorer…' },
-  '/comparison': { en: 'Opening Spectral Comparison…', id: 'Membuka Perbandingan Spektral…' },
-  '/guide': { en: 'Opening Cosmic Guide…', id: 'Membuka Cosmic Guide…' },
-  '/xr': { en: 'Opening wormhole — preparing 3D scene…', id: 'Membuka wormhole — menyiapkan scene 3D…' },
+const NAV_LABELS: Record<string, string> = {
+  '/': 'Opening Gateway…',
+  '/explorer': 'Opening Sky Explorer…',
+  '/comparison': 'Opening Spectral Comparison…',
+  '/guide': 'Opening Cosmic Guide…',
+  '/xr': 'Opening wormhole — preparing the 3D scene…',
 }
 
 function routeLabel(pathname: string) {
@@ -146,10 +146,7 @@ export function TopBar() {
   }, [menuOpen])
 
   const state: NavState = menuOpen ? 'island-open' : scrolled ? 'island' : 'top'
-  const copy =
-    lang === 'id'
-      ? { open: 'Buka menu', close: 'Tutup menu', nav: 'Navigasi utama', panel: 'Menu navigasi' }
-      : { open: 'Open menu', close: 'Close menu', nav: 'Main Navigation', panel: 'Menu Navigation' }
+  const copy = { open: 'Open menu', close: 'Close menu', nav: 'Main Navigation', panel: 'Menu Navigation' }
   const statusLabel = online ? (status?.engine ? 'BACKEND LIVE' : 'DEMO READY') : 'OFFLINE MODE'
 
   const handleNav = (
@@ -179,10 +176,7 @@ export function TopBar() {
     onClose?.()
     const origin = originOf(event.currentTarget)
     const isToXR = to.startsWith('/xr')
-    const langKey = lang === 'id' ? 'id' : 'en'
-    const label =
-      NAV_LABELS[to]?.[langKey] ||
-      (lang === 'id' ? 'Memuat halaman…' : 'Loading page…')
+    const label = NAV_LABELS[to] || 'Loading page…'
 
     void runWormhole(
       {

@@ -116,7 +116,6 @@ function MenuPanel3D() {
       <Text font={FONT_BOLD} material={noFog} position={[-W / 2 + 0.36, H / 2 - 0.2, 0.005]} fontSize={0.13} color={UI.text} anchorX="left" anchorY="middle">
         {t('Expedition')}
       </Text>
-      <LangButton position={[W / 2 - 1.47, H / 2 - 0.2, 0.005]} />
       <Button icon="recenter" onPress={() => useXRApp.getState().requestRecenter()} position={[W / 2 - 1.12, H / 2 - 0.2, 0.005]} width={0.3} height={0.24} />
       <PinButton position={[W / 2 - 0.5, H / 2 - 0.2, 0.005]} />
       <mesh geometry={roundedRect(W - 0.16, 0.5, 0.16)} material={uiMat('#13232b')} position={[0, H / 2 - 0.66, -0.004]} />
@@ -136,11 +135,6 @@ function MenuPanel3D() {
 }
 
 const tr = (s: string) => t(s)
-
-function LangButton({ position }: { position: [number, number, number] }) {
-  const lang = useXRApp((s) => s.settings.lang)
-  return <Button label={lang === 'id' ? 'ID' : 'EN'} icon="globe" onPress={() => useXRApp.getState().setSetting('lang', lang === 'id' ? 'en' : 'id')} position={position} width={0.42} height={0.24} />
-}
 
 function PinButton({ position }: { position: [number, number, number] }) {
   const open = useXRApp((s) => s.menuOpen)

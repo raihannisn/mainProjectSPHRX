@@ -24,7 +24,7 @@ export interface GuideState {
   openGuide: (target?: GuideTarget) => void
   closeGuide: () => void
   setGuideTarget: (target: GuideTarget | null) => void
-  sendMessage: (message: string, lang: 'en' | 'id') => Promise<string>
+  sendMessage: (message: string) => Promise<string>
   clearMessages: () => void
 }
 
@@ -55,7 +55,7 @@ export const useGuide = create<GuideState>((set, get) => ({
     requestGeneration += 1
     set({ messages: [], error: null })
   },
-  sendMessage: async (text, lang) => {
+  sendMessage: async (text) => {
     const cleanText = text.trim()
     if (!cleanText || get().loading) return ''
 
@@ -76,7 +76,7 @@ export const useGuide = create<GuideState>((set, get) => ({
     }))
 
     try {
-      const result = await requestAgentChat(requestMessages, objectId, lang)
+      const result = await requestAgentChat(requestMessages, objectId, 'en')
       if (generation !== requestGeneration) return ''
       if (!result.ok) throw new Error(result.error)
 

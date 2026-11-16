@@ -20,10 +20,12 @@ Mission Agent, and Gemini text-to-speech (TTS), and how to diagnose failures.
    `GET /api/objects/{object_id}`. When a catalog record is available, it asks
    `POST /api/agent/chat` for a short record-grounded summary.
 4. The panel sends the summary to `POST /api/agent/voiceover/text`. When no
-   summary is available, it uses the bundled object description, if present.
+   summary is available, it uses the bundled English object description, if present.
 5. The backend returns WAV audio. [`agentSpeech.ts`](../arvr/src/xr/agentSpeech.ts)
    decodes and plays it with Web Audio. After playback, the panel offers a
-   replay action.
+   replay action. Spoken AI responses and browser-voice fallbacks are always
+   English; the interface can still display Indonesian and transcribe Indonesian
+   microphone input.
 
 For Mars, the bundled English and Indonesian descriptions live in
 [`mars.json`](../arvr/content/bodies/mars.json). The development API client uses
@@ -36,8 +38,8 @@ explicit `VITE_API_BASE_URL` overrides that behavior.
 |---|---|---|
 | `GET /api/status` | Check backend readiness | JSON status |
 | `GET /api/objects/{object_id}` | Load catalog record | JSON object record, e.g. `mars` |
-| `POST /api/agent/chat` | Generate object summary | JSON request with `objectId`, `lang`, and `messages`; JSON response with `data.message` and `data.sources` |
-| `POST /api/agent/voiceover/text` | Synthesize narration | JSON `{ "text": "...", "language": "id" \| "en", "voicePreset": "mission-liaison" }`; response is `audio/wav` |
+| `POST /api/agent/chat` | Generate object summary | English-only AI response; `lang` is retained for request compatibility; JSON response with `data.message` and `data.sources` |
+| `POST /api/agent/voiceover/text` | Synthesize narration | JSON `{ "text": "...", "language": "en", "voicePreset": "mission-liaison" }`; response is `audio/wav` |
 
 The speech route is implemented in
 [`routes/agent.py`](../backend/routes/agent.py). It calls

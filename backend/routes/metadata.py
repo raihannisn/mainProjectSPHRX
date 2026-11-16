@@ -12,7 +12,7 @@ FITS_FILE_1 = str(BASE_DIR / "level2_2025W36_2B_0696_1D1_spx_l2b-v20-2025-271-cu
 @router.get("/fits")
 def get_fits_metadata():
     if not os.path.exists(FITS_FILE_1):
-        raise HTTPException(status_code=404, detail="File FITS asli tidak ditemukan di server")
+        raise HTTPException(status_code=404, detail="The original FITS file was not found on the server.")
     
     try:
         hdul = fits.open(FITS_FILE_1)

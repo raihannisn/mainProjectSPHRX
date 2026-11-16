@@ -2,24 +2,24 @@
   "mars": {
     "name": "Mars",
     "type": "Planet",
-    "description": "Planet keempat dari Matahari. Dikenal sebagai Planet Merah karena besi oksida di permukaannya.",
+    "description": "The fourth planet from the Sun, known as the Red Planet because of iron oxide on its surface.",
     "hotspots": [
-      {"id": "olympus_mons", "name": "Olympus Mons", "fact": "Gunung berapi tertinggi di tata surya, tingginya 22 km!"},
-      {"id": "gale_crater", "name": "Gale Crater", "fact": "Lokasi pendaratan rover Curiosity."}
+      {"id": "olympus_mons", "name": "Olympus Mons", "fact": "The tallest volcano in the Solar System, rising about 22 km."},
+      {"id": "gale_crater", "name": "Gale Crater", "fact": "The landing site of the Curiosity rover."}
     ]
   },
   "halley": {
     "name": "1P/Halley",
-    "type": "Komet",
-    "description": "Komet paling terkenal yang bisa dilihat dari Bumi setiap 76 tahun sekali.",
+    "type": "Comet",
+    "description": "One of the best-known comets, visible from Earth approximately every 76 years.",
     "hotspots": [
-      {"id": "comet_core", "name": "Inti Komet", "fact": "Terdiri dari es, debu, dan batuan (dirty snowball)."}
+      {"id": "comet_core", "name": "Comet nucleus", "fact": "Composed of ice, dust, and rocky material."}
     ]
   },
   "jupiter": {
     "name": "Jupiter",
     "type": "Planet",
-    "description": "Planet terbesar di tata surya dengan Bintik Merah Raksasa.",
+    "description": "The largest planet in the Solar System, featuring the Great Red Spot.",
     "hotspots": []
   },
   "rcw-36": {

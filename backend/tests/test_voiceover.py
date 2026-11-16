@@ -13,6 +13,7 @@ from services.gemini_tts_provider import (
 from services.voiceover_service import (
     _generate_cached,
     generate_voiceover,
+    generate_spoken_text,
     get_script_catalog,
 )
 
@@ -111,13 +112,14 @@ class VoiceoverServiceTests(unittest.TestCase):
     def tearDown(self):
         _generate_cached.cache_clear()
 
-    def test_script_catalog_returns_requested_language(self):
-        catalog = get_script_catalog("en")
+    def test_script_catalog_is_english_even_when_indonesian_is_requested(self):
+        catalog = get_script_catalog("id")
 
         self.assertEqual(len(catalog), 3)
         self.assertIn("Welcome", catalog[0]["text"])
+        self.assertNotIn("Selamat datang", catalog[0]["text"])
 
-    def test_voiceover_uses_cached_server_script(self):
+    def test_voiceover_uses_cached_english_script_even_when_indonesian_is_requested(self):
         with patch("services.voiceover_service.synthesize_speech", return_value=b"wav") as synthesize:
             first = generate_voiceover("welcome", "id", "mission-liaison")
             second = generate_voiceover("welcome", "id", "mission-liaison")
@@ -125,6 +127,7 @@ class VoiceoverServiceTests(unittest.TestCase):
         self.assertEqual(first, b"wav")
         self.assertIs(first, second)
         synthesize.assert_called_once()
+        self.assertIn("Welcome", synthesize.call_args.kwargs["text"])
 
     def test_voiceover_normalizes_input_and_uses_cache(self):
         with patch("services.voiceover_service.synthesize_speech", return_value=b"wav") as synthesize:
@@ -133,8 +136,19 @@ class VoiceoverServiceTests(unittest.TestCase):
         self.assertEqual(result, b"wav")
         synthesize.assert_called_once_with(
             text="Welcome to the SPHEREx Explorer. I am a digital guide here to help you understand the information available. I am not an official NASA spokesperson.",
-            voice="Rasalgethi",
-            style="calm, clear, professional, and approachable narration",
+            voice="Kore",
+            style="warm, clear, and approachable narration",
+        )
+
+    def test_chat_spoken_text_uses_the_supported_kore_voice(self):
+        with patch("services.voiceover_service.synthesize_speech", return_value=b"wav") as synthesize:
+            result = generate_spoken_text("Hello from Cosmic Guide.", "en", "mission-liaison")
+
+        self.assertEqual(result, b"wav")
+        synthesize.assert_called_once_with(
+            text="Hello from Cosmic Guide.",
+            voice="Kore",
+            style="warm, clear, and approachable narration",
         )
 
     def test_unknown_script_is_rejected(self):

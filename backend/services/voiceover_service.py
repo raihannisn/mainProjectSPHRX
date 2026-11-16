@@ -5,23 +5,14 @@ from services.gemini_tts_provider import synthesize_speech
 
 SCRIPTS = {
     "welcome": {
-        "label": "Selamat datang / Welcome",
-        "id": (
-            "Selamat datang di penjelajah SPHEREx. Saya pemandu digital untuk membantu "
-            "Anda memahami informasi yang tersedia. Saya bukan juru bicara resmi NASA."
-        ),
+        "label": "Welcome",
         "en": (
             "Welcome to the SPHEREx Explorer. I am a digital guide here to help you "
             "understand the information available. I am not an official NASA spokesperson."
         ),
     },
     "mission-introduction": {
-        "label": "Pengenalan misi / Mission introduction",
-        "id": (
-            "SPHEREx adalah misi survei langit dalam inframerah. Misi ini mengamati "
-            "langit dalam banyak pita spektral untuk membantu mempelajari alam semesta, "
-            "galaksi, dan bahan-bahan es di Bima Sakti."
-        ),
+        "label": "Mission introduction",
         "en": (
             "SPHEREx is a space-based infrared sky survey mission. It observes the sky "
             "in many spectral bands to help study the universe, galaxies, and icy "
@@ -29,12 +20,7 @@ SCRIPTS = {
         ),
     },
     "exploration-guidance": {
-        "label": "Panduan eksplorasi / Exploration guidance",
-        "id": (
-            "Saat menjelajahi data, gunakan informasi dan sumber yang ditampilkan "
-            "backend. Jika suatu nilai atau hasil belum tersedia, kami akan menyatakannya "
-            "dengan jelas."
-        ),
+        "label": "Exploration guidance",
         "en": (
             "As you explore the data, use the information and sources provided by the "
             "backend. If a value or result is not available, we will say so clearly."
@@ -44,8 +30,8 @@ SCRIPTS = {
 
 VOICE_PRESETS = {
     "mission-liaison": {
-        "voice": "Rasalgethi",
-        "style": "calm, clear, professional, and approachable narration",
+        "voice": "Nika",
+        "style": "warm, clear, and approachable narration",
         "label": "Mission Liaison",
     },
     "warm-guide": {
@@ -61,7 +47,7 @@ def get_script_catalog(language: str) -> list:
     if normalized_language not in ("id", "en"):
         raise ValueError("Unsupported voice-over language.")
     return [
-        {"id": script_id, "label": script["label"], "text": script[normalized_language]}
+        {"id": script_id, "label": script["label"], "text": script["en"]}
         for script_id, script in SCRIPTS.items()
     ]
 
@@ -84,7 +70,7 @@ def generate_voiceover(script_id: str, language: str, voice_preset: str) -> byte
         raise ValueError("Unsupported voice-over language.")
     if normalized_voice_preset not in VOICE_PRESETS:
         raise ValueError("Unknown voice preset.")
-    return _generate_cached(normalized_script_id, normalized_language, normalized_voice_preset)
+    return _generate_cached(normalized_script_id, "en", normalized_voice_preset)
 
 
 def generate_spoken_text(text: str, language: str, voice_preset: str) -> bytes:

@@ -17,7 +17,6 @@ export function TourDirector() {
   const step = useXRApp((s) => s.tourStep)
   const paused = useXRApp((s) => s.tourPaused)
   const voiceOn = useXRApp((s) => s.settings.sound && s.settings.narration)
-  const lang = useXRApp((s) => s.settings.lang)
   const timer = useRef(0)
   const spokenFor = useRef<string | null>(null)
   useEffect(() => {
@@ -27,21 +26,21 @@ export function TourDirector() {
     if (step !== null && step < TOUR.length) TOUR[step].go()
     if (step === TOUR.length) playChime()
   }, [step])
-  // muting, pausing, changing language or leaving the tour stops the voice (it restarts on resume)
+  // muting, pausing or leaving the tour stops the voice
   useEffect(() => {
     stopSpeaking()
     spokenFor.current = null
-  }, [voiceOn, paused, lang])
+  }, [voiceOn, paused])
   useEffect(() => () => stopSpeaking(), [])
   useFrame((_, dt) => {
     const s = useXRApp.getState()
     if (s.tourStep === null || s.tourPaused || useLoading.getState().active) return
     const stop = s.tourStep < TOUR.length ? TOUR[s.tourStep] : TOUR_END
     // read the caption once the place has loaded
-    const key = `${s.tourStep}:${s.settings.lang}`
+    const key = `${s.tourStep}`
     if (voiceOn && spokenFor.current !== key) {
       spokenFor.current = key
-      speak(stop.caption[s.settings.lang], s.settings.lang)
+      speak(stop.caption.en)
     }
     if (s.tourStep >= TOUR.length) return
     timer.current += Math.min(dt, 0.1)

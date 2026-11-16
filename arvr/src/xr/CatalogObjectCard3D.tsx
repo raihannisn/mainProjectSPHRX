@@ -9,6 +9,7 @@ export function CatalogObjectCard3D({
   objectType,
   contentReady,
   localDescription,
+  narrationDescription,
   hidden = false,
 }: {
   objectId: string
@@ -16,51 +17,36 @@ export function CatalogObjectCard3D({
   objectType: string
   contentReady: boolean
   localDescription: string
+  narrationDescription?: string
   /** keeps the summary + voice-over running but draws no panel (inline 2D viewer; its HUD card shows the text) */
   hidden?: boolean
 }) {
-  const { object, catalogMessage, guideAnswer, guideError, guideLoading, speechStatus, speechError, canReplay, replay, isIndonesian } =
-    useAgentNarration({ objectId, objectName, objectType, contentReady, localDescription })
+  const { object, catalogMessage, guideAnswer, guideError, guideLoading, speechStatus, speechError, canReplay, replay } =
+    useAgentNarration({ objectId, objectName, objectType, contentReady, localDescription, narrationDescription })
 
   const description = localDescription || object?.description
   const guideText = guideLoading
-    ? isIndonesian
-      ? 'Cosmic Guide sedang menyiapkan ringkasan…'
-      : 'Cosmic Guide is preparing a summary…'
+    ? 'Cosmic Guide is preparing a summary…'
     : guideAnswer ??
       (guideError
-        ? `${isIndonesian ? 'Cosmic Guide tidak tersedia' : 'Cosmic Guide unavailable'}: ${guideError}`
+        ? `Cosmic Guide unavailable: ${guideError}`
         : catalogMessage
-          ? isIndonesian
-            ? 'Ringkasan AI memerlukan koneksi backend.'
-            : 'AI summary requires a backend connection.'
-          : isIndonesian
-            ? 'Ringkasan AI belum tersedia.'
-            : 'AI summary is not available.')
+          ? 'AI summary requires a backend connection.'
+          : 'AI summary is not available.')
   const speechLabel =
     speechStatus === 'loading'
-      ? isIndonesian
-        ? 'MENYIAPKAN SUARA AI…'
-        : 'PREPARING AI VOICE…'
+      ? 'PREPARING AI VOICE…'
       : speechStatus === 'playing'
-        ? isIndonesian
-          ? 'SUARA AI SEDANG DIPUTAR'
-          : 'AI VOICE PLAYING'
+        ? 'AI VOICE PLAYING'
         : speechStatus === 'ready'
-          ? isIndonesian
-            ? '▶ PUTAR ULANG SUARA AI'
-            : '▶ REPLAY AI VOICE'
+          ? '▶ REPLAY AI VOICE'
           : speechStatus === 'error'
-            ? isIndonesian
-              ? 'SUARA AI TIDAK TERSEDIA'
-              : 'AI VOICE UNAVAILABLE'
-            : isIndonesian
-              ? 'DESKRIPSI SUARA BELUM TERSEDIA'
-              : 'NO NARRATION AVAILABLE'
+            ? 'AI VOICE UNAVAILABLE'
+            : 'NO NARRATION AVAILABLE'
 
   return (
     <group visible={!hidden} position={[-1.62, 0.08, 0.12]} rotation={[0, 0.42, 0]}>
-      <PopIn key={`${objectId}-${isIndonesian ? 'id' : 'en'}`}>
+      <PopIn key={objectId}>
         <GlassPanel width={1.58} height={2.14} radius={0.08} rim={0.01} />
         <Text
           font={FONT_BOLD}
@@ -94,7 +80,7 @@ export function CatalogObjectCard3D({
           anchorX="left"
           anchorY="top"
         >
-          {description ?? (isIndonesian ? 'Deskripsi belum tersedia.' : 'Description is not available yet.')}
+          {description ?? 'Description is not available yet.'}
         </Text>
         {catalogMessage && (
           <Text

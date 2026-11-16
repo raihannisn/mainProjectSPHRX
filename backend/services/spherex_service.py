@@ -284,39 +284,39 @@ async def query_spherex_observations(
     if not (0.0 <= ra <= 360.0):
         raise HTTPException(
             status_code=400,
-            detail="Parameter 'ra' (Right Ascension) harus bernilai antara 0.0 dan 360.0 derajat.",
+            detail="Parameter 'ra' (Right Ascension) must be between 0.0 and 360.0 degrees.",
         )
     if not (-90.0 <= dec <= 90.0):
         raise HTTPException(
             status_code=400,
-            detail="Parameter 'dec' (Declination) harus bernilai antara -90.0 dan 90.0 derajat.",
+            detail="Parameter 'dec' (Declination) must be between -90.0 and 90.0 degrees.",
         )
     if radius <= 0.0 or radius > 10.0:
         raise HTTPException(
             status_code=400,
-            detail="Parameter 'radius' harus lebih besar dari 0 dan maksimal 10.0 derajat.",
+            detail="Parameter 'radius' must be greater than 0 and no more than 10.0 degrees.",
         )
 
     # 2. Validasi format tanggal
     date_regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
     if start_date:
         if not date_regex.match(start_date):
-            raise HTTPException(status_code=400, detail="Format 'start_date' harus YYYY-MM-DD.")
+            raise HTTPException(status_code=400, detail="'start_date' must use the YYYY-MM-DD format.")
         try:
             datetime.strptime(start_date, "%Y-%m-%d")
         except ValueError:
-            raise HTTPException(status_code=400, detail="Nilai 'start_date' bukan tanggal kalender yang valid.")
+            raise HTTPException(status_code=400, detail="'start_date' is not a valid calendar date.")
 
     if end_date:
         if not date_regex.match(end_date):
-            raise HTTPException(status_code=400, detail="Format 'end_date' harus YYYY-MM-DD.")
+            raise HTTPException(status_code=400, detail="'end_date' must use the YYYY-MM-DD format.")
         try:
             datetime.strptime(end_date, "%Y-%m-%d")
         except ValueError:
-            raise HTTPException(status_code=400, detail="Nilai 'end_date' bukan tanggal kalender yang valid.")
+            raise HTTPException(status_code=400, detail="'end_date' is not a valid calendar date.")
 
     if start_date and end_date and start_date > end_date:
-        raise HTTPException(status_code=400, detail="'start_date' tidak boleh lebih besar dari 'end_date'.")
+        raise HTTPException(status_code=400, detail="'start_date' must not be later than 'end_date'.")
 
     # 3. Eksekusi query ke IRSA SIA2 secara asynchronous
     try:
@@ -327,14 +327,14 @@ async def query_spherex_observations(
     except asyncio.TimeoutError:
         raise HTTPException(
             status_code=504,
-            detail="Koneksi ke layanan NASA IRSA SIA2 mengalami timeout. Silakan coba kembali beberapa saat lagi.",
+            detail="The NASA IRSA SIA2 service timed out. Please try again shortly.",
         )
     except HTTPException:
         raise
     except Exception as exc:
         raise HTTPException(
             status_code=502,
-            detail=f"Gagal melakukan query ke layanan NASA IRSA: {str(exc)}",
+            detail=f"Failed to query the NASA IRSA service: {str(exc)}",
         )
 
     # 4. Normalisasi, filtering, dan deduplikasi data observasi
@@ -489,17 +489,17 @@ def _validate_irsa_url(url_str: str) -> str:
     """Memverifikasi bahwa URL FITS mengarah ke host IRSA terpercaya untuk mencegah SSRF dan path traversal."""
     parsed = urlparse(url_str)
     if parsed.scheme.lower() != "https":
-        raise HTTPException(status_code=400, detail="Hanya skema https yang diizinkan untuk FITS preview.")
+        raise HTTPException(status_code=400, detail="Only the HTTPS scheme is allowed for FITS previews.")
     if parsed.hostname is None or parsed.hostname.lower() != "irsa.ipac.caltech.edu":
         raise HTTPException(
             status_code=400,
-            detail=f"Host tidak diizinkan: '{parsed.hostname}'. Hanya host NASA IRSA ('irsa.ipac.caltech.edu') yang diterima.",
+            detail=f"Host '{parsed.hostname}' is not allowed. Only the NASA IRSA host ('irsa.ipac.caltech.edu') is accepted.",
         )
     clean_path = posixpath.normpath(parsed.path)
     if not (clean_path.startswith("/ibe/data/spherex/") or clean_path.startswith("/ibe/cutout")):
         raise HTTPException(
             status_code=400,
-            detail="Jalur produk FITS tidak valid. Hanya produk SPHEREx IBE yang diizinkan.",
+            detail="Invalid FITS product path. Only SPHEREx IBE products are allowed.",
         )
     return url_str
 
@@ -528,7 +528,7 @@ async def generate_fits_preview(
     cache_key = hashlib.sha256(cache_payload.encode("utf-8")).hexdigest()
 
     if not re.match(r"^[a-f0-9]{64}$", cache_key):
-        raise HTTPException(status_code=400, detail="Cache key tidak valid.")
+        raise HTTPException(status_code=400, detail="Invalid cache key.")
 
     # 4. Check In-Memory Cache first
     mem_cached = await _MEMORY_PREVIEW_CACHE.get(cache_key)
@@ -579,14 +579,14 @@ async def generate_fits_preview(
                     if resp.status_code in (301, 302, 303, 307, 308):
                         raise HTTPException(
                             status_code=400,
-                            detail="Pengalihan (redirect) upstream dari IRSA tidak diizinkan untuk keamanan SSRF.",
+                            detail="Upstream redirects from IRSA are not allowed for security reasons.",
                         )
                     if resp.status_code == 200:
                         cl_header = resp.headers.get("content-length")
                         if cl_header and int(cl_header) > MAX_FITS_BYTES:
                             raise HTTPException(
                                 status_code=413,
-                                detail=f"Ukuran file FITS ({cl_header} bytes) melebihi batas maksimum 15 MB.",
+                                detail=f"FITS file size ({cl_header} bytes) exceeds the 15 MB limit.",
                             )
                         content_accum = bytearray()
                         async for chunk in resp.aiter_bytes():
@@ -594,7 +594,7 @@ async def generate_fits_preview(
                             if len(content_accum) > MAX_FITS_BYTES:
                                 raise HTTPException(
                                     status_code=413,
-                                    detail="Ukuran payload FITS melebihi batas maksimum 15 MB.",
+                                    detail="FITS payload exceeds the 15 MB limit.",
                                 )
                         fits_bytes = bytes(content_accum)
                         break
@@ -604,7 +604,7 @@ async def generate_fits_preview(
                     else:
                         raise HTTPException(
                             status_code=503 if resp.status_code == 503 else 502,
-                            detail=f"Layanan NASA IRSA IBE sedang sibuk atau tidak tersedia (HTTP {resp.status_code}). Silakan coba sesaat lagi.",
+                            detail=f"The NASA IRSA IBE service is busy or unavailable (HTTP {resp.status_code}). Please try again shortly.",
                         )
         else:
             for attempt in range(max_retries):
@@ -612,14 +612,14 @@ async def generate_fits_preview(
                 if resp.status_code in (301, 302, 303, 307, 308):
                     raise HTTPException(
                         status_code=400,
-                        detail="Pengalihan (redirect) upstream dari IRSA tidak diizinkan untuk keamanan SSRF.",
+                        detail="Upstream redirects from IRSA are not allowed for security reasons.",
                     )
                 if resp.status_code == 200:
                     cl_header = resp.headers.get("content-length")
                     if cl_header and int(cl_header) > MAX_FITS_BYTES:
                         raise HTTPException(
                             status_code=413,
-                            detail=f"Ukuran file FITS ({cl_header} bytes) melebihi batas maksimum 15 MB.",
+                            detail=f"FITS file size ({cl_header} bytes) exceeds the 15 MB limit.",
                         )
                     content_accum = bytearray()
                     for chunk in resp.iter_content(chunk_size=65536):
@@ -627,7 +627,7 @@ async def generate_fits_preview(
                         if len(content_accum) > MAX_FITS_BYTES:
                             raise HTTPException(
                                 status_code=413,
-                                detail="Ukuran payload FITS melebihi batas maksimum 15 MB.",
+                                detail="FITS payload exceeds the 15 MB limit.",
                             )
                     fits_bytes = bytes(content_accum)
                     break
@@ -637,14 +637,14 @@ async def generate_fits_preview(
                 else:
                     raise HTTPException(
                         status_code=503 if resp.status_code == 503 else 502,
-                        detail=f"Layanan NASA IRSA IBE sedang sibuk atau tidak tersedia (HTTP {resp.status_code}).",
+                        detail=f"The NASA IRSA IBE service is busy or unavailable (HTTP {resp.status_code}).",
                     )
     except HTTPException:
         raise
     except Exception as exc:
         raise HTTPException(
             status_code=504,
-            detail=f"Koneksi timeout saat mengambil FITS dari IRSA: {str(exc)}",
+            detail=f"Timed out while retrieving FITS data from IRSA: {str(exc)}",
         )
 
     # 7. Parse FITS dan ekstrak IMAGE HDU menggunakan Astropy
@@ -731,5 +731,5 @@ async def generate_fits_preview(
     except Exception as exc:
         raise HTTPException(
             status_code=500,
-            detail=f"Gagal memproses data visual FITS: {str(exc)}",
+            detail=f"Failed to process FITS visualization data: {str(exc)}",
         )

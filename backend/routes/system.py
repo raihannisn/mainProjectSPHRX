@@ -15,7 +15,7 @@ def get_mission_control():
     if not os.path.exists(MISSION_CONTROL_HTML):
         raise HTTPException(
             status_code=404,
-            detail=f"File mission_control.html tidak ditemukan di {MISSION_CONTROL_HTML}"
+            detail=f"mission_control.html was not found at {MISSION_CONTROL_HTML}."
         )
     return FileResponse(str(MISSION_CONTROL_HTML), media_type="text/html")
 

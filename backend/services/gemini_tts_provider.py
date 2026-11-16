@@ -71,7 +71,7 @@ def build_request_payload(text: str, voice: str, style: str) -> dict:
 
 def extract_wav_audio(response_data: dict) -> bytes:
     if not isinstance(response_data, dict):
-        raise HTTPException(status_code=502, detail="Gemini TTS tidak mengembalikan audio.")
+        raise HTTPException(status_code=502, detail="Gemini TTS did not return audio.")
 
     audio_candidates = []
     steps = response_data.get("steps")
@@ -93,7 +93,7 @@ def extract_wav_audio(response_data: dict) -> bytes:
             continue
         return audio
 
-    raise HTTPException(status_code=502, detail="Gemini TTS tidak mengembalikan audio WAV yang valid.")
+    raise HTTPException(status_code=502, detail="Gemini TTS did not return valid WAV audio.")
 
 
 def synthesize_speech(text: str, voice: str, style: str) -> bytes:
@@ -101,7 +101,7 @@ def synthesize_speech(text: str, voice: str, style: str) -> bytes:
     if not api_key:
         raise HTTPException(
             status_code=503,
-            detail="Gemini TTS belum dikonfigurasi. Atur GEMINI_API_KEY pada environment backend.",
+            detail="Gemini TTS is not configured. Set GEMINI_API_KEY in the backend environment.",
         )
 
     try:
@@ -114,13 +114,13 @@ def synthesize_speech(text: str, voice: str, style: str) -> bytes:
     except httpx.TimeoutException as exc:
         raise HTTPException(
             status_code=504,
-            detail="Permintaan ke Gemini TTS melewati batas waktu. Silakan coba kembali.",
+            detail="The Gemini TTS request timed out. Please try again.",
         ) from exc
     except httpx.RequestError as exc:
         logger.warning("Gemini TTS request failed: %s", type(exc).__name__)
         raise HTTPException(
             status_code=502,
-            detail="Tidak dapat menghubungi layanan Gemini TTS.",
+            detail="Could not connect to the Gemini TTS service.",
         ) from exc
 
     if response.is_error:
@@ -146,11 +146,11 @@ def synthesize_speech(text: str, voice: str, style: str) -> bytes:
         if response.status_code == 429:
             raise HTTPException(
                 status_code=429,
-                detail="Batas penggunaan Gemini TTS tercapai. Silakan coba kembali nanti.",
+                detail="The Gemini TTS usage limit has been reached. Please try again later.",
             )
         raise HTTPException(
             status_code=502,
-            detail="Gemini TTS gagal memproses permintaan. Periksa konfigurasi dan coba lagi.",
+            detail="Gemini TTS could not process the request. Check the configuration and try again.",
         )
 
     try:
@@ -158,7 +158,7 @@ def synthesize_speech(text: str, voice: str, style: str) -> bytes:
     except ValueError as exc:
         raise HTTPException(
             status_code=502,
-            detail="Gemini TTS mengembalikan respons yang tidak dapat dibaca.",
+            detail="Gemini TTS returned an unreadable response.",
         ) from exc
 
     return extract_wav_audio(response_data)

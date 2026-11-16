@@ -1,12 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from services.ai_service import get_gemini_chat_reply, FALLBACK_REPLY
+from services.agent_service import generate_agent_response
 
 router = APIRouter(prefix="/api/ai", tags=["AI"])
 
 
 class ChatRequest(BaseModel):
-    message: str = ""
+    message: str
 
 
 class ChatResponse(BaseModel):
@@ -14,12 +14,14 @@ class ChatResponse(BaseModel):
 
 
 @router.post("/chat", response_model=ChatResponse, summary="Cosmic Guide AI Chat")
-async def chat_with_gemini(request: ChatRequest):
-    """Menerima input pesan dari Frontend dan mengembalikan respons teks dari Gemini 3.5 Flash.
-    Jika terjadi error atau API key belum diset, mengembalikan fallback status code 200.
-    """
-    try:
-        reply = await get_gemini_chat_reply(request.message)
-        return {"reply": reply}
-    except Exception:
-        return {"reply": FALLBACK_REPLY}
+def chat_with_gemini(request: ChatRequest):
+    """Answer a standalone Cosmic Guide question using the shared English-only agent."""
+    message = request.message.strip()
+    if not message:
+        raise HTTPException(status_code=422, detail="Message must not be blank.")
+
+    reply = generate_agent_response(
+        messages=[{"role": "user", "content": message}],
+        language="en",
+    )
+    return {"reply": reply}

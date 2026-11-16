@@ -67,7 +67,6 @@ function formatUtc(value: string | null | undefined) {
 export function ObservationComparisonScreen() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const lang = useXRApp((s) => s.settings.lang)
   const targetId = searchParams.get('target') || 'rcw-36'
 
   // Comparison mode & wiper state
@@ -253,7 +252,7 @@ export function ObservationComparisonScreen() {
         objectId: targetId,
         objectName: object?.name || targetId,
         question,
-        lang: lang === 'id' ? 'id' : 'en',
+        lang: 'en',
       })
       if (!res.ok) {
         setAiError(res.error)
@@ -347,7 +346,7 @@ export function ObservationComparisonScreen() {
         {/* Loading Indicator */}
         {loading && (
           <div className="fe-data-message" role="status">
-            <WormholePulse decorative /> Memuat data target observasi RCW 36…
+            <WormholePulse decorative /> Loading RCW 36 observation data…
           </div>
         )}
 
@@ -526,7 +525,7 @@ export function ObservationComparisonScreen() {
 
               {/* Intuitive Wiper Usage Hint */}
               <div className="fe-compare-hint">
-                GESER SLIDER UNTUK MEMBANDINGKAN CITRA T1 DAN T2 · TEKAN BLINK UNTUK KEDIPAN OTOMATIS
+                DRAG THE SLIDER TO COMPARE T1 AND T2 IMAGES · SELECT BLINK FOR AUTOMATIC SWITCHING
               </div>
             </section>
 
@@ -548,7 +547,7 @@ export function ObservationComparisonScreen() {
                   <strong>rcw-36</strong>
                 </div>
                 <div className="fe-datum">
-                  <span>Klasifikasi</span>
+                  <span>Classification</span>
                   <strong>{object?.type || 'Nebula Emisi H II'}</strong>
                 </div>
                 <div className="fe-datum">
@@ -564,7 +563,7 @@ export function ObservationComparisonScreen() {
                   <strong>75.8% (CWAVE/CBAND)</strong>
                 </div>
                 <div className="fe-datum">
-                  <span>Sumber Katalog</span>
+                  <span>Catalog Source</span>
                   <strong>{object?.source || 'IPAC IRSA / SIMBAD'}</strong>
                 </div>
               </div>
@@ -576,7 +575,7 @@ export function ObservationComparisonScreen() {
             {/* Epoch T1 Observation Card */}
             <article className="fe-epoch-card fe-hud-card">
               <div className="fe-card-head">
-                <span className="fe-tag fe-tag-cyan">● OBSERVASI T1 (DR1)</span>
+                <span className="fe-tag fe-tag-cyan">● OBSERVATION T1 (DR1)</span>
                 <span className="fe-card-date">{formatUtc(pair[0].observed_at_utc)}</span>
               </div>
               <h3 className="fe-card-title">{pair[0].observation_id}</h3>
@@ -616,7 +615,7 @@ export function ObservationComparisonScreen() {
             {/* Epoch T2 Observation Card */}
             <article className="fe-epoch-card fe-hud-card">
               <div className="fe-card-head">
-                <span className="fe-tag fe-tag-blue">● OBSERVASI T2 (QR3)</span>
+                <span className="fe-tag fe-tag-blue">● OBSERVATION T2 (QR3)</span>
                 <span className="fe-card-date">{formatUtc(pair[1].observed_at_utc)}</span>
               </div>
               <h3 className="fe-card-title">{pair[1].observation_id}</h3>
@@ -698,7 +697,7 @@ export function ObservationComparisonScreen() {
                 <input
                   type="text"
                   className="fe-ai-input"
-                  placeholder="Tanyakan variabilitas spektral atau astrofisika..."
+                  placeholder="Ask about spectral variability or astrophysics..."
                   value={aiPrompt}
                   maxLength={500}
                   onChange={(e) => setAiPrompt(e.target.value)}
@@ -713,7 +712,7 @@ export function ObservationComparisonScreen() {
                   disabled={aiLoading || !aiPrompt.trim()}
                   onClick={() => void handleAskAi(aiPrompt)}
                 >
-                  {aiLoading ? 'Menjawab…' : 'Kirim ↗'}
+                  {aiLoading ? 'Answering…' : 'Send ↗'}
                 </button>
               </div>
 

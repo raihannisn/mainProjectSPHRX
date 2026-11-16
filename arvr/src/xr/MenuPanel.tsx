@@ -4,7 +4,7 @@ import { BODY_BY_ID } from './bodies'
 import { useSiteContent } from './content'
 import { ALL_GOALS, type Mission } from './missions'
 import { activeMissions } from './MissionTracker'
-import { LANGS, t, useT } from './i18n'
+import { t, useT } from './i18n'
 import { resetControllerHints } from './ControllerHints'
 import { saveForOffline, useOffline } from './offline'
 import { useKiosk } from './kiosk'
@@ -49,7 +49,6 @@ const isPhone = () => typeof matchMedia !== 'undefined' && matchMedia('(max-widt
 export function MenuPanel() {
   const open = useXRApp((s) => s.menuOpen)
   const [tab, setTab] = useState<MenuTab>('travel')
-  const lang = useXRApp((s) => s.settings.lang)
   const t = useT()
   const app = useXRApp.getState
   const sheet = useRef<HTMLElement>(null)
@@ -75,7 +74,7 @@ export function MenuPanel() {
     bar.style.transform = `translateX(${btn.offsetLeft}px)`
     bar.style.width = `${btn.offsetWidth}px`
     btn.scrollIntoView({ block: 'nearest', inline: 'nearest' })
-  }, [tab, open, lang])
+  }, [tab, open])
 
   useEffect(() => {
     if (!open) return
@@ -133,13 +132,6 @@ export function MenuPanel() {
             <div className="menu-panel__title">
               <strong>{t('Expedition')}</strong>
               <Where />
-            </div>
-            <div className="lang-switch" role="group" aria-label={t('Language')}>
-              {LANGS.map((l) => (
-                <button key={l.value} className={lang === l.value ? 'on' : ''} aria-pressed={lang === l.value} onClick={() => app().setSetting('lang', l.value)}>
-                  {l.value.toUpperCase()}
-                </button>
-              ))}
             </div>
             <button className="menu-close" aria-label={t('Close menu')} onClick={close}>
               <UiIcon name="close" />

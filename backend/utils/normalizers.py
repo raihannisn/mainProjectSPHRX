@@ -8,11 +8,11 @@ import re
 DUMMY_APOD = {
     "status": "ok",
     "fallback": True,
-    "message": "NASA APOD sedang berjalan dalam mode offline.",
+    "message": "NASA APOD is currently running in offline mode.",
     "source": "NASA Astronomy Picture of the Day (APOD) - Offline Archive",
     "title": "NASA APOD - Offline Mode",
     "date": "2026-11-15",
-    "explanation": "Layanan live NASA APOD saat ini sedang tidak dapat dijangkau dari server upstream (NASA Error 500). Sebagai gantinya, ditampilkan arsip observasi astronomi spektakuler Vela Molecular Ridge Nebula dari teleskop ruang angkasa SPHEREx dalam spektrum inframerah.",
+    "explanation": "The live NASA APOD service is currently unreachable (NASA Error 500). This archive image shows the Vela Molecular Ridge Nebula observed by the SPHEREx space telescope in infrared.",
     "media_type": "image",
     "image_url": "/spherex/vela.jpg",
     "article_url": "https://science.nasa.gov",

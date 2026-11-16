@@ -52,7 +52,7 @@ class AgentMessage(BaseModel):
 
 class AgentChatRequest(BaseModel):
     objectId: Optional[str] = Field(None, max_length=80)
-    lang: Literal["id", "en"] = "id"
+    lang: Literal["id", "en"] = "en"
     messages: List[AgentMessage] = Field(..., min_items=1, max_items=10)
 
     @validator("objectId")
@@ -76,7 +76,7 @@ class AgentChatRequest(BaseModel):
 
 class AgentLiveSessionRequest(BaseModel):
     objectId: Optional[str] = Field(None, max_length=80)
-    lang: Literal["id", "en"] = "id"
+    lang: Literal["id", "en"] = "en"
     messages: List[AgentMessage] = Field(default_factory=list, max_items=10)
 
     @validator("objectId")
@@ -94,13 +94,13 @@ class AgentLiveSessionRequest(BaseModel):
 
 class VoiceoverRequest(BaseModel):
     scriptId: Literal["welcome", "mission-introduction", "exploration-guidance"]
-    language: Literal["id", "en"]
+    language: Literal["en"] = "en"
     voicePreset: Literal["mission-liaison", "warm-guide"] = "mission-liaison"
 
 
 class AgentSpeechRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=500)
-    language: Literal["id", "en"]
+    language: Literal["en"] = "en"
     voicePreset: Literal["mission-liaison", "warm-guide"] = "mission-liaison"
 
     @validator("text")
@@ -118,7 +118,7 @@ def _check_agent_rate_limit(request: Request):
     if not agent_rate_limiter.allow(client_key):
         raise HTTPException(
             status_code=429,
-            detail="Batas permintaan Agent tercapai. Silakan coba kembali dalam satu menit.",
+            detail="The Agent request limit has been reached. Please try again in one minute.",
         )
 
 
@@ -127,13 +127,13 @@ def _check_live_session_rate_limit(request: Request):
     if not live_session_rate_limiter.allow(client_key):
         raise HTTPException(
             status_code=429,
-            detail="Batas pembuatan sesi suara tercapai. Tunggu satu menit sebelum mencoba lagi.",
+            detail="The voice session creation limit has been reached. Wait one minute before trying again.",
         )
 
 
 @router.get("/voiceover/scripts")
 def list_voiceover_scripts(
-    language: Literal["id", "en"] = Query("id"),
+    language: Literal["en"] = Query("en"),
 ):
     return {
         "success": True,
@@ -152,7 +152,7 @@ def create_agent_response(request: AgentChatRequest):
 
     message = generate_agent_response(
         messages=[item.model_dump() for item in request.messages],
-        language=request.lang,
+        language="en",
         object_id=request.objectId,
         object_record=object_record,
     )
@@ -183,24 +183,24 @@ async def transcribe_voice_input(
     if mime_type not in SUPPORTED_VOICE_MIME_TYPES:
         raise HTTPException(
             status_code=415,
-            detail="Format audio tidak didukung. Gunakan WebM, MP4, OGG, atau WAV.",
+            detail="Unsupported audio format. Use WebM, MP4, OGG, or WAV.",
         )
 
     content_length = request.headers.get("content-length")
     if content_length:
         try:
             if int(content_length) > MAX_VOICE_CLIP_BYTES:
-                raise HTTPException(status_code=413, detail="Audio terlalu besar. Batas maksimum 8 MB.")
+                raise HTTPException(status_code=413, detail="Audio is too large. The maximum size is 8 MB.")
         except ValueError as exc:
-            raise HTTPException(status_code=400, detail="Header panjang audio tidak valid.") from exc
+            raise HTTPException(status_code=400, detail="Invalid audio content-length header.") from exc
 
     audio = bytearray()
     async for chunk in request.stream():
         audio.extend(chunk)
         if len(audio) > MAX_VOICE_CLIP_BYTES:
-            raise HTTPException(status_code=413, detail="Audio terlalu besar. Batas maksimum 8 MB.")
+            raise HTTPException(status_code=413, detail="Audio is too large. The maximum size is 8 MB.")
     if not audio:
-        raise HTTPException(status_code=400, detail="Audio kosong. Silakan rekam ulang.")
+        raise HTTPException(status_code=400, detail="Audio is empty. Please record again.")
 
     transcript = await asyncio.to_thread(
         transcribe_audio,
@@ -231,7 +231,7 @@ async def create_live_voice_session(request: AgentLiveSessionRequest):
 
     session = await asyncio.to_thread(
         create_live_session_token,
-        request.lang,
+        "en",
         request.objectId,
         object_record,
     )

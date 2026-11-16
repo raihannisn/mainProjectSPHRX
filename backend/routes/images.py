@@ -18,7 +18,7 @@ def get_image_t1():
         return FileResponse(IMAGE_1, media_type="image/png", headers={"Cache-Control": "public, max-age=3600"})
     if os.path.exists(FALLBACK_1):
         return FileResponse(FALLBACK_1, media_type="image/png", headers={"Cache-Control": "public, max-age=3600"})
-    raise HTTPException(status_code=404, detail="Gambar T1 tidak ditemukan")
+    raise HTTPException(status_code=404, detail="T1 image not found.")
 
 
 @router.get("/t2")
@@ -27,4 +27,4 @@ def get_image_t2():
         return FileResponse(IMAGE_2, media_type="image/png", headers={"Cache-Control": "public, max-age=3600"})
     if os.path.exists(FALLBACK_2):
         return FileResponse(FALLBACK_2, media_type="image/png", headers={"Cache-Control": "public, max-age=3600"})
-    raise HTTPException(status_code=404, detail="Gambar T2 tidak ditemukan")
+    raise HTTPException(status_code=404, detail="T2 image not found.")

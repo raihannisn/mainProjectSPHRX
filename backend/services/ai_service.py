@@ -1,8 +1,8 @@
 import os
-import json
 import logging
 from pathlib import Path
 from dotenv import load_dotenv
+from fastapi import HTTPException
 
 # 1. Pastikan file .env dibaca dari berbagai kemungkinan lokasi (backend/.env, .env root, atau CWD)
 _SERVICES_DIR = Path(__file__).resolve().parent
@@ -29,7 +29,12 @@ logger = logging.getLogger(__name__)
 
 # Konfigurasi URL Gemini sesuai spesifikasi
 GEMINI_ENDPOINT_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent"
-FALLBACK_REPLY = "Maaf, Cosmic Guide sedang sibuk. Silakan coba lagi."
+if HAS_HTTPX:
+    TIMEOUT_ERRORS = (httpx.TimeoutException,)
+    REQUEST_ERRORS = (httpx.RequestError,)
+else:
+    TIMEOUT_ERRORS = (requests.Timeout,)
+    REQUEST_ERRORS = (requests.RequestException,)
 
 
 def _mask_api_key(text: str, key: str) -> str:
@@ -40,11 +45,7 @@ def _mask_api_key(text: str, key: str) -> str:
 
 
 async def get_gemini_chat_reply(message: str) -> str:
-    """Mengirim prompt pesan ke Google Gemini API (gemini-3.5-flash)
-    dan mengembalikan teks respons jawaban.
-    Jika terjadi kendala (API Key tidak ada, timeout, 503, dsb),
-    mengembalikan pesan fallback yang ramah pengguna.
-    """
+    """Send an English-only SPHEREx chat request to Google Gemini."""
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         for candidate_env in [
@@ -60,23 +61,32 @@ async def get_gemini_chat_reply(message: str) -> str:
                     break
 
     if not api_key:
-        logger.warning("GEMINI_API_KEY belum dikonfigurasi di file .env maupun environment variable.")
-        return FALLBACK_REPLY
+        logger.warning("GEMINI_API_KEY is not configured in the environment.")
+        raise HTTPException(
+            status_code=503,
+            detail="Cosmic Guide is not configured. Set GEMINI_API_KEY in the backend environment.",
+        )
 
     clean_message = (message or "").strip()
     if not clean_message:
-        return "Halo! Ada yang bisa saya bantu tentang SPHEREx, astronomi, atau eksplorasi kosmik?"
+        raise HTTPException(status_code=422, detail="Message must not be blank.")
 
-    # 1. URL dengan query parameter ?key=... (bukan di header)
-    target_url = f"{GEMINI_ENDPOINT_URL}?key={api_key}"
-
-    # 2. Header Content-Type: application/json
     headers = {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "x-goog-api-key": api_key,
     }
 
-    # 3. Format body request sesuai format Gemini: {"contents": [{"parts": [{"text": message}]}]}
+    target_url = GEMINI_ENDPOINT_URL
     payload = {
+        "systemInstruction": {
+            "parts": [{
+                "text": (
+                    "You are Cosmic Guide for the SPHEREx mission. Always answer in English, "
+                    "answer the user's latest question directly, and do not invent observations, "
+                    "measurements, or target-specific facts."
+                )
+            }]
+        },
         "contents": [
             {
                 "parts": [
@@ -90,45 +100,40 @@ async def get_gemini_chat_reply(message: str) -> str:
         if HAS_HTTPX:
             async with httpx.AsyncClient(timeout=60.0) as client:
                 response = await client.post(target_url, json=payload, headers=headers)
-                if response.status_code != 200:
-                    safe_err = _mask_api_key(response.text, api_key)
-                    logger.warning(f"Gemini API returned status {response.status_code}: {safe_err}")
-                    return FALLBACK_REPLY
-                result_json = response.json()
         else:
             response = requests.post(target_url, json=payload, headers=headers, timeout=60.0)
-            if response.status_code != 200:
-                safe_err = _mask_api_key(response.text, api_key)
-                logger.warning(f"Gemini API returned status {response.status_code}: {safe_err}")
-                return FALLBACK_REPLY
-            result_json = response.json()
+    except TIMEOUT_ERRORS as exc:
+        logger.warning("Gemini chat request timed out.")
+        raise HTTPException(status_code=504, detail="The Gemini chat request timed out.") from exc
+    except REQUEST_ERRORS as exc:
+        safe_msg = _mask_api_key(str(exc), api_key)
+        logger.error(f"Gemini chat connection error [{type(exc).__name__}]: {safe_msg}")
+        raise HTTPException(status_code=502, detail="Could not connect to the Gemini chat service.") from exc
 
-        candidates = result_json.get("candidates", [])
-        if not candidates:
-            return FALLBACK_REPLY
+    if response.status_code != 200:
+        safe_err = _mask_api_key(response.text, api_key)
+        logger.warning(f"Gemini API returned status {response.status_code}: {safe_err}")
+        raise HTTPException(status_code=502, detail="Gemini returned an error response.")
 
-        content = candidates[0].get("content", {})
-        parts = content.get("parts", [])
-        if not parts:
-            return FALLBACK_REPLY
+    try:
+        result_json = response.json()
+    except ValueError as exc:
+        raise HTTPException(status_code=502, detail="Gemini returned an unreadable response.") from exc
 
-        text_pieces = []
-        for part in parts:
-            if isinstance(part, dict):
-                t = part.get("text", "")
-                if t:
-                    text_pieces.append(t)
-
-        if text_pieces:
-            return "\n".join(text_pieces).strip()
-
-        direct_text = parts[0].get("text", "")
-        if direct_text:
-            return direct_text.strip()
-
-        return FALLBACK_REPLY
-
-    except Exception as e:
-        safe_msg = _mask_api_key(str(e), api_key)
-        logger.error(f"Error during Gemini API call [{type(e).__name__}]: {safe_msg}")
-        return FALLBACK_REPLY
+    if not isinstance(result_json, dict):
+        raise HTTPException(status_code=502, detail="Gemini returned an invalid response.")
+    candidates = result_json.get("candidates", [])
+    if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict):
+        raise HTTPException(status_code=502, detail="Gemini did not return a text answer.")
+    content = candidates[0].get("content", {})
+    parts = content.get("parts", []) if isinstance(content, dict) else []
+    if not isinstance(parts, list):
+        raise HTTPException(status_code=502, detail="Gemini did not return a text answer.")
+    text_pieces = [
+        part["text"]
+        for part in parts
+        if isinstance(part, dict) and isinstance(part.get("text"), str) and part["text"].strip()
+    ]
+    if not text_pieces:
+        raise HTTPException(status_code=502, detail="Gemini did not return a text answer.")
+    return "\n".join(text_pieces).strip()
