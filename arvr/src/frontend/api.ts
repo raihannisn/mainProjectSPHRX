@@ -5,7 +5,7 @@
 
 export const BASE_URL: string =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ||
-  ''
+  'https://nasa-spherex-backend.vercel.app'
 
 export const API_URL = BASE_URL
 
@@ -123,6 +123,9 @@ async function getJson<T>(path: string, timeoutMs: number, parse: Parser<T>): Pr
     const fullUrl = toApiUrl(path)
     const response = await fetch(fullUrl, { signal: AbortSignal.timeout(timeoutMs) })
     if (!response.ok) {
+      if (response.status === 502 || response.status === 503 || response.status === 504) {
+        throw new Error('Server arsip NASA sedang sibuk. Silakan coba beberapa saat lagi.')
+      }
       let detail = ''
       try {
         const body: unknown = await response.json()
@@ -130,11 +133,18 @@ async function getJson<T>(path: string, timeoutMs: number, parse: Parser<T>): Pr
       } catch {
         // The HTTP status remains useful when the error body is not JSON.
       }
+      if (detail.includes('<html') || detail.includes('<!DOCTYPE') || detail.includes('Bad Gateway')) {
+        throw new Error('Server arsip NASA sedang sibuk. Silakan coba beberapa saat lagi.')
+      }
       throw new Error(`HTTP ${response.status}${detail}`)
     }
     return { ok: true, data: parse(await response.json()) }
   } catch (error: unknown) {
-    return { ok: false, error: error instanceof Error ? error.message : String(error) }
+    const msg = error instanceof Error ? error.message : String(error)
+    if (msg.includes('502') || msg.includes('<html') || msg.includes('<!DOCTYPE') || msg.toLowerCase().includes('bad gateway')) {
+      return { ok: false, error: 'Server arsip NASA sedang sibuk. Silakan coba beberapa saat lagi.' }
+    }
+    return { ok: false, error: msg }
   }
 }
 
@@ -286,12 +296,34 @@ export const DEFAULT_RCW36_INFO: ObjectInfo = {
   source: 'IPAC IRSA SPHEREx QR3 Catalog',
 }
 
-export function fetchBackendObjectInfo(objectId: string): Promise<ApiResult<ObjectInfo>> {
-  return getJson(`/api/objects/${encodeURIComponent(objectId)}`, 6000, parseObjectInfo)
+export const DEFAULT_CATALOG: ObjectInfo[] = [
+  DEFAULT_RCW36_INFO,
+  {
+    id: 'vela-ridge',
+    name: 'Vela Molecular Ridge',
+    type: 'Giant Molecular Cloud Complex',
+    description:
+      'A massive interstellar molecular cloud complex in the southern sky containing active star-forming regions observed by SPHEREx.',
+    ra: 133.75,
+    dec: -44.0,
+    source: 'NASA IRSA / SPHEREx',
+  },
+]
+
+export async function fetchBackendObjectInfo(objectId: string): Promise<ApiResult<ObjectInfo>> {
+  const result = await getJson(`/api/objects/${encodeURIComponent(objectId)}`, 6000, parseObjectInfo)
+  if (result.ok) return result
+  const key = objectId.toLowerCase().trim()
+  if (key === 'rcw-36' || key === 'rcw' || key === 'rcw36') {
+    return { ok: true, data: DEFAULT_RCW36_INFO }
+  }
+  return result
 }
 
-export function fetchObjectCatalog(): Promise<ApiResult<ObjectInfo[]>> {
-  return getJson('/api/objects', 6000, parseObjectCatalog)
+export async function fetchObjectCatalog(): Promise<ApiResult<ObjectInfo[]>> {
+  const result = await getJson('/api/objects', 6000, parseObjectCatalog)
+  if (result.ok && result.data.length > 0) return result
+  return { ok: true, data: DEFAULT_CATALOG }
 }
 
 export async function fetchObjectInfo(objectId: string): Promise<ApiResult<ObjectInfo>> {
@@ -404,18 +436,15 @@ export async function requestAgentChat(
   lang: 'en' | 'id',
   timeoutMs = 45000,
 ): Promise<GuideReply> {
+  const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user')
+  const question = lastUserMsg?.content ?? ''
+  const contextPrefix = objectId ? `[Target: ${objectId}] ` : ''
+
   try {
-    const response = await fetch(toApiUrl('/api/agent/chat'), {
+    const response = await fetch(toApiUrl('/api/ai/chat'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        objectId,
-        lang,
-        messages: messages.slice(-10).map((message) => ({
-          role: message.role === 'assistant' ? 'bot' : 'user',
-          content: message.content,
-        })),
-      }),
+      body: JSON.stringify({ message: `${contextPrefix}${question}` }),
       signal: AbortSignal.timeout(timeoutMs),
     })
 
@@ -431,11 +460,14 @@ export async function requestAgentChat(
     }
 
     const body: unknown = await response.json()
-    if (isRecord(body) && body.success === true && isRecord(body.data)) {
-      const answer = body.data.message
-      if (typeof answer === 'string' && answer.trim()) {
-        return { ok: true, text: answer.trim() }
-      }
+    if (isRecord(body)) {
+      const answer =
+        typeof body.reply === 'string'
+          ? body.reply
+          : isRecord(body.data) && typeof body.data.message === 'string'
+            ? body.data.message
+            : ''
+      if (answer.trim()) return { ok: true, text: answer.trim() }
     }
     return { ok: false, error: 'The Agent returned an invalid or empty response.' }
   } catch (error: unknown) {

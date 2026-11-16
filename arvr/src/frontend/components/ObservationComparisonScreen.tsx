@@ -153,6 +153,7 @@ export function ObservationComparisonScreen() {
   const [aiDisplayedText, setAiDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
 
   // Fetch catalog object metadata
   useEffect(() => {
@@ -168,7 +169,19 @@ export function ObservationComparisonScreen() {
       if (!catalogResult.ok) {
         setCatalog([])
         setLoading(false)
-        setDataError(`Could not load the object catalog: ${catalogResult.error}`)
+        const rawErr = catalogResult.error || ''
+        const is502OrHtml =
+          rawErr.includes('502') ||
+          rawErr.includes('<html') ||
+          rawErr.includes('<!DOCTYPE') ||
+          rawErr.toLowerCase().includes('bad gateway') ||
+          rawErr.toLowerCase().includes('proxy error') ||
+          rawErr.includes('arsip NASA sedang sibuk')
+        if (is502OrHtml) {
+          setDataError('Server arsip NASA sedang sibuk. Silakan coba beberapa saat lagi.')
+        } else {
+          setDataError(`Could not load the object catalog: ${rawErr}`)
+        }
         return
       }
 
@@ -194,7 +207,19 @@ export function ObservationComparisonScreen() {
         if (!active) return
         setLoading(false)
         if (!observationsResult.ok) {
-          setDataError(`Could not search SPHEREx observations: ${observationsResult.error}`)
+          const rawErr = observationsResult.error || ''
+          const is502OrHtml =
+            rawErr.includes('502') ||
+            rawErr.includes('<html') ||
+            rawErr.includes('<!DOCTYPE') ||
+            rawErr.toLowerCase().includes('bad gateway') ||
+            rawErr.toLowerCase().includes('proxy error') ||
+            rawErr.includes('arsip NASA sedang sibuk')
+          if (is502OrHtml) {
+            setDataError('Server arsip NASA sedang sibuk. Silakan coba beberapa saat lagi.')
+          } else {
+            setDataError(`Could not search SPHEREx observations: ${rawErr}`)
+          }
           return
         }
 
@@ -215,7 +240,7 @@ export function ObservationComparisonScreen() {
     return () => {
       active = false
     }
-  }, [targetId, selectedObservationId])
+  }, [targetId, selectedObservationId, retryCount])
 
   const comparisonTargets = catalog.filter(
     (entry) => entry.id && entry.ra !== undefined && entry.dec !== undefined,
@@ -463,8 +488,26 @@ export function ObservationComparisonScreen() {
           </div>
         )}
         {!loading && dataError && (
-          <div className="fe-data-message fe-data-message-error" role="status">
-            {dataError}
+          <div className="fe-data-message fe-data-message-error" role="status" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', textAlign: 'center' }}>
+            <span>{dataError}</span>
+            <button
+              type="button"
+              className="fe-pill-button"
+              style={{
+                cursor: 'pointer',
+                background: 'rgba(79, 227, 214, 0.15)',
+                border: '1px solid rgba(79, 227, 214, 0.4)',
+                color: '#4fe3d6',
+                padding: '0.5rem 1.25rem',
+                borderRadius: '999px',
+                fontWeight: 600,
+                fontSize: '0.875rem',
+                transition: 'all 0.2s ease',
+              }}
+              onClick={() => setRetryCount((prev) => prev + 1)}
+            >
+              🔄 Coba Lagi
+            </button>
           </div>
         )}
 

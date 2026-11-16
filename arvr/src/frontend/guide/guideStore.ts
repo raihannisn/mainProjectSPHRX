@@ -1,5 +1,8 @@
 import { create } from 'zustand'
-import { requestAgentChat } from '../api'
+import { requestAgentChat, BASE_URL } from '../api'
+
+export { BASE_URL }
+export const API_URL = BASE_URL
 
 let requestGeneration = 0
 
