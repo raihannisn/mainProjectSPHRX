@@ -2,6 +2,14 @@
   "id": "moon",
   "name": "Moon",
   "type": "moon",
+  "description": {
+    "en": "Earth's Moon is a rocky natural satellite with an ancient, cratered surface. Its dark lunar maria are broad plains formed when lava filled impact basins.",
+    "id": "Bulan adalah satelit alami berbatu dengan permukaan tua yang penuh kawah. Dataran gelap maria terbentuk ketika lava mengisi cekungan tumbukan."
+  },
+  "source": {
+    "label": "NASA Science – Moon Facts",
+    "url": "https://science.nasa.gov/moon/facts/"
+  },
   "texture": "/textures/moon.jpg",
   "textureCredit": "NASA/GSFC/Arizona State University: LRO LROC colour map (NASA SVS CGI Moon Kit), public domain",
   "hotspots": [

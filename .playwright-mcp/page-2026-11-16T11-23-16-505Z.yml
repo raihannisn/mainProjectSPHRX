@@ -1,0 +1,84 @@
+- generic [ref=f8e1]:
+  - generic [ref=f8e387]:
+    - banner:
+      - generic [ref=f8e390]:
+        - link "S SPHEREx / COSMIC EXPEDITION" [ref=f8e391] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f8e392]: S
+          - generic [ref=f8e393]: SPHEREx / COSMIC EXPEDITION
+        - navigation "Main Navigation" [ref=f8e394]:
+          - link "Gateway" [ref=f8e395] [cursor=pointer]:
+            - /url: /
+          - link "Sky Explorer" [ref=f8e396] [cursor=pointer]:
+            - /url: /explorer
+          - link "Comparison" [ref=f8e397] [cursor=pointer]:
+            - /url: /comparison
+          - link "Cosmic Guide" [ref=f8e398] [cursor=pointer]:
+            - /url: /guide
+    - main [ref=f8e400]:
+      - generic [ref=f8e401]:
+        - generic [ref=f8e406]:
+          - generic [ref=f8e407]: 3D chart · not to scale
+          - heading "Solar System" [level=2] [ref=f8e409]
+          - paragraph [ref=f8e410]:
+            - generic [ref=f8e411]: Tap a planet to open it
+        - generic [ref=f8e412]:
+          - button "Reset view" [ref=f8e413] [cursor=pointer]: ⌖
+          - button "Recenter" [ref=f8e414] [cursor=pointer]: ◎
+          - button "Toggle audio off" [ref=f8e415] [cursor=pointer]: ♫
+          - button "Open Cosmic Guide" [ref=f8e416] [cursor=pointer]
+        - group "3D model controls" [ref=f8e423]:
+          - 'button "3D models. Showing Solar System. Next: Mars" [ref=f8e424] [cursor=pointer]': 3D
+        - generic [ref=f8e425]: DRAG TO TURN · SCROLL TO ZOOM
+      - generic [ref=f8e426]:
+        - generic [ref=f8e427]: 3D chart
+        - generic [ref=f8e428]: ILLUSTRATION
+      - complementary [ref=f8e429]:
+        - generic [ref=f8e430]:
+          - heading "Solar System" [level=2] [ref=f8e431]
+          - paragraph [ref=f8e432]: Tap a planet to open its 3D model here. Planets sit at today's real direction from the Sun; sizes and distances are not to scale.
+        - generic [ref=f8e434]:
+          - generic [ref=f8e435]:
+            - generic [ref=f8e436]: Object ID
+            - strong [ref=f8e437]: solar-system
+          - generic [ref=f8e438]:
+            - generic [ref=f8e439]: Classification
+            - strong [ref=f8e440]: Planetary system
+          - generic [ref=f8e441]:
+            - generic [ref=f8e442]: Bodies
+            - strong [ref=f8e443]: "11"
+          - generic [ref=f8e444]:
+            - generic [ref=f8e445]: Label
+            - strong [ref=f8e446]: Illustration
+        - generic [ref=f8e447]: "Source: JPL approximate planetary positions · NASA imagery"
+        - generic [ref=f8e448]:
+          - button "Ask the Guide" [ref=f8e449] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f8e451]: ↗
+          - button "Compare observations" [ref=f8e452] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f8e454]: →
+          - button "Enter 3D Table (XR)" [ref=f8e455] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f8e457]: ↗
+        - generic [ref=f8e458]:
+          - button "Exit to Gateway" [ref=f8e459] [cursor=pointer]
+          - button "Solar System Hub" [ref=f8e460] [cursor=pointer]
+  - dialog "Cosmic Guide" [ref=f8e560]:
+    - banner [ref=f8e561]:
+      - generic [ref=f8e569]:
+        - heading "Cosmic Guide" [level=1] [ref=f8e570]
+        - paragraph [ref=f8e571]: RCW 36 Emission Nebula
+      - button "Turn voice answers off" [pressed] [ref=f8e572]
+      - button "Close" [ref=f8e577]: ×
+    - status [ref=f8e578]:
+      - status [ref=f8e579]: Ask a question about RCW 36 Emission Nebula.
+    - generic [ref=f8e580]:
+      - button "SPHEREx Mission" [ref=f8e581]
+      - button "Water Ice Search" [ref=f8e582]
+      - button "Infrared All-Sky" [ref=f8e583]
+    - paragraph [ref=f8e584]:
+      - generic [ref=f8e585]: MISSION AGENT
+      - text: Answers use backend catalog records when available; missing data is not guessed.
+    - generic [ref=f8e586]:
+      - textbox "Question for Cosmic Guide" [active] [ref=f8e587]:
+        - /placeholder: Ask Cosmic Guide a question…
+      - button "Ask by voice" [ref=f8e588]
+      - button "Send" [disabled] [ref=f8e592]: ↗

@@ -1,0 +1,17 @@
+[  144269ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/status:1
+[  144270ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/objects/rcw-36:1
+[  144272ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/status:1
+[  144273ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/objects/rcw-36:1
+[  144337ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/spherex/observations?ra=134.8708&dec=-43.7533&radius=0.05&collection=all:1
+[  144417ms] [WARNING] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead. @ https://localhost:5173/node_modules/.vite/deps/chunk-RRWAP4QR.js?v=4579f38a:755
+[  157461ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/status:1
+[  157463ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/status:1
+[  163392ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/status:1
+[  163393ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/objects/rcw-36:1
+[  163394ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/status:1
+[  163470ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/objects/rcw-36:1
+[  163554ms] [WARNING] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead. @ https://localhost:5173/node_modules/.vite/deps/chunk-RRWAP4QR.js?v=4579f38a:755
+[  164920ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/spherex/observations?ra=134.8708&dec=-43.7533&radius=0.05&collection=all:1
+[  173605ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/objects/sun:1
+[  173674ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/agent/voiceover/text:1
+[  195513ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://localhost:5173/api/agent/chat:1

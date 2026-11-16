@@ -5,7 +5,7 @@
 
 export const BASE_URL: string =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ||
-  (import.meta.env.DEV ? '' : 'https://nasa-spherex-backend.vercel.app')
+  ''
 
 export const API_URL = BASE_URL
 
@@ -42,6 +42,9 @@ export interface ObjectInfo {
   dec?: number
   ra_hms?: string
   dec_dms?: string
+  coordinate_provenance?: string
+  constellation?: string
+  distance?: string
   source?: string
 }
 
@@ -171,8 +174,21 @@ function parseObjectInfo(value: unknown): ObjectInfo {
     dec: typeof value.dec === 'number' && Number.isFinite(value.dec) ? value.dec : undefined,
     ra_hms: typeof value.ra_hms === 'string' ? value.ra_hms : undefined,
     dec_dms: typeof value.dec_dms === 'string' ? value.dec_dms : undefined,
+    coordinate_provenance:
+      typeof value.coordinate_provenance === 'string' ? value.coordinate_provenance : undefined,
+    constellation: typeof value.constellation === 'string' ? value.constellation : undefined,
+    distance: typeof value.distance === 'string' ? value.distance : undefined,
     source: typeof value.source === 'string' ? value.source : undefined,
   }
+}
+
+function parseObjectCatalog(value: unknown): ObjectInfo[] {
+  if (!Array.isArray(value)) throw new Error('Invalid API response: expected object catalog list')
+  return value.map((item, index) => {
+    const object = parseObjectInfo(item)
+    if (!object.id) throw new Error(`Invalid API response: objects[${index}].id is missing`)
+    return object
+  })
 }
 
 function parseObservations(value: unknown): SpherexObservationsResponse {
@@ -272,6 +288,10 @@ export const DEFAULT_RCW36_INFO: ObjectInfo = {
 
 export function fetchBackendObjectInfo(objectId: string): Promise<ApiResult<ObjectInfo>> {
   return getJson(`/api/objects/${encodeURIComponent(objectId)}`, 6000, parseObjectInfo)
+}
+
+export function fetchObjectCatalog(): Promise<ApiResult<ObjectInfo[]>> {
+  return getJson('/api/objects', 6000, parseObjectCatalog)
 }
 
 export async function fetchObjectInfo(objectId: string): Promise<ApiResult<ObjectInfo>> {
@@ -485,7 +505,7 @@ export function requestAgentSpeech(text: string): Promise<ApiResult<Blob>> {
   return request
 }
 
-/** A slow or rate-limited provider returns an error so the caller can report it instead of switching voices. */
+/** Provider errors stay explicit so the caller can report them alongside any labeled browser-voice fallback. */
 const SPEECH_TIMEOUT_MS = 20000
 
 async function fetchAgentSpeech(text: string): Promise<ApiResult<Blob>> {

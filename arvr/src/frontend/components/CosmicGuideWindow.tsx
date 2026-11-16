@@ -29,14 +29,16 @@ const voiceInputLanguage: 'en' | 'id' =
 
 export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicGuideWindowProps) {
   const [open, setOpen] = useState(fullPage)
+  const [closing, setClosing] = useState(false)
   const [context, setContext] = useState(initialObjectId ?? '')
   const [draft, setDraft] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const panelRef = useRef<HTMLElement>(null)
   const threadRef = useRef<HTMLDivElement>(null)
   const returnFocusRef = useRef<HTMLElement | null>(null)
+  const closeTimerRef = useRef<number | null>(null)
   const { messages, loading, error, sendMessage, setGuideTarget } = useGuide()
-  const voice = useGuideSpeech(messages, open)
+  const voice = useGuideSpeech(messages, open && !closing)
   // Push-to-talk: the spoken question is sent as typed text would be, and its answer is read aloud
   const mic = useVoiceInput(voiceInputLanguage, (text) => {
     voice.speakNext()
@@ -44,12 +46,36 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
   })
   const micCancel = mic.cancel
   useEffect(() => {
-    if (!open) micCancel()
-  }, [open, micCancel])
+    if (!open || closing) micCancel()
+  }, [open, closing, micCancel])
+
+  const show = useCallback(() => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
+    setClosing(false)
+    setOpen(true)
+  }, [])
 
   const close = useCallback(() => {
-    setOpen(false)
+    if (!open || closing || fullPage) return
+    setClosing(true)
     returnFocusRef.current?.focus()
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setOpen(false)
+      setClosing(false)
+      return
+    }
+    closeTimerRef.current = window.setTimeout(() => {
+      setOpen(false)
+      setClosing(false)
+      closeTimerRef.current = null
+    }, 240)
+  }, [open, closing, fullPage])
+
+  useEffect(() => () => {
+    if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current)
   }, [])
 
   useEffect(() => {
@@ -63,7 +89,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
       const objectId = detail?.objectId?.trim()
       setGuideTarget(objectId ? { id: objectId, name: detail?.objectName?.trim() || objectId } : null)
       setDraft('')
-      setOpen(true)
+      show()
     }
     const openForXRRequest = (event: Event) => {
       const { body, hotspotId, guidePrompt } = (event as CustomEvent<GuideRequest>).detail
@@ -72,7 +98,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
       const objectId = body.trim()
       setGuideTarget(objectId ? { id: objectId, name: objectId } : null)
       setDraft(guidePrompt || '')
-      setOpen(true)
+      show()
     }
 
     window.addEventListener('cosmic:open-guide', openGuide)
@@ -81,7 +107,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
       window.removeEventListener('cosmic:open-guide', openGuide)
       window.removeEventListener(ASK_GUIDE_EVENT, openForXRRequest)
     }
-  }, [fullPage, setGuideTarget])
+  }, [fullPage, setGuideTarget, show])
 
   useEffect(() => {
     if (!fullPage) return
@@ -97,7 +123,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
   }, [messages, loading])
 
   useEffect(() => {
-    if (!open || fullPage) return
+    if (!open || closing || fullPage) return
     const frame = requestAnimationFrame(() => inputRef.current?.focus())
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') close()
@@ -112,7 +138,7 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
       document.removeEventListener('keydown', onKeyDown)
       document.removeEventListener('pointerdown', onPointerDown)
     }
-  }, [open, fullPage, close])
+  }, [open, closing, fullPage, close])
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -134,10 +160,12 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
 
   const panel = (
     <section
-      className={`cg-window${fullPage ? ' cg-window--page' : ''}`}
+      className={`cg-window${fullPage ? ' cg-window--page' : ''}${closing ? ' cg-window--closing' : ''}`}
       ref={panelRef}
       role={fullPage ? 'region' : 'dialog'}
       aria-modal={fullPage ? undefined : false}
+      aria-hidden={closing || undefined}
+      inert={closing}
       aria-labelledby="cg-title"
     >
       <header className="cg-head">

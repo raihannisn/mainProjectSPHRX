@@ -1,0 +1,14 @@
+{
+  "id": "saturn",
+  "name": "Saturn",
+  "type": "planet",
+  "description": {
+    "en": "Saturn is the sixth planet from the Sun and the second largest. This gas giant has a spectacular ring system made mostly of countless pieces of ice and rock.",
+    "id": "Saturnus adalah planet keenam dari Matahari dan terbesar kedua. Raksasa gas ini memiliki sistem cincin yang menonjol, sebagian besar tersusun dari banyak keping es dan batu."
+  },
+  "source": {
+    "label": "NASA Science – Saturn Facts",
+    "url": "https://science.nasa.gov/saturn/facts/"
+  },
+  "hotspots": []
+}

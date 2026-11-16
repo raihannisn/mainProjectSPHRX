@@ -214,7 +214,6 @@ export function TopBar() {
       aria-label={statusLabel}
       title={status?.message ?? (online ? 'API Online' : 'API Unavailable')}
     >
-      <i className={`fe-dot ${online ? '' : 'offline'}`} aria-hidden="true" />
       <span>{statusLabel}</span>
     </div>
   )

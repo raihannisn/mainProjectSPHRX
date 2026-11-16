@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo } from 'react'
+import { lazy, Suspense, useEffect, useMemo } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { XR } from '@react-three/xr'
@@ -7,9 +7,14 @@ import '../../xr/loading' // registers the /xr/ base-path URL modifier for textu
 import { BodyExplorer } from '../../xr/BodyExplorer'
 import { SolarSystemHub } from '../../xr/SolarSystemHub'
 import { BODY_BY_ID } from '../../xr/bodies'
+import { useSiteContent } from '../../xr/content'
 import { ErrorBoundary } from '../../xr/ErrorBoundary'
 import { useXRApp } from '../../xr/store'
 import { xrStore } from '../../xr/xrStore'
+
+const SurfaceScene = lazy(() =>
+  import('../../xr/surface/SurfaceScene').then((module) => ({ default: module.SurfaceScene })),
+)
 
 /** Bodies that have a 3D model + hotspot content in `arvr/content/bodies/`. */
 export const MODEL_BODIES = ['mars', 'moon', 'bennu'] as const
@@ -34,6 +39,8 @@ function FitCamera({ resetKey, radius = FRAME_RADIUS, lift = 0.18 }: { resetKey:
   const width = useThree((s) => s.size.width)
   const height = useThree((s) => s.size.height)
   useEffect(() => {
+    camera.near = 0.05
+    camera.far = 60
     const aspect = width / Math.max(1, height)
     const halfV = Math.tan(((FOV / 2) * Math.PI) / 180)
     const distance = Math.max(radius / halfV, radius / (halfV * aspect)) * 1.05
@@ -49,6 +56,20 @@ function FitCamera({ resetKey, radius = FRAME_RADIUS, lift = 0.18 }: { resetKey:
   return null
 }
 
+function FitSurfaceCamera({ siteId }: { siteId: string }) {
+  const camera = useThree((s) => s.camera)
+  const site = useSiteContent(siteId)
+
+  useEffect(() => {
+    if (!site) return
+    camera.near = 0.1
+    camera.far = site.terrain.viewRadius * 2
+    camera.updateProjectionMatrix()
+  }, [camera, site])
+
+  return null
+}
+
 function ViewerFallback({ label }: { label: string }) {
   return (
     <div className="model3d-fallback" role="status">
@@ -60,6 +81,8 @@ function ViewerFallback({ label }: { label: string }) {
 interface ModelViewer3DProps {
   /** a body id, or 'solar' for the Solar System chart (tap a planet to open it) */
   bodyId: string
+  /** a walkable content/sites ID; when set, the existing surface scene replaces the orbit model */
+  siteId?: string | null
   /** Bumped by the toolbar's reset/recentre buttons to re-frame the model. */
   resetKey: number
 }
@@ -68,7 +91,7 @@ interface ModelViewer3DProps {
  * The AR/VR app's body explorer (NASA-textured globe or shape model + hotspot pins) rendered inline
  * in the 2D Sky Explorer viewport. Desktop/touch only: immersive VR/AR stays in the `/xr` routes.
  */
-export function ModelViewer3D({ bodyId, resetKey }: ModelViewer3DProps) {
+export function ModelViewer3D({ bodyId, siteId = null, resetKey }: ModelViewer3DProps) {
   // Hotspot selection lives in the shared XR store; start clean for each body and clean up on leave,
   // so a pin picked here never leaks into the XR scene (or another body).
   useEffect(() => {
@@ -85,7 +108,7 @@ export function ModelViewer3D({ bodyId, resetKey }: ModelViewer3DProps) {
   )
 
   return (
-    <div className="model3d" data-model={bodyId}>
+    <div className="model3d" data-model={bodyId} data-site={siteId ?? undefined}>
       <ErrorBoundary fallback={<ViewerFallback label="3D view unavailable on this device (WebGL could not start)." />}>
         <Canvas
           className="model3d-canvas"
@@ -98,23 +121,31 @@ export function ModelViewer3D({ bodyId, resetKey }: ModelViewer3DProps) {
             <ambientLight intensity={0.32} />
             <directionalLight position={[4, 2.5, 5]} intensity={2.4} />
             <directionalLight position={[-5, -1, -3]} intensity={0.25} color="#7fa6ff" />
-            <FitCamera resetKey={resetKey} radius={bodyId === 'solar' ? 3.4 : FRAME_RADIUS} lift={bodyId === 'solar' ? 0.55 : 0.18} />
+            {siteId ? (
+              <FitSurfaceCamera siteId={siteId} />
+            ) : (
+              <FitCamera resetKey={resetKey} radius={bodyId === 'solar' ? 3.4 : FRAME_RADIUS} lift={bodyId === 'solar' ? 0.55 : 0.18} />
+            )}
             <Suspense fallback={null}>
-              {bodyId === 'solar' ? (
+              {siteId ? (
+                <SurfaceScene key={`${siteId}:${resetKey}`} siteId={siteId} mode="desktop" />
+              ) : bodyId === 'solar' ? (
                 <SolarSystemHub />
               ) : (
                 <BodyExplorer key={bodyId} id={bodyId} vr={false} showTitle={false} showObjectCard={false} />
               )}
             </Suspense>
-            <OrbitControls
-              key={resetKey}
-              makeDefault
-              enablePan={false}
-              enableDamping={!reduceMotion}
-              minDistance={2.2}
-              maxDistance={bodyId === 'solar' ? 30 : 12}
-              rotateSpeed={0.7}
-            />
+            {!siteId && (
+              <OrbitControls
+                key={resetKey}
+                makeDefault
+                enablePan={false}
+                enableDamping={!reduceMotion}
+                minDistance={2.2}
+                maxDistance={bodyId === 'solar' ? 30 : 12}
+                rotateSpeed={0.7}
+              />
+            )}
           </XR>
         </Canvas>
       </ErrorBoundary>

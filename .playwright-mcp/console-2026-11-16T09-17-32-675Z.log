@@ -1,0 +1,9 @@
+[    1430ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ https://localhost:5173/node_modules/.vite/deps/chunk-ZNK36WMM.js?v=4579f38a:21897
+[    1617ms] [WARNING] THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed. @ https://localhost:5173/node_modules/.vite/deps/chunk-RRWAP4QR.js?v=4579f38a:755
+[   20626ms] [WARNING] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead. @ https://localhost:5173/node_modules/.vite/deps/chunk-RRWAP4QR.js?v=4579f38a:755
+[   21126ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://localhost:5173/api/spherex/observations?ra=134.8708&dec=-43.7533&radius=0.05&collection=all:1
+[  316002ms] [WARNING] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead. @ https://localhost:5173/node_modules/.vite/deps/chunk-RRWAP4QR.js?v=4579f38a:755
+[  324259ms] [ERROR] Failed to load resource: the server responded with a status of 429 (Too Many Requests) @ https://localhost:5173/api/agent/voiceover/text:1
+[  767086ms] [WARNING] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead. @ https://localhost:5173/node_modules/.vite/deps/chunk-RRWAP4QR.js?v=4579f38a:755
+[  769238ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://localhost:5173/api/spherex/observations?ra=134.8708&dec=-43.7533&radius=0.05&collection=all:1
+[  770211ms] [ERROR] Failed to load resource: the server responded with a status of 429 (Too Many Requests) @ https://localhost:5173/api/agent/voiceover/text:1

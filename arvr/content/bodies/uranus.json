@@ -1,0 +1,14 @@
+{
+  "id": "uranus",
+  "name": "Uranus",
+  "type": "planet",
+  "description": {
+    "en": "Uranus is the seventh planet from the Sun and an ice giant. Its axis is tilted by about 98 degrees, so it rotates almost on its side and experiences extreme seasons.",
+    "id": "Uranus adalah planet ketujuh dari Matahari dan tergolong raksasa es. Sumbu rotasinya miring sekitar 98 derajat, sehingga planet ini berputar hampir menyamping dan mengalami musim yang ekstrem."
+  },
+  "source": {
+    "label": "NASA Science – Uranus Facts",
+    "url": "https://science.nasa.gov/uranus/facts/"
+  },
+  "hotspots": []
+}

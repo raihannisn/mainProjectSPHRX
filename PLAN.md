@@ -177,6 +177,21 @@ Every agent working on XR must first inspect the actual project source and curre
 **Verified from IRSA documentation:** archive source, data collections, SIA2 search capability, QR3 availability, FITS product format and broad scientific caveats.  
 **Not yet verified:** live JSON payloads returned by our backend, whether T1 and T2 are real SPHEREx files, whether both images cover the same sky coordinates, the observation timestamps/releases/detectors, frontend framework, XR browser/device compatibility, and existing state management.
 
+### 4.4 Verified XR body content and narration behavior
+
+The XR hub's selectable bodies are declared in `arvr/src/xr/bodies.ts`.
+Each listed body must have a matching sourced JSON record in
+`arvr/content/bodies/`, with English and Indonesian descriptions. The
+`arvr/scripts/check-content.mjs` build check reads the selectable IDs from
+that list and rejects missing descriptions or sources. Backend catalog records
+are optional for overview content: a missing catalog record must leave the
+bundled description available. A body can have no mapped hotspots; this is a
+valid empty state and must not be presented as missing overview information.
+Narration prefers backend-generated WAV speech and falls back to visibly
+identified browser speech when generated audio is unavailable. Neither the
+Gemini provider quota nor deployment availability is guaranteed by this local
+contract.
+
 ## 5. Product positioning and UX goal
 
 Working product descriptor: **SPHEREx Cosmic Explorer**.
@@ -284,6 +299,14 @@ Advanced, only when backend/data preparation supports it:
 - accessibility and responsive behavior
 - XR entry point and graceful fallback
 - no direct parsing of large raw FITS files unless deliberately benchmarked and approved
+
+#### XR body content and narration
+
+- Keep every selectable ID in `arvr/src/xr/bodies.ts` synchronized with a sourced local body record; automated coverage must derive from the selectable-body list rather than an unrelated hand-maintained subset.
+- Provide both English and Indonesian descriptions and a source link. Use the English description as the overview narration text unless the narration contract is explicitly expanded.
+- Treat hotspots as optional mapped content. Empty hotspots must not suppress the sourced overview description or narration; say when hotspots are not mapped.
+- Try the backend catalog and Agent narration, but retain local details if the catalog returns 404 or is unavailable. Prefer Gemini-generated audio, then use an explicitly labeled browser-speech fallback. Surface errors; do not silently claim the fallback is AI audio.
+- Verify the no-catalog and TTS-failure paths as well as a successful generated-audio path when provider access is available. Do not equate provider quota exhaustion with missing body content.
 
 ### 7.2 Backend responsibilities
 
@@ -454,7 +477,10 @@ A feature is not done merely because it renders once on the developer's laptop. 
 - no false scientific claim is made;
 - links/URL state reproduce the selected target and observation parameters;
 - integration errors are surfaced in a useful way;
-- a reviewer can trace an image back to its data source/product ID.
+- a reviewer can trace an image back to its data source/product ID;
+- every selectable XR body has a sourced local description checked by the build;
+- catalog 404s do not erase local details, and empty hotspots do not erase overview narration;
+- generated-speech failure either produces a clearly labeled browser-voice fallback or an explicit unavailable/error state.
 
 ## 11. Risks and explicit open questions
 

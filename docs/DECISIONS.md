@@ -33,6 +33,13 @@ Record decisions that affect more than one workstream. Newest decisions go first
 - **Reason:** A separate static 3D scene would not demonstrate the core SPHEREx temporal-comparison workflow.
 - **Impact:** XR integration depends on a stable observation ID/state handoff and must have a 2D fallback.
 
+## 2026-11-16 — Local sourced body content is the narration baseline
+
+- **Decision:** Every selectable XR body must have a sourced local overview description independent of backend catalog coverage; mapped hotspots are optional. Narration prefers Gemini TTS and must explicitly fall back to browser speech or an unavailable state.
+- **Reason:** Catalog coverage and provider quotas vary independently. Treating either as required for basic body information caused selectable bodies to show empty information/narration states.
+- **Alternatives considered:** Require backend records for every body, or treat an empty hotspot list as missing body content.
+- **Impact:** Keep body JSON aligned with the XR body list, enforce coverage in `check-content`, distinguish missing catalog/hotspots from missing overview content in UI, and document Agent/TTS errors separately from local content errors.
+
 ## Template for future decisions
 
 ```md

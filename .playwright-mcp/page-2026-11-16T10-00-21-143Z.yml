@@ -1,0 +1,150 @@
+- generic [ref=f6e3]:
+  - banner:
+    - generic [ref=f6e6]:
+      - link "S SPHEREx / COSMIC EXPEDITION" [ref=f6e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f6e8]: S
+        - generic [ref=f6e9]: SPHEREx / COSMIC EXPEDITION
+      - navigation "Main Navigation" [ref=f6e10]:
+        - link "Gateway" [ref=f6e11] [cursor=pointer]:
+          - /url: /
+        - link "Sky Explorer" [ref=f6e12] [cursor=pointer]:
+          - /url: /explorer
+        - link "Comparison" [ref=f6e13] [cursor=pointer]:
+          - /url: /comparison
+        - link "Cosmic Guide" [ref=f6e14] [cursor=pointer]:
+          - /url: /guide
+  - main [ref=f6e16]:
+    - generic [ref=f6e17]:
+      - generic [ref=f6e18]:
+        - generic [ref=f6e19]: Multi-epoch comparison · SPHEREx infrared archive
+        - heading "RCW 36 Emission Nebula" [level=1] [ref=f6e21]
+        - generic [ref=f6e22]:
+          - generic [ref=f6e23]: RA 08h 59m 29s
+          - generic [ref=f6e24]: ·
+          - generic [ref=f6e25]: DEC -43Â°45â€²12â€³
+          - generic [ref=f6e26]: ·
+          - generic [ref=f6e27]: Cloud C Vela Molecular Ridge
+          - generic [ref=f6e28]: ·
+          - generic [ref=f6e29]: Jarak ~700 pc (2.300 tc)
+      - generic [ref=f6e30]:
+        - button "← 3D Explorer" [ref=f6e31] [cursor=pointer]
+        - button "Enter 3D Table (XR)" [ref=f6e32] [cursor=pointer]: Enter 3D Table (XR)↗
+    - generic [ref=f6e33]:
+      - generic [ref=f6e34]:
+        - generic [ref=f6e35]:
+          - generic [ref=f6e36]:
+            - tablist "Mode perbandingan observasi" [ref=f6e37]:
+              - button "↔ Slider Pembanding" [active] [ref=f6e38] [cursor=pointer]
+              - button "✦ Kedipan (Blink)" [ref=f6e39] [cursor=pointer]
+              - button "◫ Berdampingan" [ref=f6e40] [cursor=pointer]
+            - generic [ref=f6e41]: ● LIVE ARCHIVE · 75.8% OVERLAP
+          - generic [ref=f6e162]:
+            - generic [ref=f6e163]:
+              - 'img "Observasi T2: 2026W23_2A_0030_2"'
+            - generic [ref=f6e164]:
+              - 'img "Observasi T1: 2025W22_2B_0536_1"'
+            - generic [ref=f6e165]: ● T1 · 28 Mei 2025 · 2.4489 µm
+            - generic [ref=f6e167]: ● T2 · 04 Jun 2026 · 2.4679 µm
+            - generic [ref=f6e169]:
+              - generic [ref=f6e170]: ◀
+              - generic [ref=f6e171]: ❚
+              - generic [ref=f6e172]: ▶
+            - generic [aria-hidden] [ref=f6e173]: "T1: 50% │ T2: 50%"
+          - generic [ref=f6e55]: DRAG THE SLIDER TO COMPARE T1 AND T2 IMAGES · SELECT BLINK FOR AUTOMATIC SWITCHING
+        - generic [ref=f6e56]:
+          - generic [ref=f6e57]:
+            - generic [ref=f6e58]: ● CATALOG TARGET
+            - generic [ref=f6e59]: ~700 pc (2.300 tc)
+          - heading "RCW 36 Emission Nebula" [level=3] [ref=f6e60]
+          - paragraph [ref=f6e61]: A compact star-forming H II emission nebula situated within Cloud C of the Vela Molecular Ridge. Ionized by massive embedded O/B stars and observed by SPHEREx across 96 infrared spectral channels.
+          - generic [ref=f6e62]:
+            - generic [ref=f6e63]:
+              - generic [ref=f6e64]: Object ID
+              - strong [ref=f6e65]: rcw-36
+            - generic [ref=f6e66]:
+              - generic [ref=f6e67]: Classification
+              - strong [ref=f6e68]: Emission Nebula / H II Region
+            - generic [ref=f6e69]:
+              - generic [ref=f6e70]: Right Ascension
+              - strong [ref=f6e71]: RA 08h 59m 29s
+            - generic [ref=f6e72]:
+              - generic [ref=f6e73]: Declination
+              - strong [ref=f6e74]: DEC -43Â°45â€²12â€³
+            - generic [ref=f6e75]:
+              - generic [ref=f6e76]: Bandpass Overlap
+              - strong [ref=f6e77]: 75.8% (CWAVE/CBAND)
+            - generic [ref=f6e78]:
+              - generic [ref=f6e79]: Catalog Source
+              - strong [ref=f6e80]: NASA ADS / SIMBAD Gum 20 / IPAC IRSA SPHEREx QR3 Catalog
+      - generic [ref=f6e81]:
+        - article [ref=f6e82]:
+          - generic [ref=f6e83]:
+            - generic [ref=f6e84]: ● OBSERVATION T1 (DR1)
+            - generic [ref=f6e85]: 2025-05-28 14:12:08 UTC
+          - heading "2025W22_2B_0536_1" [level=3] [ref=f6e86]
+          - generic [ref=f6e87]:
+            - generic [ref=f6e88]:
+              - generic [ref=f6e89]: Panjang Gelombang (λ)
+              - strong [ref=f6e90]: 2.4489 µm
+            - generic [ref=f6e91]:
+              - generic [ref=f6e92]: Bandwidth
+              - strong [ref=f6e93]: 0.0602 µm
+            - generic [ref=f6e94]:
+              - generic [ref=f6e95]: Detektor
+              - strong [ref=f6e96]: SPHEREx-D4
+            - generic [ref=f6e97]:
+              - generic [ref=f6e98]: Quality Flag
+              - strong [ref=f6e99]: Bit 21 (SOURCE Detected)
+          - link "↓ Unduh FITS (Level 2)" [ref=f6e101] [cursor=pointer]:
+            - /url: https://irsa.ipac.caltech.edu/ibe/data/spherex/dr1/level2/2025W22_2B/l2b-v27-2026-200/4/level2_2025W22_2B_0536_1D4_spx_l2b-v27-2026-200.fits
+            - text: ↓ Unduh FITS (Level 2)↗
+        - article [ref=f6e102]:
+          - generic [ref=f6e103]:
+            - generic [ref=f6e104]: ● OBSERVATION T2 (QR3)
+            - generic [ref=f6e105]: 2026-06-04 09:30:45 UTC
+          - heading "2026W23_2A_0030_2" [level=3] [ref=f6e106]
+          - generic [ref=f6e107]:
+            - generic [ref=f6e108]:
+              - generic [ref=f6e109]: Panjang Gelombang (λ)
+              - strong [ref=f6e110]: 2.4679 µm
+            - generic [ref=f6e111]:
+              - generic [ref=f6e112]: Bandwidth
+              - strong [ref=f6e113]: 0.0691 µm
+            - generic [ref=f6e114]:
+              - generic [ref=f6e115]: Detektor
+              - strong [ref=f6e116]: SPHEREx-D4
+            - generic [ref=f6e117]:
+              - generic [ref=f6e118]: Quality Flag
+              - strong [ref=f6e119]: Bit 21 (SOURCE Detected)
+          - link "↓ Unduh FITS (Level 2)" [ref=f6e121] [cursor=pointer]:
+            - /url: https://irsa.ipac.caltech.edu/ibe/data/spherex/qr3/level2/2026W23_2A/l2b-v27-2026-200/4/level2_2026W23_2A_0030_2D4_spx_l2b-v27-2026-200.fits
+            - text: ↓ Unduh FITS (Level 2)↗
+        - article [ref=f6e122]:
+          - generic [ref=f6e123]:
+            - generic [ref=f6e124]: ✦ Cosmic Guide AI Assistant
+            - generic [ref=f6e125]: ● LIVE GEMINI
+          - generic [ref=f6e126]:
+            - button "Beda T1 vs T2?" [ref=f6e127] [cursor=pointer]
+            - button "Pergeseran Filter?" [ref=f6e128] [cursor=pointer]
+            - button "Protobintang RCW 36?" [ref=f6e129] [cursor=pointer]
+          - generic [ref=f6e130]:
+            - textbox "Ask about spectral variability or astrophysics..." [ref=f6e131]
+            - button "Send ↗" [disabled] [ref=f6e132] [cursor=pointer]
+    - generic [ref=f6e133]:
+      - generic [ref=f6e134]:
+        - generic [ref=f6e135]: ⚖
+        - strong [ref=f6e136]: Scientific Integrity Disclosures
+      - generic [ref=f6e137]:
+        - paragraph [ref=f6e138]:
+          - text: •
+          - strong [ref=f6e139]: Photometric Notice
+          - text: ": Visual preview only; not calibrated for quantitative photometry. Validated astrophysical variability or proper motion requires PSF aperture photometry on unresampled Level 2 images."
+        - paragraph [ref=f6e140]:
+          - text: •
+          - strong [ref=f6e141]: Bandpass Overlap
+          - text: ": Geometric bandpass overlap is derived from authoritative CWAVE/CBAND parameters (75.8% narrower filter, 54.6% IoU). WCS-WAVE serves as visualization fallback (74.6% narrower filter, 52.6% IoU)."
+        - paragraph [ref=f6e142]:
+          - text: •
+          - strong [ref=f6e143]: Quality Flag
+          - text: ": Level 2 quality flag status applies to the sampled pixel only. Bit 21 (SOURCE) indicates detected source presence without asserting detector-wide flag absence."

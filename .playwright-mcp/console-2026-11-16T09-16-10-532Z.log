@@ -1,0 +1,2 @@
+[    1340ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ https://localhost:5173/node_modules/.vite/deps/chunk-ZNK36WMM.js?v=4579f38a:21897
+[    1838ms] [WARNING] THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed. @ https://localhost:5173/node_modules/.vite/deps/chunk-RRWAP4QR.js?v=4579f38a:755

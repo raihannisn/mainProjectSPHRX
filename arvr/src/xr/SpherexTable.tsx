@@ -170,10 +170,10 @@ export function SpherexTable({ mode }: { mode: ViewMode }) {
   const choiceOptions = useMemo(() => {
     const list: { value: string; label: string }[] = []
     if (obsIdB) {
-      list.push({ value: 'live-compare', label: `● ${t('Live Comparison (A / B)')}` })
+      list.push({ value: 'live-compare', label: t('Live Comparison (A / B)') })
     }
     if (obsIdA) {
-      list.push({ value: 'live-obs', label: `● ${t('Live Obs')}: ${obsIdA.slice(0, 12)}` })
+      list.push({ value: 'live-obs', label: `${t('Live Obs')}: ${obsIdA.slice(0, 12)}` })
     }
     list.push({ value: 'blink', label: `${t('Spot what moved')} (Curated)` })
     for (const img of IMAGES) {
@@ -213,7 +213,7 @@ export function SpherexTable({ mode }: { mode: ViewMode }) {
         {view === 'live-obs' && (
           <>
             <Text font={FONT_BOLD} position={[-PW / 2 + 0.08, H / 2 - 0.08, 0.006]} fontSize={0.085} color="#4fe3d6" outlineWidth={0.005} outlineColor="#000" anchorX="left" anchorY="top">
-              {`● LIVE NASA ARCHIVE · ${obsDataA?.observation_id || obsIdA || 'SPHEREx'}`}
+              {`LIVE NASA ARCHIVE · ${obsDataA?.observation_id || obsIdA || 'SPHEREx'}`}
             </Text>
             <Text font={FONT_BOLD} position={[PW / 2 - 0.08, H / 2 - 0.08, 0.006]} fontSize={0.08} color="#38bdf8" outlineWidth={0.005} outlineColor="#000" anchorX="right" anchorY="top">
               {obsDataA?.effective_wavelength_at_target || band || ''}
@@ -226,8 +226,8 @@ export function SpherexTable({ mode }: { mode: ViewMode }) {
           <>
             <Text font={FONT_BOLD} position={[-PW / 2 + 0.08, H / 2 - 0.08, 0.006]} fontSize={0.085} color={liveFrame === 0 ? '#4fe3d6' : '#f5ae43'} outlineWidth={0.005} outlineColor="#000" anchorX="left" anchorY="top">
               {liveFrame === 0
-                ? `● LIVE A · ${obsDataA?.observation_id || obsIdA || 'Epoch 1'}`
-                : `● LIVE B · ${obsDataB?.observation_id || obsIdB || 'Epoch 2'}`}
+                ? `LIVE A · ${obsDataA?.observation_id || obsIdA || 'Epoch 1'}`
+                : `LIVE B · ${obsDataB?.observation_id || obsIdB || 'Epoch 2'}`}
             </Text>
             <Text font={FONT_BOLD} position={[PW / 2 - 0.08, H / 2 - 0.08, 0.006]} fontSize={0.08} color="#38bdf8" outlineWidth={0.005} outlineColor="#000" anchorX="right" anchorY="top">
               {liveFrame === 0 ? obsDataA?.effective_wavelength_at_target || '' : obsDataB?.effective_wavelength_at_target || ''}

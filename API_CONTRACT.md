@@ -22,11 +22,51 @@ https://nasa-spherex-backend.vercel.app/docs
 | GET | `/api/image/t2` | none documented | Get Image T2 | Unknown response shape; source/time/coordinates unconfirmed |
 | GET | `/api/metadata/fits` | none documented | Get FITS Metadata | Unknown fields and source FITS file |
 | GET | `/api/objects/{object_id}` | required string path parameter `object_id` | Get Object Info | Object catalog/source and returned fields unconfirmed |
+| GET | `/api/objects` | none | List canonical object catalog records | Source-verified local route; aliases are deduplicated and each record includes `id`; coordinates may be absent |
 | GET | `/api/nasa/apod` | none documented | NASA APOD | Description says static/dummy JSON may be returned when NASA API fails |
 | GET | `/api/nasa/neows` | none documented | NASA NeoWs normalized feed | Not SPHEREx image data |
 | GET | `/api/status` | none documented | Service status | Unknown response shape |
 | GET | `/` | none documented | Root | System route |
 | GET | `/mission-control` | none documented | Mission Control & API Test Bench HTML page | Not a JSON data contract |
+
+### 2.1 Additional Agent and narration routes verified from FastAPI source
+
+These routes are implemented in `backend/routes/agent.py` but were absent from
+the supplied OpenAPI snapshot. This is a source-verified local contract; it
+does not by itself confirm that a production deployment has the same version.
+
+| Method | Path | Request | Success response | Error behavior |
+|---|---|---|---|---|
+| POST | `/api/agent/chat` | `{ "objectId"?: string, "lang": "id" \| "en", "messages": [{ "role": "user" \| "bot", "content": string }] }`; 1–10 messages, each 1–500 chars; final role must be `user` | `{ "success": true, "data": { "message": string, "sources": [...] } }` | Unknown object IDs are tolerated; chat can answer without a catalog record. Request validation returns 422. |
+| POST | `/api/agent/voiceover/text` | `{ "text": string, "language": "en", "voicePreset": "mission-liaison" \| "warm-guide" }`; nonblank text, max 500 chars | WAV bytes with `audio/wav` content type | 422 for invalid input; 503 when `GEMINI_API_KEY` is not configured; 429 for the Agent limiter or Gemini usage limit; 502 for provider/network errors; 504 for provider timeout. |
+
+The chat request accepts `lang` for compatibility, but current backend
+generation is English-only. The TTS route also only accepts English. The
+Agent chat and text-to-speech routes share an in-memory limit of 20 requests
+per client IP per 60 seconds; Gemini may impose separate usage limits. A 429
+is therefore not evidence that local body content is missing.
+
+For XR narration, `GET /api/objects/{object_id}` may return 404 when the
+backend catalog has no record. The frontend must then use the corresponding
+bundled `arvr/content/bodies/{id}.json` description and source; catalog
+availability is not a prerequisite for overview narration. The frontend
+prefers Agent-generated WAV audio, then uses browser speech synthesis when the
+request or audio playback fails. It must label this as browser voice and show
+the AI-voice failure status rather than presenting it as Gemini audio. No
+available local description means narration is unavailable, not fabricated.
+
+### 2.2 Object catalog list
+
+`GET /api/objects` returns the canonical records in `backend/kamus_object.json`
+as an array. Catalog aliases that declare the same `id` are returned once.
+Records without numeric `ra` and `dec` remain in the response but are not
+eligible for archive comparison. The frontend must not substitute another
+target's coordinates or images when a record lacks coordinates.
+
+Every ID in the XR `BODIES` list must have a matching local JSON record with
+English and Indonesian descriptions and a source `{label,url}`. Hotspots are
+optional: an empty hotspot list is valid and must be described as “not mapped,”
+not as a failure of overview content or narration.
 
 ## 3. What frontend can safely assume today
 
@@ -149,6 +189,10 @@ The sample values are placeholders, not real observation records.
 - Components should not know raw IRSA SIA2/VOTable/FITS field names.
 - Handle empty arrays as a normal no-results state.
 - Handle upstream timeouts and partial records.
+- Comparison target choices come from `/api/objects` and are restricted to
+  records with numeric coordinates. Build each image pair from that target's
+  SPHEREx search results, ordered by `observed_at_utc`; do not reuse the RCW 36
+  sample images for another target.
 - Preserve timestamps in UTC internally; localize only for display and always identify the timezone.
 - Never expose private API keys in browser code.
 - Prefer backend-served preview/cutout URLs rather than downloading full MEF FITS into the browser.
@@ -182,3 +226,5 @@ Every image visible in the application should be traceable to:
 | Date | Change | Evidence | Owner |
 |---|---|---|---|
 | 2026-11-09 | Initial provisional contract from supplied OpenAPI | Project owner-provided OpenAPI 3.1.0, API v1.1.0 | Project owner |
+| 2026-11-16 | Added source-verified Agent chat/TTS contract and XR body-content fallback behavior; production deployment remains unverified | `backend/routes/agent.py`, `backend/services/gemini_tts_provider.py`, `arvr/src/xr/useAgentNarration.ts` | Project team |
+| 2026-11-16 | Added the canonical object-catalog list route and target-specific comparison rules | `backend/routes/objects.py`, `backend/services/object_service.py`, `arvr/src/frontend/components/ObservationComparisonScreen.tsx` | Project team |

@@ -125,16 +125,20 @@ class AgentServiceTests(unittest.TestCase):
         self.assertEqual(generate.call_args.args[1], SYSTEM_INSTRUCTIONS["en"])
         self.assertIn("Always answer in English", generate.call_args.args[1])
 
-    def test_agent_instructions_clarify_a_target_that_conflicts_with_selection(self):
+    def test_agent_instructions_answer_about_a_named_body_outside_the_selection(self):
         instruction = build_agent_system_instruction(
             "en",
             "rcw-36",
             {"name": "RCW 36 Emission Nebula"},
         )
 
-        self.assertIn("YouTube 36", instruction)
-        self.assertIn("do not silently substitute the selected object", instruction)
-        self.assertIn("briefly ask whether they meant that object or another one", instruction)
+        self.assertIn("selected-object context is a hint, not a restriction", instruction)
+        self.assertIn("answer about that named body using general astronomy knowledge", instruction)
+        self.assertIn("a missing record is not a reason to refuse general facts", instruction)
+        self.assertIn("Indonesian 'Neptunus' means Neptune", instruction)
+        self.assertIn("Do not ask whether the user meant the selected object", instruction)
+        self.assertIn("genuinely unrecognized or ambiguous target", instruction)
+        self.assertIn("silently substituting the current selection", instruction)
         self.assertIn("source label is not a verified citation", instruction)
 
     def test_unknown_object_observation_question_gets_general_only_guidance(self):

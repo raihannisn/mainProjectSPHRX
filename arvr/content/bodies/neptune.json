@@ -1,0 +1,14 @@
+{
+  "id": "neptune",
+  "name": "Neptune",
+  "type": "planet",
+  "description": {
+    "en": "Neptune is the eighth and most distant planet from the Sun. A year there lasts about 165 Earth years, and its atmosphere is swept by extremely fast winds.",
+    "id": "Neptunus adalah planet kedelapan dan terjauh dari Matahari. Satu tahunnya berlangsung sekitar 165 tahun Bumi, dan atmosfernya dilanda angin yang sangat cepat."
+  },
+  "source": {
+    "label": "NASA Science – Neptune Facts",
+    "url": "https://science.nasa.gov/neptune/neptune-facts/"
+  },
+  "hotspots": []
+}

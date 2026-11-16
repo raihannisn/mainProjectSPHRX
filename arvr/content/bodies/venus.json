@@ -1,0 +1,14 @@
+{
+  "id": "venus",
+  "name": "Venus",
+  "type": "planet",
+  "description": {
+    "en": "Venus is the second planet from the Sun and the hottest in the solar system. Its dense atmosphere traps heat, giving the surface temperatures around 467 degrees Celsius.",
+    "id": "Venus adalah planet kedua dari Matahari dan planet terpanas di tata surya. Atmosfernya yang padat memerangkap panas sehingga suhu permukaannya sekitar 467 derajat Celsius."
+  },
+  "source": {
+    "label": "NASA Science – Venus Facts",
+    "url": "https://science.nasa.gov/venus/venus-facts/"
+  },
+  "hotspots": []
+}

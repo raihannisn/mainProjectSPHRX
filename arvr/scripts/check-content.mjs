@@ -1,16 +1,24 @@
-// Fails (exit 1) if any hotspot in content/bodies or content/sites is missing a source or breaks the schema limits.
+// Fails (exit 1) if body narration coverage or hotspot content is incomplete or invalid.
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'content')
+const appRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
+const root = join(appRoot, 'content')
 const dir = join(root, 'bodies')
 const siteDir = join(root, 'sites')
 const siteIds = new Set(readdirSync(siteDir).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)))
+const bodiesModule = readFileSync(join(appRoot, 'src', 'xr', 'bodies.ts'), 'utf8')
+const bodiesMatch = bodiesModule.match(/export const BODIES: BodyInfo\[\] = \[([\s\S]*?)\n\]/)
 const KINDS = new Set(['fact', 'illustration', 'candidate'])
 const words = (s) => String(s ?? '').trim().split(/\s+/).filter(Boolean).length
 const errors = []
+const bodyRecords = new Map()
 let count = 0
+
+if (!bodiesMatch) errors.push('src/xr/bodies.ts: could not read the BODIES list')
+const narrationBodyIds = [...(bodiesMatch?.[1] ?? '').matchAll(/\bid:\s*'([^']+)'/g)].map(([, id]) => id)
+if (!narrationBodyIds.length) errors.push('src/xr/bodies.ts: the BODIES list has no readable body IDs')
 
 const files = [
   ...readdirSync(dir).filter((f) => f.endsWith('.json')).map((f) => ({ file: f, path: join(dir, f), site: false })),
@@ -24,6 +32,7 @@ for (const { file, path, site } of files) {
     errors.push(`${file}: invalid JSON (${e.message})`)
     continue
   }
+  if (!site && typeof body.id === 'string') bodyRecords.set(body.id, body)
   const ids = new Set()
   for (const [i, h] of (body.hotspots ?? []).entries()) {
     const at = `${file} hotspot[${i}] ${h.id ?? '(no id)'}`
@@ -49,6 +58,23 @@ for (const { file, path, site } of files) {
       if (!site) errors.push(`${at}: site anchors are only allowed in content/sites`)
       if (typeof a.x !== 'number' || typeof a.z !== 'number') errors.push(`${at}: site anchor needs numeric x/z (metres)`)
     } else errors.push(`${at}: anchor.type must be latlon|mesh|site`)
+  }
+}
+
+for (const id of narrationBodyIds) {
+  const body = bodyRecords.get(id)
+  if (!body) {
+    errors.push(`bodies/${id}.json: required body content is missing`)
+    continue
+  }
+  if (typeof body.description?.en !== 'string' || !body.description.en.trim()) {
+    errors.push(`bodies/${id}.json: English narration description is required`)
+  }
+  if (typeof body.description?.id !== 'string' || !body.description.id.trim()) {
+    errors.push(`bodies/${id}.json: Indonesian description is required`)
+  }
+  if (!body.source?.label || !/^https?:\/\//.test(body.source.url ?? '')) {
+    errors.push(`bodies/${id}.json: source {label,url} is required`)
   }
 }
 

@@ -52,7 +52,7 @@ export function InfoCardPanel() {
   return (
     <aside className="info-card" role="dialog" aria-label={h.title}>
       <div className="info-card__top">
-        <span className="kind-tag" style={{ borderColor: KIND_COLORS[h.kind], color: KIND_COLORS[h.kind] }}>
+        <span className="kind-tag" style={{ color: KIND_COLORS[h.kind] }}>
           {t(KIND_LABEL[h.kind])}
         </span>
         <button className="icon-btn" aria-label={t('Close')} onClick={() => useXRApp.getState().selectHotspot(null)}>

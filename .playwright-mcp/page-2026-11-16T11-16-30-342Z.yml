@@ -1,0 +1,52 @@
+- generic [ref=f6e125]:
+  - banner:
+    - generic [ref=f6e128]:
+      - link "S SPHEREx / COSMIC EXPEDITION" [ref=f6e129] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f6e130]: S
+        - generic [ref=f6e131]: SPHEREx / COSMIC EXPEDITION
+      - navigation "Main Navigation" [ref=f6e132]:
+        - link "Gateway" [ref=f6e133] [cursor=pointer]:
+          - /url: /
+        - link "Sky Explorer" [ref=f6e134] [cursor=pointer]:
+          - /url: /explorer
+        - link "Comparison" [ref=f6e135] [cursor=pointer]:
+          - /url: /comparison
+        - link "Cosmic Guide" [ref=f6e136] [cursor=pointer]:
+          - /url: /guide
+  - main [ref=f6e138]:
+    - generic [ref=f6e139]:
+      - generic [ref=f6e140]:
+        - generic [ref=f6e141]: Multi-epoch comparison · SPHEREx infrared archive
+        - heading "RCW 36 Emission Nebula" [level=1] [ref=f6e142]
+        - generic [ref=f6e143]:
+          - generic [ref=f6e144]: RA 08h 59m 29s
+          - generic [ref=f6e145]: ·
+          - generic [ref=f6e146]: DEC -43°45′12″
+          - generic [ref=f6e147]: ·
+          - generic [ref=f6e148]: Vela
+          - generic [ref=f6e149]: ·
+          - generic [ref=f6e150]: ~700 pc
+        - generic [ref=f6e151]:
+          - text: Comparison target
+          - combobox "Choose a catalog target for comparison" [ref=f6e152] [cursor=pointer]:
+            - option "RCW 36 Emission Nebula · Emission Nebula / H II Region" [selected]
+            - option "Vela Molecular Ridge · Giant Molecular Cloud Complex"
+      - generic [ref=f6e153]:
+        - button "← 3D Explorer" [ref=f6e154] [cursor=pointer]
+        - button "Enter 3D Table (XR)" [ref=f6e155] [cursor=pointer]: Enter 3D Table (XR)↗
+    - status [ref=f6e156]: Searching the catalog and SPHEREx archive…
+    - generic [ref=f6e159]:
+      - generic [ref=f6e160]:
+        - generic [ref=f6e161]: ⚖
+        - strong [ref=f6e162]: Scientific Integrity Disclosures
+      - generic [ref=f6e163]:
+        - paragraph [ref=f6e164]:
+          - strong [ref=f6e165]: Photometric Notice
+          - text: ": Visual preview only; not calibrated for quantitative photometry. Validated astrophysical variability or proper motion requires PSF aperture photometry on unresampled Level 2 images."
+        - paragraph [ref=f6e166]:
+          - strong [ref=f6e167]: Epoch pairing
+          - text: ": The displayed pair uses the same detector and the earliest/latest valid UTC timestamps returned for the selected target. Wavelengths can differ; check each epoch’s metadata before interpreting visual changes."
+        - paragraph [ref=f6e168]:
+          - strong [ref=f6e169]: Quality flags
+          - text: ": Values shown come from each archive record. A visual comparison is not registered, normalized, or calibrated for quantitative photometry."

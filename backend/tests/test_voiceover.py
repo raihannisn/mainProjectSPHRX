@@ -136,18 +136,18 @@ class VoiceoverServiceTests(unittest.TestCase):
         self.assertEqual(result, b"wav")
         synthesize.assert_called_once_with(
             text="Welcome to the SPHEREx Explorer. I am a digital guide here to help you understand the information available. I am not an official NASA spokesperson.",
-            voice="Kore",
+            voice="Nika",
             style="warm, clear, and approachable narration",
         )
 
-    def test_chat_spoken_text_uses_the_supported_kore_voice(self):
+    def test_chat_spoken_text_uses_the_mission_liaison_voice(self):
         with patch("services.voiceover_service.synthesize_speech", return_value=b"wav") as synthesize:
             result = generate_spoken_text("Hello from Cosmic Guide.", "en", "mission-liaison")
 
         self.assertEqual(result, b"wav")
         synthesize.assert_called_once_with(
             text="Hello from Cosmic Guide.",
-            voice="Kore",
+            voice="Nika",
             style="warm, clear, and approachable narration",
         )
 

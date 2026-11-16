@@ -1,0 +1,14 @@
+{
+  "id": "mercury",
+  "name": "Mercury",
+  "type": "planet",
+  "description": {
+    "en": "Mercury is the smallest planet and the closest to the Sun. It completes an orbit in 88 Earth days, while its thin exosphere allows extreme temperature swings between day and night.",
+    "id": "Merkurius adalah planet terkecil dan terdekat dari Matahari. Satu orbitnya berlangsung 88 hari Bumi, sementara eksosfernya yang sangat tipis menyebabkan perbedaan suhu siang dan malam yang ekstrem."
+  },
+  "source": {
+    "label": "NASA Science – Mercury Facts",
+    "url": "https://science.nasa.gov/mercury/facts/"
+  },
+  "hotspots": []
+}

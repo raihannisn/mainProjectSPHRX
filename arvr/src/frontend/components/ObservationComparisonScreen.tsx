@@ -3,11 +3,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
-  fetchObjectInfo,
+  fetchObjectCatalog,
   requestGuideReply,
-  toApiUrl,
   type ObjectInfo,
   type SpherexObservation,
+  searchSpherexObservations,
 } from '../api'
 import { TopBar } from './TopBar'
 import { ParticleField } from './ParticleField'
@@ -17,57 +17,108 @@ import { cacheObservations, useXRApp } from '../../xr/store'
 
 type CompareMode = 'wipe' | 'blink' | 'side'
 
-// Verified default SPHEREx multi-epoch observation pair for RCW 36
-const DEFAULT_OBS_T1: SpherexObservation = {
-  observation_id: '2025W22_2B_0536_1',
-  release: 'SPHEREx DR1',
-  collection: 'all',
-  processing_version: 'l2b-v27-2026-200',
-  calib_level: 2,
-  detector: 'SPHEREx-D4',
-  observed_at_utc: '2025-05-28T14:12:08Z',
-  effective_wavelength_at_target: '2.4489 µm',
-  bandwidth_at_target: '0.0602 µm',
-  visualization_wavelength: '2.4474 µm',
-  visualization_bandwidth: '0.0611 µm',
-  spectral_calibration_source: 'Known RCW36 WCS-WAVE / CWAVE',
-  quality_flag: 2097152,
-  quality_flag_meaning: 'Bit 21 (SOURCE detected), defects 0-20 clear',
-  provenance_badge: 'CATALOG',
-  preview_url: toApiUrl('/api/image/t1'),
-  fits_url:
-    'https://irsa.ipac.caltech.edu/ibe/data/spherex/dr1/level2/2025W22_2B/l2b-v27-2026-200/4/level2_2025W22_2B_0536_1D4_spx_l2b-v27-2026-200.fits',
+function parseUtcTimestamp(value: string) {
+  const withTimezone = /(?:Z|[+-]\d{2}:\d{2})$/i.test(value) ? value : `${value}Z`
+  return Date.parse(withTimezone)
 }
 
-const DEFAULT_OBS_T2: SpherexObservation = {
-  observation_id: '2026W23_2A_0030_2',
-  release: 'SPHEREx QR3',
-  collection: 'all',
-  processing_version: 'l2b-v27-2026-200',
-  calib_level: 2,
-  detector: 'SPHEREx-D4',
-  observed_at_utc: '2026-06-04T09:30:45Z',
-  effective_wavelength_at_target: '2.4679 µm',
-  bandwidth_at_target: '0.0691 µm',
-  visualization_wavelength: '2.4679 µm',
-  visualization_bandwidth: '0.0710 µm',
-  spectral_calibration_source: 'Known RCW36 WCS-WAVE / CWAVE',
-  quality_flag: 2097152,
-  quality_flag_meaning: 'Bit 21 (SOURCE detected), defects 0-20 clear',
-  provenance_badge: 'CATALOG',
-  preview_url: toApiUrl('/api/image/t2'),
-  fits_url:
-    'https://irsa.ipac.caltech.edu/ibe/data/spherex/qr3/level2/2026W23_2A/l2b-v27-2026-200/4/level2_2026W23_2A_0030_2D4_spx_l2b-v27-2026-200.fits',
+function selectComparisonPair(observations: SpherexObservation[], preferredObservationId?: string | null) {
+  const byDetector = new Map<string, Map<string, SpherexObservation>>()
+
+  for (const observation of observations) {
+    const detector = observation.detector?.trim()
+    const timestamp = observation.observed_at_utc ? parseUtcTimestamp(observation.observed_at_utc) : NaN
+    if (!detector || !Number.isFinite(timestamp)) continue
+
+    const detectorObservations = byDetector.get(detector) ?? new Map<string, SpherexObservation>()
+    const previous = detectorObservations.get(observation.observation_id)
+    if (
+      !previous ||
+      (observation.release?.includes('QR3') && !previous.release?.includes('QR3'))
+    ) {
+      detectorObservations.set(observation.observation_id, observation)
+    }
+    byDetector.set(detector, detectorObservations)
+  }
+
+  const candidates = Array.from(byDetector.entries())
+    .map(([detector, records]) => {
+      const sorted = Array.from(records.values()).sort(
+        (a, b) => parseUtcTimestamp(a.observed_at_utc!) - parseUtcTimestamp(b.observed_at_utc!),
+      )
+      return { detector, sorted, span: sorted.length > 1
+        ? parseUtcTimestamp(sorted[sorted.length - 1].observed_at_utc!) - parseUtcTimestamp(sorted[0].observed_at_utc!)
+        : 0 }
+    })
+    .filter((candidate) => candidate.sorted.length > 1 && candidate.span > 0)
+    .sort((a, b) => b.span - a.span || b.sorted.length - a.sorted.length || a.detector.localeCompare(b.detector))
+
+  if (preferredObservationId) {
+    const preferredGroup = candidates.find((candidate) =>
+      candidate.sorted.some((observation) => observation.observation_id === preferredObservationId),
+    )
+    const preferred = preferredGroup?.sorted.find(
+      (observation) => observation.observation_id === preferredObservationId,
+    )
+    if (preferred && preferredGroup) {
+      const preferredTime = parseUtcTimestamp(preferred.observed_at_utc!)
+      const other = preferredGroup.sorted
+        .filter((observation) => observation.observation_id !== preferredObservationId)
+        .sort(
+          (a, b) =>
+            Math.abs(parseUtcTimestamp(b.observed_at_utc!) - preferredTime) -
+            Math.abs(parseUtcTimestamp(a.observed_at_utc!) - preferredTime),
+        )[0]
+      if (other) {
+        return parseUtcTimestamp(preferred.observed_at_utc!) < parseUtcTimestamp(other.observed_at_utc!)
+          ? [preferred, other] as const
+          : [other, preferred] as const
+      }
+    }
+  }
+
+  const selected = candidates[0]?.sorted
+  return selected ? ([selected[0], selected[selected.length - 1]] as const) : null
 }
 
 function formatUtc(value: string | null | undefined) {
-  return value ? value.replace('T', ' ').replace(/Z$/, ' UTC') : 'Timestamp unavailable'
+  if (!value) return 'Timestamp unavailable'
+  const timestamp = parseUtcTimestamp(value)
+  const date = new Date(timestamp)
+  if (!Number.isFinite(date.getTime())) return 'Timestamp unavailable'
+  return `${new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  }).format(date)} UTC`
+}
+
+function formatEpochDate(value: string | null | undefined) {
+  if (!value) return 'Time unavailable'
+  const timestamp = parseUtcTimestamp(value)
+  const date = new Date(timestamp)
+  if (!Number.isFinite(date.getTime())) return 'Time unavailable'
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(date)
+}
+
+function formatCoordinate(value: number | undefined, sexagesimal: string | undefined) {
+  if (sexagesimal) return sexagesimal
+  return value === undefined ? 'Unavailable' : `${value.toFixed(4)}°`
 }
 
 export function ObservationComparisonScreen() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const targetId = searchParams.get('target') || 'rcw-36'
+  const selectedObservationId = searchParams.get('obs')
 
   // Comparison mode & wiper state
   const [mode, setMode] = useState<CompareMode>('wipe')
@@ -81,18 +132,13 @@ export function ObservationComparisonScreen() {
   const [blinkSpeed, setBlinkSpeed] = useState<'normal' | 'fast'>('normal')
 
   // Target info & data pair
+  const [catalog, setCatalog] = useState<ObjectInfo[]>([])
   const [object, setObject] = useState<ObjectInfo | null>(null)
   const [loading, setLoading] = useState(true)
-  const [pair] = useState<readonly [SpherexObservation, SpherexObservation]>([
-    DEFAULT_OBS_T1,
-    DEFAULT_OBS_T2,
-  ])
+  const [dataError, setDataError] = useState<string | null>(null)
+  const [pair, setPair] = useState<readonly [SpherexObservation, SpherexObservation] | null>(null)
 
   // Fallback states for images
-  const [imgFallback, setImgFallback] = useState<{ t1: boolean; t2: boolean }>({
-    t1: false,
-    t2: false,
-  })
   const [imgError, setImgError] = useState<{ t1: boolean; t2: boolean }>({
     t1: false,
     t2: false,
@@ -112,26 +158,76 @@ export function ObservationComparisonScreen() {
   useEffect(() => {
     let active = true
     setLoading(true)
+    setObject(null)
+    setPair(null)
+    setDataError(null)
+    setImgError({ t1: false, t2: false })
 
-    fetchObjectInfo(targetId)
-      .then((res) => {
+    fetchObjectCatalog().then((catalogResult) => {
+      if (!active) return
+      if (!catalogResult.ok) {
+        setCatalog([])
+        setLoading(false)
+        setDataError(`Could not load the object catalog: ${catalogResult.error}`)
+        return
+      }
+
+      setCatalog(catalogResult.data)
+      const selectedObject = catalogResult.data.find((entry) => entry.id === targetId)
+      if (!selectedObject) {
+        setLoading(false)
+        setDataError('This target is not in the object catalog. Choose a catalog target to compare.')
+        return
+      }
+
+      setObject(selectedObject)
+      if (
+        selectedObject.ra === undefined ||
+        selectedObject.dec === undefined
+      ) {
+        setLoading(false)
+        setDataError('This catalog entry has no sky coordinates for an archive search. Choose a target with coordinates.')
+        return
+      }
+
+      searchSpherexObservations(selectedObject.ra, selectedObject.dec).then((observationsResult) => {
         if (!active) return
         setLoading(false)
-        if (res.ok) {
-          setObject(res.data)
+        if (!observationsResult.ok) {
+          setDataError(`Could not search SPHEREx observations: ${observationsResult.error}`)
+          return
         }
-      })
-      .catch(() => {
-        if (!active) return
-        setLoading(false)
-      })
 
-    cacheObservations([DEFAULT_OBS_T1, DEFAULT_OBS_T2])
+        const selectedPair = selectComparisonPair(
+          observationsResult.data.observations,
+          selectedObservationId,
+        )
+        if (!selectedPair) {
+          setDataError('Fewer than two timestamped observations from the same detector are available for this target.')
+          return
+        }
+
+        setPair(selectedPair)
+        cacheObservations([...selectedPair])
+      })
+    })
 
     return () => {
       active = false
     }
-  }, [targetId])
+  }, [targetId, selectedObservationId])
+
+  const comparisonTargets = catalog.filter(
+    (entry) => entry.id && entry.ra !== undefined && entry.dec !== undefined,
+  )
+
+  const handleTargetChange = (nextTargetId: string) => {
+    const next = new URLSearchParams(searchParams)
+    next.set('target', nextTargetId)
+    next.delete('obs')
+    next.delete('band')
+    setSearchParams(next)
+  }
 
   // Typewriter effect for Cosmic Guide AI
   useEffect(() => {
@@ -200,38 +296,23 @@ export function ObservationComparisonScreen() {
     }
   }
 
-  // Fallback image rendering
-  const handleImageError = (key: 't1' | 't2') => {
-    if (!imgFallback[key]) {
-      setImgFallback((prev) => ({ ...prev, [key]: true }))
-    } else {
-      setImgError((prev) => ({ ...prev, [key]: true }))
-    }
-  }
-
   const renderImage = (obs: SpherexObservation, key: 't1' | 't2') => {
     if (imgError[key]) {
       return (
         <div className="fe-image-placeholder" role="img" aria-label={`Citra ${key.toUpperCase()}`}>
           <div className="fe-placeholder-icon">✦</div>
           <div className="fe-placeholder-title">Citra Observasi {key.toUpperCase()}</div>
-          <div className="fe-placeholder-desc">RCW 36 Emission Nebula · {obs.observation_id}</div>
-          <span className="fe-placeholder-badge">{obs.effective_wavelength_at_target || '2.45 µm'}</span>
+          <div className="fe-placeholder-desc">{object?.name || targetId} · {obs.observation_id}</div>
+          <span className="fe-placeholder-badge">{obs.effective_wavelength_at_target || 'Wavelength unavailable'}</span>
         </div>
       )
     }
 
-    const src = imgFallback[key]
-      ? key === 't1'
-        ? '/spherex/blink-a.png'
-        : '/spherex/blink-b.png'
-      : obs.preview_url
-
     return (
       <img
-        src={src}
+        src={obs.preview_url}
         alt={`Observasi ${key.toUpperCase()}: ${obs.observation_id}`}
-        onError={() => handleImageError(key)}
+        onError={() => setImgError((previous) => ({ ...previous, [key]: true }))}
         draggable={false}
       />
     )
@@ -249,7 +330,7 @@ export function ObservationComparisonScreen() {
 
     try {
       const res = await requestGuideReply({
-        objectId: targetId,
+        objectId: object?.id || targetId,
         objectName: object?.name || targetId,
         question,
         lang: 'en',
@@ -278,14 +359,15 @@ export function ObservationComparisonScreen() {
   }
 
   // Navigation handlers with wormhole
-  const handleNavSky = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleNav3DExplorer = (e: React.MouseEvent<HTMLButtonElement>) => {
     const origin = originOf(e.currentTarget)
     void runWormhole({ origin, minMs: 380 }, () =>
-      navigate(`/explorer?target=${encodeURIComponent(targetId)}`)
+      navigate('/explorer')
     )
   }
 
   const enterXR = (event?: React.MouseEvent<HTMLButtonElement>) => {
+    if (!pair) return
     const origin = originOf(event?.currentTarget ?? null)
     useXRApp.getState().setObservationData(pair[0], pair[1])
     void runWormhole({ origin, waitForScene: false, minMs: 580 }, () =>
@@ -307,35 +389,66 @@ export function ObservationComparisonScreen() {
         <header className="fe-compare-top">
           <div className="fe-compare-hero-block">
             <div className="fe-eyebrow">
-              <span className="fe-pulse-dot" aria-hidden="true" />
               <span>Multi-epoch comparison · SPHEREx infrared archive</span>
             </div>
             <h1 className="fe-compare-hero-title">
-              {object?.name || (loading ? 'Loading target…' : 'RCW 36 Emission Nebula')}
+              {object?.name || (loading ? 'Loading target…' : 'Choose a catalog target')}
             </h1>
             <div className="fe-compare-meta-pill">
-              <span>RA {object?.ra_hms || '08h 59m 29s'}</span>
+              <span>RA {formatCoordinate(object?.ra, object?.ra_hms)}</span>
               <span className="fe-coord-dot">·</span>
-              <span>DEC {object?.dec_dms || '-43°45′12″'}</span>
-              <span className="fe-coord-dot">·</span>
-              <span>Cloud C Vela Molecular Ridge</span>
-              <span className="fe-coord-dot">·</span>
-              <span>Jarak ~700 pc (2.300 tc)</span>
+              <span>DEC {formatCoordinate(object?.dec, object?.dec_dms)}</span>
+              {object?.constellation && (
+                <>
+                  <span className="fe-coord-dot">·</span>
+                  <span>{object.constellation}</span>
+                </>
+              )}
+              {object?.distance && (
+                <>
+                  <span className="fe-coord-dot">·</span>
+                  <span>{object.distance}</span>
+                </>
+              )}
             </div>
+            <label className="fe-compare-target-picker">
+              <span>Comparison target</span>
+              <select
+                className="fe-obs-select"
+                value={targetId}
+                onChange={(event) => handleTargetChange(event.currentTarget.value)}
+                aria-label="Choose a catalog target for comparison"
+              >
+                {!comparisonTargets.some((entry) => entry.id === targetId) && (
+                  <option value={targetId} disabled>
+                    {object?.name || targetId} — archive coordinates unavailable
+                  </option>
+                )}
+                {comparisonTargets.map((entry) => (
+                  <option key={entry.id} value={entry.id}>
+                    {entry.name} · {entry.type}
+                  </option>
+                ))}
+              </select>
+              {object?.coordinate_provenance === 'project_search_position' && (
+                <small>Using a nominal search position, not a physical centroid.</small>
+              )}
+            </label>
           </div>
 
           <div className="fe-compare-nav">
             <button
               type="button"
               className="fe-btn-text fe-btn-with-gold"
-              onClick={handleNavSky}
+              onClick={handleNav3DExplorer}
             >
-              <span>← Sky Explorer</span>
+              <span>← 3D Explorer</span>
             </button>
             <button
               type="button"
               className="fe-btn-gold"
               onClick={enterXR}
+              disabled={!pair}
             >
               <span>Enter 3D Table (XR)</span>
               <span aria-hidden="true">↗</span>
@@ -346,11 +459,17 @@ export function ObservationComparisonScreen() {
         {/* Loading Indicator */}
         {loading && (
           <div className="fe-data-message" role="status">
-            <WormholePulse decorative /> Loading RCW 36 observation data…
+            <WormholePulse decorative /> Searching the catalog and SPHEREx archive…
+          </div>
+        )}
+        {!loading && dataError && (
+          <div className="fe-data-message fe-data-message-error" role="status">
+            {dataError}
           </div>
         )}
 
         {/* ── MAIN DASHBOARD: 2 Balanced Columns Matching Sky Explorer ── */}
+        {pair && (
         <div className="fe-compare-dashboard">
           {/* ── LEFT COLUMN: Interactive Viewport Instrument & Astrometry Profile ── */}
           <div className="fe-instrument-column">
@@ -382,7 +501,7 @@ export function ObservationComparisonScreen() {
                 </div>
 
                 <span className="fe-tag fe-tag-gold">
-                  ● LIVE ARCHIVE · 75.8% OVERLAP
+                  IRSA · {pair[0].detector || 'SAME DETECTOR'}
                 </span>
               </div>
 
@@ -414,12 +533,12 @@ export function ObservationComparisonScreen() {
 
                     {/* Badges */}
                     <span className="fe-image-badge left">
-                      <span className="fe-badge-full">● T1 · 28 Mei 2025 · {pair[0].effective_wavelength_at_target}</span>
-                      <span className="fe-badge-short">● T1 · {pair[0].effective_wavelength_at_target}</span>
+                      <span className="fe-badge-full">T1 · {formatEpochDate(pair[0].observed_at_utc)} · {pair[0].effective_wavelength_at_target || 'Wavelength unavailable'}</span>
+                      <span className="fe-badge-short">T1 · {pair[0].effective_wavelength_at_target || 'Wavelength unavailable'}</span>
                     </span>
                     <span className="fe-image-badge right">
-                      <span className="fe-badge-full">● T2 · 04 Jun 2026 · {pair[1].effective_wavelength_at_target}</span>
-                      <span className="fe-badge-short">● T2 · {pair[1].effective_wavelength_at_target}</span>
+                      <span className="fe-badge-full">T2 · {formatEpochDate(pair[1].observed_at_utc)} · {pair[1].effective_wavelength_at_target || 'Wavelength unavailable'}</span>
+                      <span className="fe-badge-short">T2 · {pair[1].effective_wavelength_at_target || 'Wavelength unavailable'}</span>
                     </span>
 
                     {/* Wiper Handle (Gold Ring + Chevrons) */}
@@ -447,8 +566,16 @@ export function ObservationComparisonScreen() {
                 {mode === 'blink' && (
                   <div className="fe-compare-single fe-blink-stage">
                     <span className={`fe-image-badge ${blinkEpoch === 'A' ? 'left' : 'right'}`}>
-                      <span className="fe-badge-full">{blinkEpoch === 'A' ? '● Observasi T1 (DR1) · 2.45 µm' : '● Observasi T2 (QR3) · 2.47 µm'}</span>
-                      <span className="fe-badge-short">{blinkEpoch === 'A' ? '● T1 · 2.45 µm' : '● T2 · 2.47 µm'}</span>
+                      <span className="fe-badge-full">
+                        {blinkEpoch === 'A'
+                          ? `T1 · ${pair[0].release || 'Release unavailable'} · ${pair[0].effective_wavelength_at_target || 'Wavelength unavailable'}`
+                          : `T2 · ${pair[1].release || 'Release unavailable'} · ${pair[1].effective_wavelength_at_target || 'Wavelength unavailable'}`}
+                      </span>
+                      <span className="fe-badge-short">
+                        {blinkEpoch === 'A'
+                          ? `T1 · ${pair[0].effective_wavelength_at_target || 'Wavelength unavailable'}`
+                          : `T2 · ${pair[1].effective_wavelength_at_target || 'Wavelength unavailable'}`}
+                      </span>
                     </span>
 
                     <div className="fe-blink-image-wrap">
@@ -507,15 +634,15 @@ export function ObservationComparisonScreen() {
                   <div className="fe-compare-sides">
                     <div className="fe-comparison-pane">
                       <span className="fe-image-badge left">
-                        <span className="fe-badge-full">● T1 · 28 Mei 2025 · {pair[0].effective_wavelength_at_target}</span>
-                        <span className="fe-badge-short">● T1 · {pair[0].effective_wavelength_at_target}</span>
+                        <span className="fe-badge-full">T1 · {formatEpochDate(pair[0].observed_at_utc)} · {pair[0].effective_wavelength_at_target || 'Wavelength unavailable'}</span>
+                        <span className="fe-badge-short">T1 · {pair[0].effective_wavelength_at_target || 'Wavelength unavailable'}</span>
                       </span>
                       {renderImage(pair[0], 't1')}
                     </div>
                     <div className="fe-comparison-pane">
                       <span className="fe-image-badge right">
-                        <span className="fe-badge-full">● T2 · 04 Jun 2026 · {pair[1].effective_wavelength_at_target}</span>
-                        <span className="fe-badge-short">● T2 · {pair[1].effective_wavelength_at_target}</span>
+                        <span className="fe-badge-full">T2 · {formatEpochDate(pair[1].observed_at_utc)} · {pair[1].effective_wavelength_at_target || 'Wavelength unavailable'}</span>
+                        <span className="fe-badge-short">T2 · {pair[1].effective_wavelength_at_target || 'Wavelength unavailable'}</span>
                       </span>
                       {renderImage(pair[1], 't2')}
                     </div>
@@ -530,41 +657,40 @@ export function ObservationComparisonScreen() {
             </section>
 
             {/* Target Astrometry Card */}
-            <section className="fe-hud-card">
+            <section className="fe-hud-card fe-target-astrometry-card">
               <div className="fe-card-head">
-                <span className="fe-tag fe-tag-gold">● CATALOG TARGET</span>
-                <span className="fe-card-date">~700 pc (2.300 tc)</span>
+                <span className="fe-tag fe-tag-gold">CATALOG TARGET</span>
+                <span className="fe-card-date">{object?.distance || 'Distance unavailable'}</span>
               </div>
-              <h3 className="fe-card-title">{object?.name || 'RCW 36 Emission Nebula'}</h3>
+              <h3 className="fe-card-title">{object?.name || targetId}</h3>
               <p className="fe-card-desc">
-                {object?.description ||
-                  'Nebula emisi H II kompak di Cloud C Vela Molecular Ridge. Terionisasi oleh bintang masif tipe O/B yang tertanam dan diamati SPHEREx pada 96 saluran inframerah.'}
+                {object?.description || 'Description unavailable in the object catalog.'}
               </p>
 
               <div className="fe-data-grid">
                 <div className="fe-datum">
                   <span>Object ID</span>
-                  <strong>rcw-36</strong>
+                  <strong>{object?.id || targetId}</strong>
                 </div>
                 <div className="fe-datum">
                   <span>Classification</span>
-                  <strong>{object?.type || 'Nebula Emisi H II'}</strong>
+                  <strong>{object?.type || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
                   <span>Right Ascension</span>
-                  <strong>RA {object?.ra_hms || '08h 59m 29s'}</strong>
+                  <strong>RA {formatCoordinate(object?.ra, object?.ra_hms)}</strong>
                 </div>
                 <div className="fe-datum">
                   <span>Declination</span>
-                  <strong>DEC {object?.dec_dms || '-43°45′12″'}</strong>
+                  <strong>DEC {formatCoordinate(object?.dec, object?.dec_dms)}</strong>
                 </div>
                 <div className="fe-datum">
-                  <span>Bandpass Overlap</span>
-                  <strong>75.8% (CWAVE/CBAND)</strong>
+                  <span>Shared detector</span>
+                  <strong>{pair[0].detector || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
                   <span>Catalog Source</span>
-                  <strong>{object?.source || 'IPAC IRSA / SIMBAD'}</strong>
+                  <strong>{object?.source || 'Unavailable'}</strong>
                 </div>
               </div>
             </section>
@@ -573,9 +699,9 @@ export function ObservationComparisonScreen() {
           {/* ── RIGHT COLUMN: 2 Epoch Telemetry Cards & Cosmic AI Guide ── */}
           <div className="fe-telemetry-column">
             {/* Epoch T1 Observation Card */}
-            <article className="fe-epoch-card fe-hud-card">
+            <article className="fe-epoch-card fe-epoch-card-t1 fe-hud-card">
               <div className="fe-card-head">
-                <span className="fe-tag fe-tag-cyan">● OBSERVATION T1 (DR1)</span>
+                <span className="fe-tag fe-tag-cyan">OBSERVATION T1 ({pair[0].release || 'RELEASE UNKNOWN'})</span>
                 <span className="fe-card-date">{formatUtc(pair[0].observed_at_utc)}</span>
               </div>
               <h3 className="fe-card-title">{pair[0].observation_id}</h3>
@@ -583,19 +709,19 @@ export function ObservationComparisonScreen() {
               <div className="fe-data-grid">
                 <div className="fe-datum">
                   <span>Panjang Gelombang (λ)</span>
-                  <strong style={{ color: '#4fe3d6' }}>{pair[0].effective_wavelength_at_target}</strong>
+                  <strong style={{ color: '#4fe3d6' }}>{pair[0].effective_wavelength_at_target || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
                   <span>Bandwidth</span>
-                  <strong>{pair[0].bandwidth_at_target}</strong>
+                  <strong>{pair[0].bandwidth_at_target || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
                   <span>Detektor</span>
-                  <strong>{pair[0].detector}</strong>
+                  <strong>{pair[0].detector || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
                   <span>Quality Flag</span>
-                  <strong style={{ color: '#86efac' }}>Bit 21 (SOURCE Detected)</strong>
+                  <strong>{pair[0].quality_flag_meaning || pair[0].quality_flag?.toString() || 'Unavailable'}</strong>
                 </div>
               </div>
 
@@ -613,9 +739,9 @@ export function ObservationComparisonScreen() {
             </article>
 
             {/* Epoch T2 Observation Card */}
-            <article className="fe-epoch-card fe-hud-card">
+            <article className="fe-epoch-card fe-epoch-card-t2 fe-hud-card">
               <div className="fe-card-head">
-                <span className="fe-tag fe-tag-blue">● OBSERVATION T2 (QR3)</span>
+                <span className="fe-tag fe-tag-blue">OBSERVATION T2 ({pair[1].release || 'RELEASE UNKNOWN'})</span>
                 <span className="fe-card-date">{formatUtc(pair[1].observed_at_utc)}</span>
               </div>
               <h3 className="fe-card-title">{pair[1].observation_id}</h3>
@@ -623,19 +749,19 @@ export function ObservationComparisonScreen() {
               <div className="fe-data-grid">
                 <div className="fe-datum">
                   <span>Panjang Gelombang (λ)</span>
-                  <strong style={{ color: '#38bdf8' }}>{pair[1].effective_wavelength_at_target}</strong>
+                  <strong style={{ color: '#38bdf8' }}>{pair[1].effective_wavelength_at_target || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
                   <span>Bandwidth</span>
-                  <strong>{pair[1].bandwidth_at_target}</strong>
+                  <strong>{pair[1].bandwidth_at_target || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
                   <span>Detektor</span>
-                  <strong>{pair[1].detector}</strong>
+                  <strong>{pair[1].detector || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
                   <span>Quality Flag</span>
-                  <strong style={{ color: '#86efac' }}>Bit 21 (SOURCE Detected)</strong>
+                  <strong>{pair[1].quality_flag_meaning || pair[1].quality_flag?.toString() || 'Unavailable'}</strong>
                 </div>
               </div>
 
@@ -658,7 +784,7 @@ export function ObservationComparisonScreen() {
                 <span style={{ display: 'flex', alignItems: 'center', gap: '7px', color: '#f4e8c6', fontFamily: 'var(--sans)', fontSize: '0.9rem' }}>
                   ✦ Cosmic Guide AI Assistant
                 </span>
-                <span className="fe-tag fe-tag-gold">● LIVE GEMINI</span>
+                <span className="fe-tag fe-tag-gold">LIVE GEMINI</span>
               </div>
 
               {/* Quick Inquiry Chips */}
@@ -667,7 +793,7 @@ export function ObservationComparisonScreen() {
                   type="button"
                   className="fe-ai-chip"
                   onClick={() =>
-                    void handleAskAi('Apa perbedaan observasi inframerah T1 vs T2 pada RCW 36?')
+                    void handleAskAi(`Apa yang berbeda antara epoch T1 dan T2 untuk ${object?.name || targetId}?`)
                   }
                 >
                   Beda T1 vs T2?
@@ -676,19 +802,19 @@ export function ObservationComparisonScreen() {
                   type="button"
                   className="fe-ai-chip"
                   onClick={() =>
-                    void handleAskAi('Mengapa terjadi pergeseran filter antara 2.45 µm dan 2.47 µm?')
+                    void handleAskAi(`Bagaimana perbedaan panjang gelombang memengaruhi perbandingan ${object?.name || targetId}?`)
                   }
                 >
-                  Pergeseran Filter?
+                  Konteks panjang gelombang
                 </button>
                 <button
                   type="button"
                   className="fe-ai-chip"
                   onClick={() =>
-                    void handleAskAi('Jelaskan peran protobintang di nebula RCW 36.')
+                    void handleAskAi(`Apa yang diketahui dari katalog tentang ${object?.name || targetId}?`)
                   }
                 >
-                  Protobintang RCW 36?
+                  Tentang target
                 </button>
               </div>
 
@@ -770,6 +896,7 @@ export function ObservationComparisonScreen() {
             </article>
           </div>
         </div>
+        )}
 
         {/* ── SCIENTIFIC INTEGRITY DISCLOSURES (Compact, Muted Bottom Card) ── */}
         <section className="fe-scientific-notes fe-hud-card">
@@ -779,19 +906,18 @@ export function ObservationComparisonScreen() {
           </div>
           <div className="fe-sci-text">
             <p>
-              • <strong>Photometric Notice</strong>: Visual preview only; not calibrated for
+              <strong>Photometric Notice</strong>: Visual preview only; not calibrated for
               quantitative photometry. Validated astrophysical variability or proper motion requires
               PSF aperture photometry on unresampled Level 2 images.
             </p>
             <p>
-              • <strong>Bandpass Overlap</strong>: Geometric bandpass overlap is derived from
-              authoritative CWAVE/CBAND parameters (75.8% narrower filter, 54.6% IoU). WCS-WAVE
-              serves as visualization fallback (74.6% narrower filter, 52.6% IoU).
+              <strong>Epoch pairing</strong>: When available, the displayed pair uses the same
+              detector and the earliest/latest valid UTC timestamps returned for the selected target.
+              Wavelengths can differ; check each epoch’s metadata before interpreting visual changes.
             </p>
             <p>
-              • <strong>Quality Flag</strong>: Level 2 quality flag status applies to the sampled
-              pixel only. Bit 21 (SOURCE) indicates detected source presence without asserting
-              detector-wide flag absence.
+              <strong>Quality flags</strong>: Values shown come from each archive record. A visual
+              comparison is not registered, normalized, or calibrated for quantitative photometry.
             </p>
           </div>
         </section>

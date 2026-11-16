@@ -1,0 +1,103 @@
+- generic [ref=f8e1]:
+  - generic [ref=f8e3]:
+    - banner:
+      - generic [ref=f8e6]:
+        - link "S SPHEREx / COSMIC EXPEDITION" [ref=f8e7] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f8e8]: S
+          - generic [ref=f8e9]: SPHEREx / COSMIC EXPEDITION
+        - navigation "Main Navigation" [ref=f8e10]:
+          - link "Gateway" [ref=f8e11] [cursor=pointer]:
+            - /url: /
+          - link "Sky Explorer" [ref=f8e12] [cursor=pointer]:
+            - /url: /explorer
+          - link "Comparison" [ref=f8e13] [cursor=pointer]:
+            - /url: /comparison
+          - link "Cosmic Guide" [ref=f8e14] [cursor=pointer]:
+            - /url: /guide
+    - main [ref=f8e16]:
+      - generic [ref=f8e17]:
+        - generic [ref=f8e18]:
+          - generic "Sky targets":
+            - button "RCW 36 Emission Nebula (catalog target)" [pressed] [ref=f8e22] [cursor=pointer]:
+              - generic [ref=f8e23]: RCW 36
+            - button "Illustrative candidate marker" [ref=f8e24] [cursor=pointer]:
+              - generic [ref=f8e25]: Candidate · illustrative
+            - button "Illustrative tile marker" [ref=f8e26] [cursor=pointer]:
+              - generic [ref=f8e27]: Sample · illustrative
+        - generic [ref=f8e28]:
+          - generic [ref=f8e29]: All-sky explorer · IRSA SPHEREx field
+          - heading "Vela Molecular Ridge" [level=2] [ref=f8e31]
+          - paragraph [ref=f8e32]:
+            - generic [ref=f8e33]: RA 08h 59m 29s
+            - generic [ref=f8e34]: ·
+            - generic [ref=f8e35]: DEC -43Â°45â€²12â€³
+        - generic [ref=f8e36]:
+          - button "Reset view" [ref=f8e37] [cursor=pointer]: ⌖
+          - button "Recenter" [ref=f8e38] [cursor=pointer]: ◎
+          - button "Toggle audio off" [ref=f8e39] [cursor=pointer]: ♫
+          - button "Open Cosmic Guide" [ref=f8e40] [cursor=pointer]
+        - group "3D model controls" [ref=f8e47]:
+          - 'button "3D models. Showing Sky. Next: Solar System" [ref=f8e48] [cursor=pointer]': 3D
+          - button "Back to Solar System" [ref=f8e49] [cursor=pointer]: ←
+        - generic [ref=f8e50]: DRAG TO ROTATE SKY · SCROLL TO ZOOM
+      - generic [ref=f8e51]:
+        - generic [ref=f8e52]: Target selected
+        - generic [ref=f8e55]: CATALOG
+      - complementary [ref=f8e56]:
+        - generic [ref=f8e57]:
+          - heading "RCW 36 Emission Nebula" [level=2] [ref=f8e58]
+          - paragraph [ref=f8e59]: A compact star-forming H II emission nebula situated within Cloud C of the Vela Molecular Ridge. Ionized by massive embedded O/B stars and observed by SPHEREx across 96 infrared spectral channels.
+          - button "Back to Solar System" [ref=f8e61] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f8e62]: ←
+        - generic [ref=f8e65]:
+          - generic [ref=f8e66]:
+            - generic [ref=f8e67]: Object ID
+            - strong [ref=f8e68]: rcw-36
+          - generic [ref=f8e69]:
+            - generic [ref=f8e70]: Classification
+            - strong [ref=f8e71]: Emission Nebula / H II Region
+          - generic [ref=f8e72]:
+            - generic [ref=f8e73]: Right ascension
+            - strong [ref=f8e74]: 08h 59m 29s
+          - generic [ref=f8e75]:
+            - generic [ref=f8e76]: Declination
+            - strong [ref=f8e77]: "-43Â°45â€²12â€³"
+          - generic [ref=f8e78]:
+            - generic [ref=f8e79]: Observation
+            - strong [ref=f8e80]: Loading…
+          - generic [ref=f8e81]:
+            - generic [ref=f8e82]: Observed at (UTC)
+            - strong [ref=f8e83]: Not available
+        - generic [ref=f8e84]: "Source: NASA ADS / SIMBAD Gum 20 / IPAC IRSA SPHEREx QR3 Catalog"
+        - generic [ref=f8e85]:
+          - button "Ask the Guide" [ref=f8e86] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f8e88]: ↗
+          - button "Compare observations" [ref=f8e89] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f8e91]: →
+          - button "Enter 3D Table (XR)" [ref=f8e92] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f8e94]: ↗
+        - generic [ref=f8e95]:
+          - button "Exit to Gateway" [ref=f8e96] [cursor=pointer]
+          - button "Solar System Hub" [ref=f8e97] [cursor=pointer]
+  - dialog "Cosmic Guide" [ref=f8e98]:
+    - banner [ref=f8e99]:
+      - generic [ref=f8e107]:
+        - heading "Cosmic Guide" [level=1] [ref=f8e108]
+        - paragraph [ref=f8e109]: RCW 36 Emission Nebula
+      - button "Turn voice answers off" [pressed] [ref=f8e110]
+      - button "Close" [ref=f8e115]: ×
+    - status [ref=f8e116]:
+      - status [ref=f8e117]: Ask a question about RCW 36 Emission Nebula.
+    - generic [ref=f8e118]:
+      - button "SPHEREx Mission" [ref=f8e119]
+      - button "Water Ice Search" [ref=f8e120]
+      - button "Infrared All-Sky" [ref=f8e121]
+    - paragraph [ref=f8e122]:
+      - generic [ref=f8e123]: MISSION AGENT
+      - text: Answers use backend catalog records when available; missing data is not guessed.
+    - generic [ref=f8e124]:
+      - textbox "Question for Cosmic Guide" [active] [ref=f8e125]:
+        - /placeholder: Ask Cosmic Guide a question…
+      - button "Ask by voice" [ref=f8e126]
+      - button "Send" [disabled] [ref=f8e130]: ↗

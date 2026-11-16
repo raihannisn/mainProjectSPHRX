@@ -55,7 +55,7 @@ html, body, #root { margin: 0; height: 100%; overflow: hidden; background: var(-
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px);
 }
 .info-card__top { display: flex; justify-content: space-between; align-items: center; }
-.kind-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; border: 1px solid; border-radius: 999px; padding: 2px 8px; }
+.kind-tag { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; }
 .info-card h2 { margin: 8px 0 6px; font-size: 20px; font-weight: 500; }
 .info-card__short { margin: 0 0 4px; font-size: 15px; line-height: 1.45; }
 .info-card__detail { margin: 6px 0; font-size: 14px; line-height: 1.5; color: #c3cbe0; }
@@ -187,10 +187,6 @@ html, body, #root { margin: 0; height: 100%; overflow: hidden; background: var(-
 .tour-caption p { margin: 0; line-height: 1.5; color: #d6e4ea; font-size: 14px; }
 .tour-caption__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #6fe7dc; }
 .tour-caption__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-.tour-dots { display: flex; gap: 5px; }
-.tour-dots i { width: 7px; height: 7px; border-radius: 50%; background: #2a3f48; }
-.tour-dots i.on { background: #6fe7dc; }
-.tour-dots i.done { background: #2bb8b0; }
 .tour-progress { height: 3px; border-radius: 2px; background: #1b2c2e; overflow: hidden; }
 .tour-progress i { display: block; height: 100%; width: 0; background: #2bb8b0; }
 @keyframes tour-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }

@@ -1,0 +1,81 @@
+- generic [ref=f7e3]:
+  - banner:
+    - generic [ref=f7e6]:
+      - link "S SPHEREx / COSMIC EXPEDITION" [ref=f7e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f7e8]: S
+        - generic [ref=f7e9]: SPHEREx / COSMIC EXPEDITION
+      - navigation "Main Navigation" [ref=f7e10]:
+        - link "Gateway" [ref=f7e11] [cursor=pointer]:
+          - /url: /
+        - link "Sky Explorer" [ref=f7e12] [cursor=pointer]:
+          - /url: /explorer
+        - link "Comparison" [ref=f7e13] [cursor=pointer]:
+          - /url: /comparison
+        - link "Cosmic Guide" [ref=f7e14] [cursor=pointer]:
+          - /url: /guide
+  - main [ref=f7e16]:
+    - generic [ref=f7e17]:
+      - generic [ref=f7e18]:
+        - generic "Sky targets":
+          - button "RCW 36 Emission Nebula (catalog target)" [pressed] [ref=f7e22] [cursor=pointer]:
+            - generic [ref=f7e23]: RCW 36
+          - button "Illustrative candidate marker" [ref=f7e24] [cursor=pointer]:
+            - generic [ref=f7e25]: Candidate · illustrative
+          - button "Illustrative tile marker" [ref=f7e26] [cursor=pointer]:
+            - generic [ref=f7e27]: Sample · illustrative
+      - generic [ref=f7e28]:
+        - generic [ref=f7e29]: All-sky explorer · IRSA SPHEREx field
+        - heading "Vela Molecular Ridge" [level=2] [ref=f7e31]
+        - paragraph [ref=f7e32]:
+          - generic [ref=f7e33]: RA 08h 59m 29s
+          - generic [ref=f7e34]: ·
+          - generic [ref=f7e35]: DEC -43Â°45â€²12â€³
+      - generic [ref=f7e36]:
+        - button "Reset view" [ref=f7e37] [cursor=pointer]: ⌖
+        - button "Recenter" [ref=f7e38] [cursor=pointer]: ◎
+        - button "Toggle audio off" [ref=f7e39] [cursor=pointer]: ♫
+        - button "Open Cosmic Guide" [ref=f7e40] [cursor=pointer]
+      - group "3D model controls" [ref=f7e47]:
+        - 'button "3D models. Showing Sky. Next: Solar System" [ref=f7e48] [cursor=pointer]': 3D
+        - button "Back to Solar System" [ref=f7e49] [cursor=pointer]: ←
+      - generic [ref=f7e50]: DRAG TO ROTATE SKY · SCROLL TO ZOOM
+    - generic [ref=f7e51]:
+      - generic [ref=f7e52]: Target selected
+      - generic [ref=f7e55]: CATALOG
+    - complementary [ref=f7e56]:
+      - generic [ref=f7e57]:
+        - heading "RCW 36 Emission Nebula" [level=2] [ref=f7e58]
+        - paragraph [ref=f7e59]: A compact star-forming H II emission nebula situated within Cloud C of the Vela Molecular Ridge. Ionized by massive embedded O/B stars and observed by SPHEREx across 96 infrared spectral channels.
+        - button "Back to Solar System" [ref=f7e61] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f7e62]: ←
+      - generic [ref=f7e65]:
+        - generic [ref=f7e66]:
+          - generic [ref=f7e67]: Object ID
+          - strong [ref=f7e68]: rcw-36
+        - generic [ref=f7e69]:
+          - generic [ref=f7e70]: Classification
+          - strong [ref=f7e71]: Emission Nebula / H II Region
+        - generic [ref=f7e72]:
+          - generic [ref=f7e73]: Right ascension
+          - strong [ref=f7e74]: 08h 59m 29s
+        - generic [ref=f7e75]:
+          - generic [ref=f7e76]: Declination
+          - strong [ref=f7e77]: "-43Â°45â€²12â€³"
+        - generic [ref=f7e78]:
+          - generic [ref=f7e79]: Observation
+          - strong [ref=f7e80]: Loading…
+        - generic [ref=f7e81]:
+          - generic [ref=f7e82]: Observed at (UTC)
+          - strong [ref=f7e83]: Not available
+      - generic [ref=f7e84]: "Source: NASA ADS / SIMBAD Gum 20 / IPAC IRSA SPHEREx QR3 Catalog"
+      - generic [ref=f7e85]:
+        - button "Ask the Guide" [ref=f7e86] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f7e88]: ↗
+        - button "Compare observations" [ref=f7e89] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f7e91]: →
+        - button "Enter 3D Table (XR)" [ref=f7e92] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f7e94]: ↗
+      - generic [ref=f7e95]:
+        - button "Exit to Gateway" [ref=f7e96] [cursor=pointer]
+        - button "Solar System Hub" [ref=f7e97] [cursor=pointer]

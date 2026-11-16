@@ -1,0 +1,5 @@
+[   10899ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ https://localhost:5173/node_modules/.vite/deps/chunk-ZNK36WMM.js?v=4579f38a:21897
+[   11553ms] [WARNING] THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed. @ https://localhost:5173/node_modules/.vite/deps/chunk-RRWAP4QR.js?v=4579f38a:755
+[   12970ms] [WARNING] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead. @ https://localhost:5173/node_modules/.vite/deps/chunk-RRWAP4QR.js?v=4579f38a:755
+[   18195ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://localhost:5173/api/spherex/observations?ra=134.8708&dec=-43.7533&radius=0.05&collection=all:1
+[   30107ms] [WARNING] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio @ https://localhost:5173/src/xr/agentSpeech.ts:24

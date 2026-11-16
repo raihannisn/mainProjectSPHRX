@@ -170,9 +170,9 @@ function TabBadge({ tab }: { tab: MenuTab }) {
   const siteId = useXRApp((s) => s.siteId)
   if (tab === 'missions') {
     const left = activeMissions(done, bodyId, siteId).flatMap((m) => m.goals).filter((g) => !done[g.id]).length
-    return left ? <b className="tab-badge">{left}</b> : null
+    return left ? <b className="tab-count">{left}</b> : null
   }
-  if (tab === 'audio') return <b className={`tab-dot${sound ? ' on' : ''}`} aria-label={sound ? t('Sound on') : t('Sound off')} />
+  if (tab === 'audio') return <b className={`tab-state${sound ? ' on' : ''}`}>{sound ? 'ON' : 'OFF'}</b>
   return null
 }
 

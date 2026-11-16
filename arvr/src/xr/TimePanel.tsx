@@ -42,7 +42,6 @@ export function TimePanel() {
   if (!open) {
     return (
       <button className="time-pill" onClick={() => setOpen(true)} aria-expanded={false}>
-        <span className="time-pill__dot" data-live={live} aria-hidden />
         {live ? t('Today') : formatDate(now, lang)} · {t('Time machine')} ▴
       </button>
     )

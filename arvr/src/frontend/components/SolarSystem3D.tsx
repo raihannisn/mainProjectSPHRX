@@ -845,7 +845,6 @@ export function SolarSystem3D() {
       aria-label="Stylized Cartoon CGI 3D Solar System with 8 orbiting planets and glowing speedline trails"
     >
       <div className="fe-solar-hud" aria-live="polite">
-        <span className="fe-solar-hud-dot" aria-hidden="true" />
         <span className="fe-solar-hud-title" ref={hudTitleRef}>
           {isIndo ? 'Tata Surya' : 'Solar System'}
         </span>

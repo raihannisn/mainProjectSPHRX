@@ -1,0 +1,80 @@
+- generic [ref=f4e3]:
+  - banner:
+    - generic [ref=f4e6]:
+      - link "S SPHEREx" [ref=f4e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f4e8]: S
+        - generic [ref=f4e9]: SPHEREx
+      - navigation "Main Navigation" [ref=f4e10]:
+        - link "Gateway" [ref=f4e11] [cursor=pointer]:
+          - /url: /
+        - link "Sky Explorer" [ref=f4e12] [cursor=pointer]:
+          - /url: /explorer
+        - link "Comparison" [ref=f4e13] [cursor=pointer]:
+          - /url: /comparison
+        - link "Cosmic Guide" [ref=f4e14] [cursor=pointer]:
+          - /url: /guide
+  - main [ref=f4e16]:
+    - generic [ref=f4e17]:
+      - generic [ref=f4e22]:
+        - generic [ref=f4e23]: 3D model · NASA data
+        - heading "Mars" [level=2] [ref=f4e26]
+        - paragraph [ref=f4e27]:
+          - generic [ref=f4e28]: 7 hotspots
+      - generic [ref=f4e29]:
+        - button "Reset view" [ref=f4e30] [cursor=pointer]: ⌖
+        - button "Recenter" [ref=f4e31] [cursor=pointer]: ◎
+        - button "Toggle audio off" [active] [ref=f4e102] [cursor=pointer]: ♫
+        - button "Open Cosmic Guide" [ref=f4e33] [cursor=pointer]
+      - group "3D model controls" [ref=f4e40]:
+        - 'button "3D models. Showing Mars. Next: Moon" [pressed] [ref=f4e41] [cursor=pointer]': 3D
+        - button "Back to Solar System" [ref=f4e42] [cursor=pointer]: ←
+        - button "Hide hotspots" [pressed] [ref=f4e43] [cursor=pointer]: ⦿
+        - 'button "NASA image layer: Colour (Viking). Switch layer" [ref=f4e44] [cursor=pointer]': ◐
+      - generic [ref=f4e45]: DRAG TO TURN · SCROLL TO ZOOM
+    - complementary [ref=f4e46]:
+      - generic [ref=f4e47]:
+        - generic [ref=f4e48]:
+          - generic [ref=f4e49]: 3D model
+          - generic [ref=f4e50]: ● 3D MODEL
+        - heading "Mars" [level=2] [ref=f4e51]
+        - paragraph [ref=f4e52]: Drag to turn the model and tap a glowing pin to read about that place.
+        - generic [ref=f4e53]:
+          - paragraph [ref=f4e54]: Mars is the fourth planet from the Sun, known as the Red Planet due to its iron oxide surface. Its catalog features include Olympus Mons, the Solar System's tallest volcano, and Gale Crater, the Curiosity rover landing site.
+          - generic [ref=f4e55]:
+            - button "Play AI voice" [ref=f4e56] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f4e57]: ▶
+            - status [ref=f4e58]: Replay AI voice
+        - generic [ref=f4e59]:
+          - button "Back to Solar System" [ref=f4e60] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f4e61]: ←
+          - button "Exit planet" [ref=f4e63] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f4e64]: ✕
+      - generic [ref=f4e67]:
+        - generic [ref=f4e68]:
+          - generic [ref=f4e69]: Object ID
+          - strong [ref=f4e70]: mars
+        - generic [ref=f4e71]:
+          - generic [ref=f4e72]: Classification
+          - strong [ref=f4e73]: Planet
+        - generic [ref=f4e74]:
+          - generic [ref=f4e75]: Hotspots
+          - strong [ref=f4e76]: 7 · shown
+        - generic [ref=f4e77]:
+          - generic [ref=f4e78]: Label
+          - strong [ref=f4e79]: NASA data
+        - generic [ref=f4e80]:
+          - generic [ref=f4e81]: NASA image layer
+          - strong [ref=f4e82]: Colour (Viking)
+      - generic [ref=f4e83]: "Source: NASA 3D Resources (Viking-era global colour mosaic), public domain"
+      - generic [ref=f4e84]:
+        - button "Ask the Guide" [ref=f4e85] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f4e87]: ↗
+        - button "Compare observations" [ref=f4e88] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f4e90]: →
+        - button "Enter 3D Table (XR)" [ref=f4e91] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f4e93]: ↗
+      - generic [ref=f4e94]:
+        - button "Exit to Gateway" [ref=f4e95] [cursor=pointer]
+        - button "Solar System Hub" [ref=f4e96] [cursor=pointer]
+  - status [ref=f4e103]: Ambient music enabled

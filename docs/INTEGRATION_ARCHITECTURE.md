@@ -78,12 +78,15 @@ graph TD
 | :--- | :--- | :--- | :--- | :--- |
 | `GET /api/status` | Frontend / AR/VR | None | `{ status, data_source, engine, capabilities, message }` | Returns operational JSON status |
 | `GET /api/spherex/observations` | React Explorer and Comparison | `ra`, `dec`, `radius`, `collection`, `start_date`, `end_date`, `detector` | `{ query, source, total_results, observations: [...] }`, including `observation_id`, `observed_at_utc`, `preview_url`, and `fits_url` | Search errors and empty results are displayed; no observation metadata is fabricated |
+| `GET /api/objects` | React Comparison | None | Canonical records from `kamus_object.json`; aliases sharing an `id` are deduplicated | Targets without numeric RA/Dec are not archive-queryable and are excluded from the target selector |
 | `GET /api/objects/{object_id}` | Frontend / AR/VR | `object_id` (path, e.g., `mars`, `halley`, `jupiter`) | Dictionary properties from `kamus_object.json` | Returns 404 if object ID not found |
 | `GET /api/image/t1` | Frontend (Comparison) | None | Binary PNG stream (`FileResponse`). *Note: serves hasil_gambar.png* | Returns 404 if image not generated yet |
 | `GET /api/image/t2` | Frontend (Comparison) | None | Binary PNG stream (`FileResponse`). *Note: serves hasil_gambar_2.png (currently identical)* | Returns 404 if image not generated yet |
 | `GET /api/metadata/fits` | Frontend (Explorer) | None | FITS Header dictionary (`telescope`, `observation_date`, `right_ascension`, `declination`) | Returns 404 if physical `.fits` file is missing on server |
 | `GET /api/nasa/apod` | Frontend / Gateway | None | Normalized APOD JSON (`source`, `title`, `date`, `explanation`, `image_url`, etc.) | Returns `DUMMY_APOD` on upstream NASA timeout |
 | `GET /api/nasa/neows` | Frontend / Gateway | None | Normalized NeoWs JSON (`source`, `total_asteroids`, `hazardous_asteroids_count`, `asteroids`) | Returns HTTP 502 on upstream failure |
+| `POST /api/agent/chat` | XR body narration / Cosmic Guide | Optional `objectId`, `lang` (`id`/`en`), 1–10 messages (last must be `user`; message content max 500 chars) | `{ success, data: { message, sources } }`; current provider generation is English | Missing catalog object is tolerated; Agent limiter is 20 requests per client IP per 60 seconds; invalid input is 422 |
+| `POST /api/agent/voiceover/text` | XR body narration | Nonblank English `text` up to 500 chars; `voicePreset` is `mission-liaison` or `warm-guide` | `audio/wav` | 503 if backend key is missing; 429 for Agent/provider limits; 502 for provider failure; 504 for timeout. Frontend uses labeled browser speech when generated audio fails. |
 
 *Urgent NASA APOD Migration*: NASA deprecated the legacy APOD endpoint and migrated APOD to the WordPress REST API endpoint:
 `https://science.nasa.gov/wp-json/wp/v2/apod-basic`
@@ -111,6 +114,7 @@ graph TD
   - `cosmic:ask-guide`: Emitted by AR/VR (`arvr/src/xr/events.ts`) and consumed by host listeners with payload `{ body, hotspotId, guidePrompt }`.
   - `cosmic:back-to-source`: Emitted by AR/VR to signal return to source imagery.
 - **Context Navigation**: State synchronization between the 2D screens and XR uses URL query parameters such as `target`, `obs`, and `band`; `RouteSync.tsx` transfers XR observation and band values into the shared store.
+- **XR body narration**: Every selectable ID in `arvr/src/xr/bodies.ts` has sourced local content in `arvr/content/bodies/{id}.json`. The browser retains that overview when `/api/objects/{id}` has no catalog record; empty hotspots are a valid “not mapped” state. Gemini-generated WAV is preferred, with an explicitly labeled browser-speech fallback. See [the voice integration contract](AI_AGENT_XR_VOICE_INTEGRATION.md).
 
 ---
 
@@ -118,8 +122,10 @@ graph TD
 
 - **Identifier Harmonization**:
   - Backend `kamus_object.json`: `mars`, `halley`, `jupiter`.
-  - AR/VR `content/bodies/*.json`: `mars`, `moon`, `bennu`.
+  - AR/VR `content/bodies/*.json`: sourced content for all selectable hub IDs in `src/xr/bodies.ts` (Sun, Mercury, Venus, Earth, Moon, Bennu, Mars, Jupiter, Saturn, Uranus, Neptune).
   - Catalog target: `rcw-36`. Candidate and demo markers are illustrative only and do not have fabricated coordinates or observations.
+  - Comparison targets are selected from `/api/objects`; archive results are searched at each selected record's own coordinates, and a comparison pair is formed from chronological results for the same detector. Missing coordinates or fewer than two usable epochs produce an explicit unavailable state.
+- **Body-content validation**: `npm run build` runs `check:content`; the check derives the required IDs from `src/xr/bodies.ts`, requires English and Indonesian descriptions and a source per body, and validates any hotspots that are present. A zero-hotspot body remains valid.
 - **Taxonomy**: Distinct schema objects for *Solar System Bodies* (planets/moons), *Catalog Observation Targets* (nebulae, star-forming regions), and *Discrete Epoch Observations* (T1 vs. T2).
 - **Scientific Honesty Guardrails**: Every data record explicitly declares its provenance status: **Fact**, **Illustration**, **Candidate (unconfirmed)**, or **Unverified**.
 

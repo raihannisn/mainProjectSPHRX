@@ -163,29 +163,34 @@ export function BodyExplorer({
   useBodyManipulation(manip)
   const [geometry, setGeometry] = useState<BufferGeometry | null>(null)
   const [illustration, setIllustration] = useState(false)
-  useEffect(() => useXRApp.setState({ shapeIsIllustration: illustration }), [illustration])
   const paused = useXRApp((s) => s.hotspotId !== null || s.hoveredId !== null)
   const t = useT()
   const layers = layersFor(id)
   const layerId = useXRApp((s) => s.layer[id] ?? layers[0]?.id)
   const layer = layers.find((l) => l.id === layerId)
   const layerUrl = layer?.url
+  const isAsteroid = content?.type === 'asteroid' || info?.kind === 'asteroid'
+  const plainSphereIsIllustration = content !== undefined && content !== null && !isAsteroid && !content.texture
+  useEffect(() => {
+    useXRApp.setState({ shapeIsIllustration: illustration || plainSphereIsIllustration })
+  }, [illustration, plainSphereIsIllustration])
 
   useFrame((_, dt) => {
     if (spin.current && !paused && !manipulation.active) spin.current.rotation.y += dt * 0.06
   })
 
   const name = content?.name ?? info?.name ?? id
-  const isAsteroid = content?.type === 'asteroid' || info?.kind === 'asteroid'
   const color = info?.color ?? '#888888'
   const subtitle =
     content === undefined
       ? t('Loading…')
       : illustration
         ? t('Shape is an illustration (no model available)')
-        : content === null || content.hotspots.length === 0
+        : content === null
           ? t('No hotspots for this body yet')
-          : t('{n} hotspots, point, tap or look to explore', { n: content.hotspots.length })
+          : content.hotspots.length === 0
+            ? t('Overview and narration available; no mapped hotspots')
+            : t('{n} hotspots, point, tap or look to explore', { n: content.hotspots.length })
 
   return (
     <group>

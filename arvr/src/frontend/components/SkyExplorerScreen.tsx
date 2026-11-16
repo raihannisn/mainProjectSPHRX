@@ -11,7 +11,7 @@ import { SkyScene3D } from './SkyScene3D'
 import { useAmbientAudio } from '../audio/ambientAudio'
 import { ModelViewer3D, MODEL_BODIES, isViewerBody } from './ModelViewer3D'
 import { BODY_BY_ID } from '../../xr/bodies'
-import { useBodyContent } from '../../xr/content'
+import { useBodyContent, useSiteContent } from '../../xr/content'
 import { useDeviceCaps } from '../../xr/device'
 import { KIND_LABEL } from '../../xr/InfoCard'
 import { localHotspot } from '../../xr/i18n'
@@ -29,6 +29,11 @@ type MarkerId = 'rcw-36' | 'candidate-02' | 'demo-tile-01'
  */
 type ViewportModel = string // 'solar' (default) | 'sky' | a body id
 const MODEL_ORDER: ViewportModel[] = ['solar', ...MODEL_BODIES]
+const DEFAULT_SURFACE_SITE_BY_BODY: Record<string, string> = {
+  mars: 'gale',
+  moon: 'apollo11',
+  bennu: 'bennu-nightingale',
+}
 const labelOf = (model: ViewportModel) => (model === 'solar' ? 'Solar System' : model === 'sky' ? 'Sky' : (BODY_BY_ID[model]?.name ?? model))
 const BODY_TYPE_LABEL: Record<string, string> = { planet: 'Planet', moon: 'Moon', asteroid: 'Near-Earth asteroid', star: 'Star' }
 
@@ -91,7 +96,19 @@ export function SkyExplorerScreen() {
   const hotspotId = useXRApp((s) => s.hotspotId)
   const shapeIsIllustration = useXRApp((s) => s.shapeIsIllustration)
   const rawHotspot = bodyContent?.hotspots.find((h) => h.id === hotspotId) ?? null
+  const modelIsIllustration =
+    shapeIsIllustration || (bodyContent !== undefined && bodyContent !== null && !bodyContent.texture && !bodyContent.model)
   const hotspot = localHotspot(rawHotspot, 'en')
+  const requestedSurfaceId = searchParams.get('site')
+  const requestedSurface = useSiteContent(requestedSurfaceId)
+  const surfaceMode = Boolean(
+    requestedSurfaceId &&
+      bodyModel &&
+      (requestedSurface === undefined || requestedSurface?.body === bodyModel),
+  )
+  const surfaceSiteId = surfaceMode ? requestedSurfaceId : null
+  const entrySurfaceId = hotspot?.site ?? (bodyModel ? DEFAULT_SURFACE_SITE_BY_BODY[bodyModel] : undefined)
+  const entrySurface = useSiteContent(entrySurfaceId ?? null)
   const xrIntent: 'vr' | 'ar' | null = caps.vr ? 'vr' : caps.ar ? 'ar' : null
   // NASA image layers of the body (e.g. Mars colour / MOLA elevation), shared with the XR scene
   const bodyLayers = layersFor(bodyModel)
@@ -101,7 +118,7 @@ export function SkyExplorerScreen() {
 
   // Solar System chart: tapping a planet opens that body here, in the same viewport
   useEffect(() => {
-    if (!in3D) return
+    if (!in3D || bodyModel) return
     useXRApp.setState({ bodyId: null, siteId: null })
     return useXRApp.subscribe((state) => {
       const picked = state.bodyId
@@ -111,9 +128,16 @@ export function SkyExplorerScreen() {
       if (!isViewerBody(picked)) return
       const params = new URLSearchParams(window.location.search)
       params.set('model', picked)
+      params.delete('site')
       setSearchParams(params)
     })
-  }, [in3D, setSearchParams])
+  }, [bodyModel, in3D, setSearchParams])
+
+  useEffect(() => {
+    if (!surfaceMode || !surfaceSiteId || !requestedSurface || requestedSurface.body !== bodyModel) return
+    const state = useXRApp.getState()
+    if (state.siteId !== requestedSurface.id) state.selectSite(requestedSurface.id, requestedSurface.body)
+  }, [bodyModel, requestedSurface, surfaceMode, surfaceSiteId])
 
   const illustrative = selectedId === 'rcw-36' ? null : ILLUSTRATIVE_TARGETS[selectedId]
   const chosenObservation = observations.find((item) => item.observation_id === searchParams.get('obs')) ?? observations[0]
@@ -125,10 +149,10 @@ export function SkyExplorerScreen() {
       : illustrative?.description || 'Illustrative content only.'
   const targetTag =
     selectedId === 'rcw-36'
-      ? { label: '● CATALOG', tone: 'fact' }
+      ? { label: 'CATALOG', tone: 'fact' }
       : selectedId === 'candidate-02'
-        ? { label: '● CANDIDATE', tone: 'candidate' }
-        : { label: '● ILLUSTRATION', tone: 'demo' }
+        ? { label: 'CANDIDATE', tone: 'candidate' }
+        : { label: 'ILLUSTRATION', tone: 'demo' }
 
   useEffect(() => {
     let active = true
@@ -200,6 +224,7 @@ export function SkyExplorerScreen() {
     if (target === 'solar') params.delete('model')
     else params.set('model', target)
     params.delete('target')
+    params.delete('site')
     setSearchParams(params, { replace: true })
     notify(target === 'solar' ? 'Solar System.' : `3D model: ${labelOf(target)}.`)
   }
@@ -232,16 +257,38 @@ export function SkyExplorerScreen() {
 
   /** Exits the currently opened planet (or sky target) and returns to the 3D Solar System Hub. */
   const exitPlanet = () => {
-    useXRApp.getState().selectHotspot(null)
+    useXRApp.getState().selectBody(null)
     const params = new URLSearchParams(searchParams)
     params.delete('model')
     params.delete('target')
+    params.delete('site')
     setSearchParams(params)
     notify('Solar System.')
   }
 
+  const enterSurface = () => {
+    if (!entrySurface || entrySurface.body !== bodyModel) return
+    const params = new URLSearchParams(searchParams)
+    params.set('site', entrySurface.id)
+    setSearchParams(params)
+    useXRApp.getState().selectSite(entrySurface.id, entrySurface.body)
+    notify(`Entering ${entrySurface.name}.`)
+  }
+
+  const exitSurface = () => {
+    if (bodyModel) useXRApp.getState().selectBody(bodyModel)
+    const params = new URLSearchParams(searchParams)
+    params.delete('site')
+    setSearchParams(params)
+    notify(`Back to ${bodyContent?.name || labelOf(model)}.`)
+  }
+
   /** Step back: if a hotspot is selected on a planet, close the hotspot first; otherwise exit the planet to the Solar System. */
   const handleBack = () => {
+    if (surfaceMode) {
+      exitSurface()
+      return
+    }
     if (bodyModel && hotspot) {
       useXRApp.getState().selectHotspot(null)
       notify(`Back to ${bodyContent?.name || labelOf(bodyModel)}.`)
@@ -301,14 +348,23 @@ export function SkyExplorerScreen() {
       }),
     )
   }
-  const handleCompare = () => {
+  const handleCompare = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (selectedId !== 'rcw-36') {
-      notify('Comparison requires catalog-backed observation records. Switch to RCW 36 to compare.')
+      notify('This Explorer marker has no catalog coordinates for an archive comparison.')
       return
     }
     const params = new URLSearchParams({ target: selectedId })
     if (chosenObservation) params.set('obs', chosenObservation.observation_id)
-    navigate(`/comparison?${params}`)
+    const origin = originOf(event.currentTarget)
+    void runWormhole(
+      {
+        origin,
+        label: 'Opening observation comparison…',
+        waitForScene: false,
+        minMs: 580,
+      },
+      () => navigate(`/comparison?${params}`),
+    )
   }
   const handleEnterXR = (event?: React.MouseEvent<HTMLButtonElement>) => {
     const origin = originOf(event?.currentTarget ?? null)
@@ -348,35 +404,54 @@ export function SkyExplorerScreen() {
     narration.speechStatus === 'loading'
       ? 'Preparing AI voice…'
       : narration.speechStatus === 'playing'
-        ? 'AI voice playing'
+        ? narration.engine === 'browser'
+          ? 'Browser voice playing'
+          : 'AI voice playing'
         : narration.speechStatus === 'ready'
           ? narration.engine === 'browser'
             ? 'Replay voice (browser)'
             : 'Replay AI voice'
           : narration.speechStatus === 'error'
-            ? 'AI voice unavailable'
+            ? narration.engine === 'browser'
+              ? 'Browser voice unavailable'
+              : 'AI voice unavailable'
             : 'No narration available'
   const voicePlaying = narration.speechStatus === 'playing'
+  const voiceButtonLabel = voicePlaying
+    ? narration.engine === 'browser'
+      ? 'Stop browser voice'
+      : 'Stop AI voice'
+    : narration.engine === 'browser'
+      ? 'Replay browser voice'
+      : 'Play AI voice'
 
   // Honest labels for the 3D mode: the selected pin's own Fact / Illustration / Candidate kind,
   // otherwise "3D model" (or "Illustration" when an asteroid falls back to the procedural placeholder).
   const bodyTag = solar
-    ? { label: '● ILLUSTRATION', tone: 'demo' }
+    ? { label: 'ILLUSTRATION', tone: 'demo' }
     : !bodyModel
     ? null
     : hotspot
       ? {
-          label: `● ${KIND_LABEL[hotspot.kind].toUpperCase()}`,
+          label: KIND_LABEL[hotspot.kind].toUpperCase(),
           tone: hotspot.kind === 'fact' ? 'fact' : hotspot.kind === 'candidate' ? 'candidate' : 'demo',
         }
-      : shapeIsIllustration
-        ? { label: '● ILLUSTRATION', tone: 'demo' }
-        : { label: '● 3D MODEL', tone: 'fact' }
-  const headTag = bodyTag ?? targetTag
-  const headLoading = solar ? false : bodyModel ? bodyContent === undefined : targetLoading || observationsLoading
-  const bodyCredit = bodyContent ? [bodyContent.textureCredit, bodyContent.modelCredit].filter(Boolean).join(' · ') || 'NASA' : 'NASA'
+      : modelIsIllustration
+        ? { label: 'ILLUSTRATION', tone: 'demo' }
+        : { label: '3D MODEL', tone: 'fact' }
+  const headTag = surfaceMode ? { label: 'WALKABLE SURFACE', tone: 'fact' } : bodyTag ?? targetTag
+  const headLoading = surfaceMode ? requestedSurface === undefined : solar ? false : bodyModel ? bodyContent === undefined : targetLoading || observationsLoading
+  const bodyCredit = bodyContent
+    ? [bodyContent.textureCredit, bodyContent.modelCredit].filter(Boolean).join(' · ') || bodyContent.source?.label || 'NASA'
+    : 'NASA'
   const nextModel = MODEL_ORDER[(MODEL_ORDER.indexOf(model) + 1) % MODEL_ORDER.length]
-  const viewName = solar ? 'Solar System' : bodyModel ? bodyContent?.name || labelOf(bodyModel) : ''
+  const viewName = surfaceMode
+    ? requestedSurface?.name ?? 'Loading surface…'
+    : solar
+      ? 'Solar System'
+      : bodyModel
+        ? bodyContent?.name || labelOf(bodyModel)
+        : ''
 
   return (
     <div className="fe-app">
@@ -405,18 +480,19 @@ export function SkyExplorerScreen() {
           }}
         >
           {in3D ? (
-            <ModelViewer3D bodyId={bodyModel ?? 'solar'} resetKey={viewKey} />
+            <ModelViewer3D bodyId={bodyModel ?? 'solar'} siteId={surfaceSiteId} resetKey={viewKey} />
           ) : (
             <SkyScene3D selectedId={selectedId} onSelect={selectTarget} rotation={rotation} scale={scale} />
           )}
           <div className="fe-sky-title">
             <div className="fe-eyebrow">
-              <span className="fe-pulse-dot" aria-hidden="true" />
-              <span>{solar ? '3D chart · not to scale' : bodyModel ? '3D model · NASA data' : 'All-sky explorer · IRSA SPHEREx field'}</span>
+              <span>{surfaceMode ? 'Walkable surface · 3D terrain' : solar ? '3D chart · not to scale' : bodyModel ? (modelIsIllustration ? '3D illustration · not to scale' : '3D model · NASA data') : 'All-sky explorer · IRSA SPHEREx field'}</span>
             </div>
             <h2>{in3D ? viewName : selectedId === 'rcw-36' ? 'Vela Molecular Ridge' : currentName}</h2>
             <p className="fe-sky-coords">
-              {solar ? (
+              {surfaceMode ? (
+                <span className="fe-coord-pill">{requestedSurface?.region ?? 'Loading surface location…'}</span>
+              ) : solar ? (
                 <span className="fe-coord-pill">Tap a planet to open it</span>
               ) : bodyModel ? (
                 <span className="fe-coord-pill">
@@ -470,23 +546,25 @@ export function SkyExplorerScreen() {
           {/* New controls live in their own rail under the toolbar, so the four existing buttons never move.
               Round toggles only: one steps through the 3D bodies, the others act on the body that is shown. */}
           <div className="fe-model-rail" role="group" aria-label="3D model controls">
-            <button
-              type="button"
-              className={`fe-icon-btn fe-model-toggle ${bodyModel ? 'selected' : ''}`}
-              onClick={cycleModel}
-              aria-pressed={!!bodyModel}
-              aria-label={`3D models. Showing ${labelOf(model)}. Next: ${labelOf(nextModel)}`}
-              title={`3D models · now ${labelOf(model)} · next ${labelOf(nextModel)}`}
-            >
-              3D
-            </button>
+            {!surfaceMode && (
+              <button
+                type="button"
+                className={`fe-icon-btn fe-model-toggle ${bodyModel ? 'selected' : ''}`}
+                onClick={cycleModel}
+                aria-pressed={!!bodyModel}
+                aria-label={`3D models. Showing ${labelOf(model)}. Next: ${labelOf(nextModel)}`}
+                title={`3D models · now ${labelOf(model)} · next ${labelOf(nextModel)}`}
+              >
+                3D
+              </button>
+            )}
             {!solar && (
               <button
                 type="button"
                 className="fe-icon-btn fe-back-toggle"
                 onClick={handleBack}
-                aria-label={hotspot ? `Back to ${bodyContent?.name || labelOf(model)}` : 'Back to Solar System'}
-                title={hotspot ? `Back to ${bodyContent?.name || labelOf(model)}` : 'Back to Solar System'}
+                aria-label={surfaceMode ? `Exit surface to ${bodyContent?.name || labelOf(model)}` : hotspot ? `Back to ${bodyContent?.name || labelOf(model)}` : 'Back to Solar System'}
+                title={surfaceMode ? `Exit surface to ${bodyContent?.name || labelOf(model)}` : hotspot ? `Back to ${bodyContent?.name || labelOf(model)}` : 'Back to Solar System'}
               >
                 ←
               </button>
@@ -503,7 +581,7 @@ export function SkyExplorerScreen() {
                 ⦿
               </button>
             )}
-            {bodyModel && bodyLayers.length > 1 && (
+            {bodyModel && !surfaceMode && bodyLayers.length > 1 && (
               <button
                 type="button"
                 className={`fe-icon-btn fe-layer-toggle ${dataLayerOn ? 'selected' : ''}`}
@@ -516,11 +594,13 @@ export function SkyExplorerScreen() {
               </button>
             )}
           </div>
-          <div className="fe-view-hint">{in3D ? 'DRAG TO TURN · SCROLL TO ZOOM' : 'DRAG TO ROTATE SKY · SCROLL TO ZOOM'}</div>
+          <div className="fe-view-hint">
+            {surfaceMode ? 'WASD TO WALK · DRAG TO LOOK · SHIFT TO RUN · SPACE TO JUMP' : in3D ? 'DRAG TO TURN · SCROLL TO ZOOM' : 'DRAG TO ROTATE SKY · SCROLL TO ZOOM'}
+          </div>
         </div>
 
         <div className="fe-target-chip">
-          <span className="fe-eyebrow">{solar ? '3D chart' : bodyModel ? (hotspot ? 'Hotspot selected' : '3D model') : 'Target selected'}</span>
+          <span className="fe-eyebrow">{surfaceMode ? 'Surface exploration' : solar ? '3D chart' : bodyModel ? (hotspot ? 'Hotspot selected' : '3D model') : 'Target selected'}</span>
           {headLoading && <WormholePulse decorative />}
           <span className={`fe-tag ${headTag.tone}`}>{headTag.label}</span>
         </div>
@@ -531,7 +611,7 @@ export function SkyExplorerScreen() {
               <div className="fe-hud-card fe-hud-object">
                 <div className="fe-hud-head">
                   <span className="fe-eyebrow">3D chart</span>
-                  <span className={`fe-tag ${bodyTag.tone}`}>{bodyTag.label}</span>
+                  <span className={`fe-tag ${headTag.tone}`}>{headTag.label}</span>
                 </div>
                 <h2>Solar System</h2>
                 <p>Tap a planet to open its 3D model here. Planets sit at today's real direction from the Sun; sizes and distances are not to scale.</p>
@@ -568,27 +648,33 @@ export function SkyExplorerScreen() {
 
               <div className="fe-hud-card fe-source-line">Source: JPL approximate planetary positions · NASA imagery</div>
             </>
-          ) : bodyModel && bodyTag ? (
+          ) : bodyModel && (surfaceMode || bodyTag) ? (
             <>
               <div className="fe-hud-card fe-hud-object">
                 <div className="fe-hud-head">
-                  <span className="fe-eyebrow">{hotspot ? 'Hotspot selected' : '3D model'}</span>
+                  <span className="fe-eyebrow">{surfaceMode ? 'Surface exploration' : hotspot ? 'Hotspot selected' : '3D model'}</span>
                   {headLoading && <WormholePulse decorative />}
-                  <span className={`fe-tag ${bodyTag.tone}`}>{bodyTag.label}</span>
+                  <span className={`fe-tag ${headTag.tone}`}>{headTag.label}</span>
                 </div>
-                <h2>{hotspot ? hotspot.title : bodyContent?.name || labelOf(bodyModel)}</h2>
+                <h2>{surfaceMode ? requestedSurface?.name ?? 'Loading surface…' : hotspot ? hotspot.title : bodyContent?.name || labelOf(bodyModel)}</h2>
                 <p>
-                  {hotspot
+                  {surfaceMode
+                    ? requestedSurface
+                      ? `${requestedSurface.region}. Walk with WASD, drag to look, hold Shift to run, and press Space to jump.`
+                      : 'Loading the walkable surface…'
+                    : hotspot
                     ? hotspot.detail || hotspot.short
                     : bodyContent === undefined
                       ? 'Loading the 3D model and its hotspots.'
                       : bodyContent === null
                         ? 'No hotspot content is available for this body.'
+                        : bodyContent.hotspots.length === 0
+                          ? bodyContent.description?.en ?? 'No mapped hotspots are available for this body yet.'
                         : pinsOn
                           ? 'Drag to turn the model and tap a glowing pin to read about that place.'
                           : 'Hotspots are hidden. Use the ⦿ button to show them again.'}
                 </p>
-                {!hotspot && (
+                {!surfaceMode && !hotspot && (
                   <div className="fe-voice">
                     {(narration.guideLoading || narration.guideAnswer) && (
                       <p className="fe-voice-text">{narration.guideLoading ? 'Cosmic Guide is preparing a summary…' : narration.guideAnswer?.replace(/[*_`#]/g, '')}</p>
@@ -600,17 +686,25 @@ export function SkyExplorerScreen() {
                         onClick={voicePlaying ? narration.stop : narration.replay}
                         disabled={!narration.canReplay}
                         aria-pressed={voicePlaying}
-                        aria-label={voicePlaying ? 'Stop AI voice' : 'Play AI voice'}
-                        title={voicePlaying ? 'Stop AI voice' : 'Play AI voice'}
+                        aria-label={voiceButtonLabel}
+                        title={voiceButtonLabel}
                       >
                         <span aria-hidden="true">{voicePlaying ? '■' : '▶'}</span>
                       </button>
                       <span className="fe-voice-status" role="status">{voiceLabel}</span>
                     </div>
+                    {narration.speechError && (
+                      <p className="fe-voice-text" role="status">{narration.speechError}</p>
+                    )}
                   </div>
                 )}
                 <div className="fe-card-links">
-                  {hotspot ? (
+                  {surfaceMode ? (
+                    <button type="button" className="fe-card-link" onClick={exitSurface}>
+                      <span aria-hidden="true">←</span>
+                      <span>Back to {bodyContent?.name || labelOf(bodyModel)}</span>
+                    </button>
+                  ) : hotspot ? (
                     <button
                       type="button"
                       className="fe-card-link"
@@ -625,36 +719,74 @@ export function SkyExplorerScreen() {
                       <span>Back to Solar System</span>
                     </button>
                   )}
-                  <button type="button" className="fe-card-link" onClick={exitPlanet}>
-                    <span aria-hidden="true">✕</span>
-                    <span>Exit planet</span>
-                  </button>
-                  {xrIntent && (
+                  {!surfaceMode && (
+                    <button type="button" className="fe-card-link" onClick={exitPlanet}>
+                      <span aria-hidden="true">✕</span>
+                      <span>Exit planet</span>
+                    </button>
+                  )}
+                  {!surfaceMode && !hotspot && bodyContent?.source && (
+                    <a className="fe-card-link" href={bodyContent.source.url} target="_blank" rel="noopener noreferrer">
+                      <span aria-hidden="true">↗</span>
+                      <span>{bodyContent.source.label}</span>
+                    </a>
+                  )}
+                  {surfaceMode && requestedSurface?.conditionsSource && (
+                    <a className="fe-card-link" href={requestedSurface.conditionsSource.url} target="_blank" rel="noopener noreferrer">
+                      <span aria-hidden="true">↗</span>
+                      <span>{requestedSurface.conditionsSource.label}</span>
+                    </a>
+                  )}
+                  {!surfaceMode && xrIntent && (
                     <button type="button" className="fe-card-link" onClick={handleImmersive}>
                       <span>{xrIntent === 'vr' ? 'Enter VR' : 'Enter AR'}</span>
                       <span aria-hidden="true">↗</span>
                     </button>
                   )}
                 </div>
+                {surfaceMode ? (
+                  <button type="button" className="fe-btn-gold fe-go-inside" onClick={exitSurface}>
+                    <span>BACK TO ORBIT</span><span aria-hidden="true">↗</span>
+                  </button>
+                ) : entrySurface && entrySurface.body === bodyModel ? (
+                  <div className="fe-surface-entry">
+                    <button type="button" className="fe-btn-gold fe-go-inside" onClick={enterSurface}>
+                      <span>GO INSIDE</span><span aria-hidden="true">↘</span>
+                    </button>
+                    {hotspot && hotspot.site !== entrySurface.id && (
+                      <p className="fe-surface-note">
+                        No walkable terrain is mapped for {hotspot.title}; opening {entrySurface.name} instead.
+                      </p>
+                    )}
+                  </div>
+                ) : null}
               </div>
 
               <div className="fe-hud-card fe-hud-telemetry">
                 <div className="fe-data-grid">
                   <div className="fe-datum">
-                    <span>Object ID</span>
-                    <strong>{bodyModel}</strong>
+                    <span>{surfaceMode ? 'Surface site' : 'Object ID'}</span>
+                    <strong>{surfaceMode ? requestedSurface?.id || 'Loading…' : bodyModel}</strong>
                   </div>
                   <div className="fe-datum">
                     <span>Classification</span>
-                    <strong>{BODY_TYPE_LABEL[bodyContent?.type ?? ''] ?? 'Solar System body'}</strong>
+                    <strong>{surfaceMode ? 'Walkable terrain' : BODY_TYPE_LABEL[bodyContent?.type ?? ''] ?? 'Solar System body'}</strong>
                   </div>
                   <div className="fe-datum">
                     <span>Hotspots</span>
-                    <strong>{bodyContent ? `${bodyContent.hotspots.length} · ${pinsOn ? 'shown' : 'hidden'}` : '—'}</strong>
+                    <strong>
+                      {surfaceMode
+                        ? requestedSurface
+                          ? `${requestedSurface.hotspots.length} · ${pinsOn ? 'shown' : 'hidden'}`
+                          : '—'
+                        : bodyContent
+                          ? `${bodyContent.hotspots.length} · ${pinsOn ? 'shown' : 'hidden'}`
+                          : '—'}
+                    </strong>
                   </div>
                   <div className="fe-datum">
                     <span>Label</span>
-                    <strong>{hotspot ? KIND_LABEL[hotspot.kind] : shapeIsIllustration ? 'Illustration' : 'NASA data'}</strong>
+                    <strong>{surfaceMode ? 'NASA terrain + scene illustration' : hotspot ? KIND_LABEL[hotspot.kind] : modelIsIllustration ? 'Illustration' : 'NASA data'}</strong>
                   </div>
                   {bodyLayers.length > 1 && bodyLayer && (
                     <div className="fe-datum fe-datum-layer">
@@ -675,8 +807,12 @@ export function SkyExplorerScreen() {
               </div>
 
               <div className="fe-hud-card fe-source-line">
-                Source:{' '}
-                {hotspot ? (
+                {surfaceMode ? (
+                  <>{requestedSurface?.terrainCredit ?? 'Loading surface source…'}</>
+                ) : (
+                  <>
+                    Source:{' '}
+                    {hotspot ? (
                   <a href={hotspot.source.url} target="_blank" rel="noopener noreferrer">
                     {hotspot.source.label}
                   </a>
@@ -684,6 +820,8 @@ export function SkyExplorerScreen() {
                   bodyLayer.credit
                 ) : (
                   bodyCredit
+                )}
+                  </>
                 )}
               </div>
             </>
@@ -771,9 +909,11 @@ export function SkyExplorerScreen() {
             <button className="fe-btn-text" onClick={handleCompare}>
               <span>Compare observations</span><span aria-hidden="true">→</span>
             </button>
-            <button className="fe-btn-text fe-btn-gold" onClick={handleEnterXR}>
-              <span>Enter 3D Table (XR)</span><span aria-hidden="true">↗</span>
-            </button>
+            {!surfaceMode && (
+              <button className="fe-btn-text fe-btn-gold" onClick={handleEnterXR}>
+                <span>Enter 3D Table (XR)</span><span aria-hidden="true">↗</span>
+              </button>
+            )}
           </div>
 
           <div className="fe-dock">

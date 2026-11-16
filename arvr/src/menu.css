@@ -54,9 +54,9 @@ html, body, #root, .xr-root { height: 100dvh; }
 .menu-tabs button.on { color: #e9fbf9; }
 .menu-tabs button.on .ui-icon { color: #4fe3d6; }
 .menu-tabs button:hover:not(.on) { color: #dfe8f4; }
-.tab-badge { position: absolute; top: 4px; right: calc(50% - 20px); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; font-size: 10px; line-height: 16px; font-weight: 500; color: #03201e; background: #ffb54a; }
-.tab-dot { position: absolute; top: 8px; right: calc(50% - 15px); width: 7px; height: 7px; border-radius: 50%; background: #55607a; }
-.tab-dot.on { background: #5ee39a; box-shadow: 0 0 8px #5ee39a; }
+.tab-count, .tab-state { position: absolute; top: 4px; right: calc(50% - 20px); font-size: 9px; line-height: 1; font-weight: 500; color: #ffb54a; font-variant-numeric: tabular-nums; }
+.tab-state { color: #9aa8bf; }
+.tab-state.on { color: #5ee39a; }
 
 .menu-panel__body { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 14px 16px 8px; display: grid; gap: 14px; align-content: start; animation: rise-in var(--dur-mid) var(--ease-out) both; }
 .menu-section h4 { margin: 0 0 8px; font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #8fd9d3; }
@@ -270,11 +270,9 @@ label.setting-card { cursor: pointer; }
 .time-pill {
   position: absolute; left: max(16px, env(safe-area-inset-left)); bottom: calc(44px + env(safe-area-inset-bottom)); z-index: 5;
   display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; cursor: pointer; font: inherit; font-size: 13.5px; color: var(--text);
-  background: rgba(10, 22, 36, 0.8); border: 1px solid rgba(79, 227, 214, 0.35); border-radius: 999px; backdrop-filter: blur(12px);
+  background: rgba(10, 22, 36, 0.8); border: 1px solid rgba(79, 227, 214, 0.35); border-radius: 12px; backdrop-filter: blur(12px);
   animation: rise-in var(--dur-slow) var(--ease-out) 300ms both;
 }
-.time-pill__dot { width: 8px; height: 8px; border-radius: 50%; background: #8f7cff; }
-.time-pill__dot[data-live='true'] { background: #5ee39a; box-shadow: 0 0 8px #5ee39a; }
 .time-panel {
   position: absolute; left: max(16px, env(safe-area-inset-left)); bottom: calc(44px + env(safe-area-inset-bottom)); z-index: 6; width: min(420px, calc(100vw - 32px));
   display: grid; gap: 10px; padding: 14px 16px; color: var(--text);
@@ -284,8 +282,8 @@ label.setting-card { cursor: pointer; }
 .time-panel header { display: flex; align-items: center; gap: 10px; }
 .time-panel header strong { font-weight: 500; font-size: 16px; flex: 1; }
 .time-panel .menu-close { width: 36px; height: 36px; font-size: 20px; }
-.time-live { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(143, 124, 255, 0.18); color: #c9bfff; font-variant-numeric: tabular-nums; }
-.time-live.on { background: rgba(94, 227, 154, 0.15); color: #5ee39a; }
+.time-live { font-size: 12px; color: #c9bfff; font-variant-numeric: tabular-nums; }
+.time-live.on { color: #5ee39a; }
 .time-note { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
 .time-range { appearance: none; width: 100%; height: 28px; background: transparent; cursor: pointer; }
 .time-range::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, #8f7cff var(--pct), rgba(255, 255, 255, 0.12) var(--pct)); }

@@ -1,0 +1,68 @@
+- generic [ref=f6e2]:
+  - generic [ref=f6e42]:
+    - banner:
+      - generic [ref=f6e45]:
+        - link "S SPHEREx / COSMIC EXPEDITION" [ref=f6e46] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f6e47]: S
+          - generic [ref=f6e48]: SPHEREx / COSMIC EXPEDITION
+        - navigation "Main Navigation" [ref=f6e49]:
+          - link "Gateway" [ref=f6e50] [cursor=pointer]:
+            - /url: /
+          - link "Sky Explorer" [ref=f6e51] [cursor=pointer]:
+            - /url: /explorer
+          - link "Comparison" [ref=f6e52] [cursor=pointer]:
+            - /url: /comparison
+          - link "Cosmic Guide" [ref=f6e53] [cursor=pointer]:
+            - /url: /guide
+    - main [ref=f6e55]:
+      - generic [ref=f6e56]:
+        - generic [ref=f6e61]:
+          - generic [ref=f6e62]: 3D chart · not to scale
+          - heading "Solar System" [level=2] [ref=f6e64]
+          - paragraph [ref=f6e65]:
+            - generic [ref=f6e66]: Tap a planet to open it
+        - generic [ref=f6e67]:
+          - button "Reset view" [ref=f6e68] [cursor=pointer]: ⌖
+          - button "Recenter" [ref=f6e69] [cursor=pointer]: ◎
+          - button "Toggle audio off" [ref=f6e70] [cursor=pointer]: ♫
+          - button "Open Cosmic Guide" [ref=f6e71] [cursor=pointer]
+        - group "3D model controls" [ref=f6e78]:
+          - 'button "3D models. Showing Solar System. Next: Mars" [ref=f6e79] [cursor=pointer]': 3D
+        - generic [ref=f6e80]: DRAG TO TURN · SCROLL TO ZOOM
+      - generic [ref=f6e81]:
+        - generic [ref=f6e82]: 3D chart
+        - generic [ref=f6e83]: ILLUSTRATION
+      - complementary [ref=f6e84]:
+        - generic [ref=f6e85]:
+          - heading "Solar System" [level=2] [ref=f6e86]
+          - paragraph [ref=f6e87]: Tap a planet to open its 3D model here. Planets sit at today's real direction from the Sun; sizes and distances are not to scale.
+        - generic [ref=f6e89]:
+          - generic [ref=f6e90]:
+            - generic [ref=f6e91]: Object ID
+            - strong [ref=f6e92]: solar-system
+          - generic [ref=f6e93]:
+            - generic [ref=f6e94]: Classification
+            - strong [ref=f6e95]: Planetary system
+          - generic [ref=f6e96]:
+            - generic [ref=f6e97]: Bodies
+            - strong [ref=f6e98]: "11"
+          - generic [ref=f6e99]:
+            - generic [ref=f6e100]: Label
+            - strong [ref=f6e101]: Illustration
+        - generic [ref=f6e102]: "Source: JPL approximate planetary positions · NASA imagery"
+        - generic [ref=f6e103]:
+          - button "Ask the Guide" [ref=f6e104] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f6e106]: ↗
+          - button "Compare observations" [ref=f6e107] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f6e109]: →
+          - button "Enter 3D Table (XR)" [ref=f6e110] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f6e112]: ↗
+        - generic [ref=f6e113]:
+          - button "Exit to Gateway" [ref=f6e114] [cursor=pointer]
+          - button "Solar System Hub" [ref=f6e115] [cursor=pointer]
+  - status [ref=f6e116]:
+    - generic [ref=f6e118]:
+      - generic [ref=f6e119]: Opening Sky Explorer…
+      - button "Ambience · ON" [pressed] [ref=f6e122] [cursor=pointer]:
+        - generic [aria-hidden] [ref=f6e123]: ♪

@@ -2,6 +2,14 @@
   "id": "bennu",
   "name": "Bennu",
   "type": "asteroid",
+  "description": {
+    "en": "Bennu is a near-Earth asteroid studied by NASA's OSIRIS-REx mission. Its sample capsule returned to Earth in 2023 with about 121.6 grams of asteroid material.",
+    "id": "Bennu adalah asteroid dekat Bumi yang dipelajari oleh misi OSIRIS-REx NASA. Kapsul sampelnya kembali ke Bumi pada 2023 dengan sekitar 121,6 gram material asteroid."
+  },
+  "source": {
+    "label": "NASA Science – Asteroid Bennu",
+    "url": "https://science.nasa.gov/solar-system/asteroids/101955-bennu/"
+  },
   "model": "/models/bennu.glb",
   "modelCredit": "NASA 3D Resources – Asteroid 101955 Bennu (OSIRIS-REx shape model), converted from STL",
   "hotspots": [

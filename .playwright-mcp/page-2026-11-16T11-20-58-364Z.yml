@@ -1,0 +1,153 @@
+- generic [ref=f8e132]:
+  - banner:
+    - generic [ref=f8e135]:
+      - link "S SPHEREx / COSMIC EXPEDITION" [ref=f8e136] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f8e137]: S
+        - generic [ref=f8e138]: SPHEREx / COSMIC EXPEDITION
+      - navigation "Main Navigation" [ref=f8e139]:
+        - link "Gateway" [ref=f8e140] [cursor=pointer]:
+          - /url: /
+        - link "Sky Explorer" [ref=f8e141] [cursor=pointer]:
+          - /url: /explorer
+        - link "Comparison" [ref=f8e142] [cursor=pointer]:
+          - /url: /comparison
+        - link "Cosmic Guide" [ref=f8e143] [cursor=pointer]:
+          - /url: /guide
+  - main [ref=f8e145]:
+    - generic [ref=f8e146]:
+      - generic [ref=f8e147]:
+        - generic [ref=f8e148]: Multi-epoch comparison · SPHEREx infrared archive
+        - heading "Vela Molecular Ridge" [level=1] [ref=f8e286]
+        - generic [ref=f8e150]:
+          - generic [ref=f8e151]: RA 08h 55m 00s
+          - generic [ref=f8e152]: ·
+          - generic [ref=f8e153]: DEC -44°00′00″
+          - generic [ref=f8e154]: ·
+          - generic [ref=f8e155]: Vela
+          - generic [ref=f8e156]: ·
+          - generic [ref=f8e157]: 700–2,000 pc
+        - generic [ref=f8e158]:
+          - text: Comparison target
+          - combobox "Choose a catalog target for comparison" [ref=f8e159] [cursor=pointer]:
+            - option "RCW 36 Emission Nebula · Emission Nebula / H II Region"
+            - option "Vela Molecular Ridge · Giant Molecular Cloud Complex" [selected]
+          - text: Using a nominal search position, not a physical centroid.
+      - generic [ref=f8e160]:
+        - button "← 3D Explorer" [ref=f8e161] [cursor=pointer]
+        - button "Enter 3D Table (XR)" [ref=f8e162] [cursor=pointer]: Enter 3D Table (XR)↗
+    - generic [ref=f8e287]:
+      - generic [ref=f8e288]:
+        - generic [ref=f8e289]:
+          - generic [ref=f8e290]:
+            - tablist "Mode perbandingan observasi" [ref=f8e291]:
+              - button "↔ Slider Pembanding" [ref=f8e292] [cursor=pointer]
+              - button "✦ Kedipan (Blink)" [ref=f8e293] [cursor=pointer]
+              - button "◫ Berdampingan" [ref=f8e294] [cursor=pointer]
+            - generic [ref=f8e295]: IRSA · SPHEREx-D1
+          - generic [ref=f8e297]:
+            - generic [ref=f8e298]:
+              - 'img "Observasi T2: 2026W24_2B_0617_1"'
+            - generic [ref=f8e299]:
+              - 'img "Observasi T1: 2025W19_1B_0096_1"'
+            - generic [ref=f8e300]: T1 · 05 May 2025 · 0.931 μm (nominal)
+            - generic [ref=f8e302]: T2 · 14 Jun 2026 · 0.931 μm (nominal)
+            - generic [ref=f8e304]:
+              - generic [ref=f8e305]: ◀
+              - generic [ref=f8e306]: ❚
+              - generic [ref=f8e307]: ▶
+            - generic [aria-hidden] [ref=f8e308]: "T1: 50% │ T2: 50%"
+          - generic [ref=f8e309]: DRAG THE SLIDER TO COMPARE T1 AND T2 IMAGES · SELECT BLINK FOR AUTOMATIC SWITCHING
+        - generic [ref=f8e310]:
+          - generic [ref=f8e311]:
+            - generic [ref=f8e312]: CATALOG TARGET
+            - generic [ref=f8e313]: 700–2,000 pc
+          - heading "Vela Molecular Ridge" [level=3] [ref=f8e314]
+          - paragraph [ref=f8e315]: A large molecular cloud complex in Vela.
+          - generic [ref=f8e316]:
+            - generic [ref=f8e317]:
+              - generic [ref=f8e318]: Object ID
+              - strong [ref=f8e319]: vela-ridge
+            - generic [ref=f8e320]:
+              - generic [ref=f8e321]: Classification
+              - strong [ref=f8e322]: Giant Molecular Cloud Complex
+            - generic [ref=f8e323]:
+              - generic [ref=f8e324]: Right Ascension
+              - strong [ref=f8e325]: RA 08h 55m 00s
+            - generic [ref=f8e326]:
+              - generic [ref=f8e327]: Declination
+              - strong [ref=f8e328]: DEC -44°00′00″
+            - generic [ref=f8e329]:
+              - generic [ref=f8e330]: Shared detector
+              - strong [ref=f8e331]: SPHEREx-D1
+            - generic [ref=f8e332]:
+              - generic [ref=f8e333]: Catalog Source
+              - strong [ref=f8e334]: NASA IRSA
+      - generic [ref=f8e335]:
+        - article [ref=f8e336]:
+          - generic [ref=f8e337]:
+            - generic [ref=f8e338]: OBSERVATION T1 (DR1)
+            - generic [ref=f8e339]: 05 May 2025, 13:42 UTC
+          - heading "2025W19_1B_0096_1" [level=3] [ref=f8e340]
+          - generic [ref=f8e341]:
+            - generic [ref=f8e342]:
+              - generic [ref=f8e343]: Panjang Gelombang (λ)
+              - strong [ref=f8e344]: 0.931 μm (nominal)
+            - generic [ref=f8e345]:
+              - generic [ref=f8e346]: Bandwidth
+              - strong [ref=f8e347]: 0.0238 μm
+            - generic [ref=f8e348]:
+              - generic [ref=f8e349]: Detektor
+              - strong [ref=f8e350]: SPHEREx-D1
+            - generic [ref=f8e351]:
+              - generic [ref=f8e352]: Quality Flag
+              - strong [ref=f8e353]: Unflagged
+          - link "↓ Unduh FITS (Level 2)" [ref=f8e355] [cursor=pointer]:
+            - /url: https://irsa.ipac.caltech.edu/ibe/data/spherex/dr1/level2/2025W19_1B/l2b-v27-2026-197/1/level2_2025W19_1B_0096_1D1_spx_l2b-v27-2026-197.fits
+            - text: ↓ Unduh FITS (Level 2)↗
+        - article [ref=f8e356]:
+          - generic [ref=f8e357]:
+            - generic [ref=f8e358]: OBSERVATION T2 (QR3)
+            - generic [ref=f8e359]: 14 Jun 2026, 22:12 UTC
+          - heading "2026W24_2B_0617_1" [level=3] [ref=f8e360]
+          - generic [ref=f8e361]:
+            - generic [ref=f8e362]:
+              - generic [ref=f8e363]: Panjang Gelombang (λ)
+              - strong [ref=f8e364]: 0.931 μm (nominal)
+            - generic [ref=f8e365]:
+              - generic [ref=f8e366]: Bandwidth
+              - strong [ref=f8e367]: 0.0238 μm
+            - generic [ref=f8e368]:
+              - generic [ref=f8e369]: Detektor
+              - strong [ref=f8e370]: SPHEREx-D1
+            - generic [ref=f8e371]:
+              - generic [ref=f8e372]: Quality Flag
+              - strong [ref=f8e373]: Unflagged
+          - link "↓ Unduh FITS (Level 2)" [ref=f8e375] [cursor=pointer]:
+            - /url: https://irsa.ipac.caltech.edu/ibe/data/spherex/qr3/level2/2026W24_2B/l2b-v27-2026-272/1/level2_2026W24_2B_0617_1D1_spx_l2b-v27-2026-272.fits
+            - text: ↓ Unduh FITS (Level 2)↗
+        - article [ref=f8e376]:
+          - generic [ref=f8e377]:
+            - generic [ref=f8e378]: ✦ Cosmic Guide AI Assistant
+            - generic [ref=f8e379]: LIVE GEMINI
+          - generic [ref=f8e380]:
+            - button "Beda T1 vs T2?" [ref=f8e381] [cursor=pointer]
+            - button "Konteks panjang gelombang" [ref=f8e382] [cursor=pointer]
+            - button "Tentang target" [ref=f8e383] [cursor=pointer]
+          - generic [ref=f8e384]:
+            - textbox "Ask about spectral variability or astrophysics..." [ref=f8e385]
+            - button "Send ↗" [disabled] [ref=f8e386] [cursor=pointer]
+    - generic [ref=f8e166]:
+      - generic [ref=f8e167]:
+        - generic [ref=f8e168]: ⚖
+        - strong [ref=f8e169]: Scientific Integrity Disclosures
+      - generic [ref=f8e170]:
+        - paragraph [ref=f8e171]:
+          - strong [ref=f8e172]: Photometric Notice
+          - text: ": Visual preview only; not calibrated for quantitative photometry. Validated astrophysical variability or proper motion requires PSF aperture photometry on unresampled Level 2 images."
+        - paragraph [ref=f8e173]:
+          - strong [ref=f8e174]: Epoch pairing
+          - text: ": When available, the displayed pair uses the same detector and the earliest/latest valid UTC timestamps returned for the selected target. Wavelengths can differ; check each epoch’s metadata before interpreting visual changes."
+        - paragraph [ref=f8e175]:
+          - strong [ref=f8e176]: Quality flags
+          - text: ": Values shown come from each archive record. A visual comparison is not registered, normalized, or calibrated for quantitative photometry."

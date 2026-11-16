@@ -21,7 +21,7 @@ export function CatalogObjectCard3D({
   /** keeps the summary + voice-over running but draws no panel (inline 2D viewer; its HUD card shows the text) */
   hidden?: boolean
 }) {
-  const { object, catalogMessage, guideAnswer, guideError, guideLoading, speechStatus, speechError, canReplay, replay } =
+  const { object, catalogMessage, guideAnswer, guideError, guideLoading, speechStatus, speechError, engine, canReplay, replay } =
     useAgentNarration({ objectId, objectName, objectType, contentReady, localDescription, narrationDescription })
 
   const description = localDescription || object?.description
@@ -37,11 +37,17 @@ export function CatalogObjectCard3D({
     speechStatus === 'loading'
       ? 'PREPARING AI VOICE…'
       : speechStatus === 'playing'
-        ? 'AI VOICE PLAYING'
+        ? engine === 'browser'
+          ? 'BROWSER VOICE PLAYING'
+          : 'AI VOICE PLAYING'
         : speechStatus === 'ready'
-          ? '▶ REPLAY AI VOICE'
+          ? engine === 'browser'
+            ? '▶ REPLAY BROWSER VOICE'
+            : '▶ REPLAY AI VOICE'
           : speechStatus === 'error'
-            ? 'AI VOICE UNAVAILABLE'
+            ? engine === 'browser'
+              ? 'BROWSER VOICE UNAVAILABLE'
+              : 'AI VOICE UNAVAILABLE'
             : 'NO NARRATION AVAILABLE'
 
   return (

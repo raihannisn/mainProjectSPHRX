@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 
-from services.object_service import get_object_record
+from services.object_service import get_object_catalog, get_object_record
 
 
 ROUTER = APIRouter(prefix="/api/objects", tags=["Objects"])
@@ -50,3 +50,12 @@ def get_object_info(object_id: str):
         if obj_key in ("rcw-36", "rcw", "rcw36"):
             return DEFAULT_RCW36
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "",
+    summary="List canonical object catalog records",
+    description="Return catalog records once per canonical object ID.",
+)
+def list_object_infos():
+    return get_object_catalog()

@@ -1,0 +1,86 @@
+- generic [ref=f3e3]:
+  - banner:
+    - generic [ref=f3e6]:
+      - link "S SPHEREx / COSMIC EXPEDITION" [ref=f3e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f3e8]: S
+        - generic [ref=f3e9]: SPHEREx / COSMIC EXPEDITION
+      - navigation "Main Navigation" [ref=f3e10]:
+        - link "Gateway" [ref=f3e11] [cursor=pointer]:
+          - /url: /
+        - link "Sky Explorer" [ref=f3e12] [cursor=pointer]:
+          - /url: /explorer
+        - link "Comparison" [ref=f3e13] [cursor=pointer]:
+          - /url: /comparison
+        - link "Cosmic Guide" [ref=f3e14] [cursor=pointer]:
+          - /url: /guide
+  - main [ref=f3e16]:
+    - generic [ref=f3e17]:
+      - generic [ref=f3e22]:
+        - generic [ref=f3e23]: 3D model · NASA data
+        - heading "Mars" [level=2] [ref=f3e26]
+        - paragraph [ref=f3e27]:
+          - generic [ref=f3e28]: 7 hotspots
+      - generic [ref=f3e29]:
+        - button "Reset view" [ref=f3e30] [cursor=pointer]: ⌖
+        - button "Recenter" [ref=f3e31] [cursor=pointer]: ◎
+        - button "Toggle audio off" [ref=f3e32] [cursor=pointer]: ♫
+        - button "Open Cosmic Guide" [ref=f3e33] [cursor=pointer]
+      - group "3D model controls" [ref=f3e40]:
+        - 'button "3D models. Showing Mars. Next: Moon" [pressed] [ref=f3e41] [cursor=pointer]': 3D
+        - button "Back to Solar System" [ref=f3e42] [cursor=pointer]: ←
+        - button "Hide hotspots" [pressed] [ref=f3e43] [cursor=pointer]: ⦿
+        - 'button "NASA image layer: Colour (Viking). Switch layer" [ref=f3e44] [cursor=pointer]': ◐
+      - generic [ref=f3e45]: DRAG TO TURN · SCROLL TO ZOOM
+    - generic [ref=f3e46]:
+      - generic [ref=f3e47]: 3D model
+      - generic [ref=f3e48]: ● 3D MODEL
+    - complementary [ref=f3e49]:
+      - generic [ref=f3e50]:
+        - heading "Mars" [level=2] [ref=f3e51]
+        - paragraph [ref=f3e52]: Drag to turn the model and tap a glowing pin to read about that place.
+        - generic [ref=f3e53]:
+          - paragraph [ref=f3e103]: Mars is the fourth planet from the Sun, known as the Red Planet due to iron oxide on its surface. It features Olympus Mons, the tallest volcano in the Solar System, and Gale Crater, the Curiosity rover landing site.
+          - generic [ref=f3e54]:
+            - button "Replay browser voice" [ref=f3e104] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f3e56]: ▶
+            - status [ref=f3e57]: Replay voice (browser)
+          - status [ref=f3e105]: AI voice unavailable (HTTP 429); using browser voice.
+        - generic [ref=f3e58]:
+          - button "Back to Solar System" [ref=f3e59] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f3e60]: ←
+          - button "Exit planet" [ref=f3e62] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f3e63]: ✕
+          - link "NASA Science – Mars Facts" [ref=f3e65] [cursor=pointer]:
+            - /url: https://science.nasa.gov/mars/facts/
+            - generic [aria-hidden] [ref=f3e66]: ↗
+        - button "GO INSIDE" [active] [ref=f3e69] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f3e71]: ↘
+      - generic [ref=f3e73]:
+        - generic [ref=f3e74]:
+          - generic [ref=f3e75]: Object ID
+          - strong [ref=f3e76]: mars
+        - generic [ref=f3e77]:
+          - generic [ref=f3e78]: Classification
+          - strong [ref=f3e79]: Planet
+        - generic [ref=f3e80]:
+          - generic [ref=f3e81]: Hotspots
+          - strong [ref=f3e82]: 7 · shown
+        - generic [ref=f3e83]:
+          - generic [ref=f3e84]: Label
+          - strong [ref=f3e85]: NASA data
+        - generic [ref=f3e86]:
+          - generic [ref=f3e87]: NASA image layer
+          - strong [ref=f3e88]: Colour (Viking)
+      - generic [ref=f3e89]: "Source: NASA 3D Resources (Viking-era global colour mosaic), public domain"
+      - generic [ref=f3e90]:
+        - button "Ask the Guide" [ref=f3e91] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f3e93]: ↗
+        - button "Compare observations" [ref=f3e94] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f3e96]: →
+        - button "Enter 3D Table (XR)" [ref=f3e97] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f3e99]: ↗
+      - generic [ref=f3e100]:
+        - button "Exit to Gateway" [ref=f3e101] [cursor=pointer]
+        - button "Solar System Hub" [ref=f3e102] [cursor=pointer]
+  - status [ref=f3e106]: Entering Gale Crater floor.

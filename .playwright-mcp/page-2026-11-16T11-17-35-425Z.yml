@@ -1,0 +1,53 @@
+- generic [ref=f7e2]:
+  - generic [ref=f7e98]:
+    - banner:
+      - generic [ref=f7e101]:
+        - link "S SPHEREx / COSMIC EXPEDITION" [ref=f7e102] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f7e103]: S
+          - generic [ref=f7e104]: SPHEREx / COSMIC EXPEDITION
+        - navigation "Main Navigation" [ref=f7e105]:
+          - link "Gateway" [ref=f7e106] [cursor=pointer]:
+            - /url: /
+          - link "Sky Explorer" [ref=f7e107] [cursor=pointer]:
+            - /url: /explorer
+          - link "Comparison" [ref=f7e108] [cursor=pointer]:
+            - /url: /comparison
+          - link "Cosmic Guide" [ref=f7e109] [cursor=pointer]:
+            - /url: /guide
+    - main [ref=f7e111]:
+      - generic [ref=f7e112]:
+        - generic [ref=f7e113]:
+          - generic [ref=f7e114]: Multi-epoch comparison · SPHEREx infrared archive
+          - heading "Choose a catalog target" [level=1] [ref=f7e115]
+          - generic [ref=f7e116]:
+            - generic [ref=f7e117]: RA Unavailable
+            - generic [ref=f7e118]: ·
+            - generic [ref=f7e119]: DEC Unavailable
+          - generic [ref=f7e120]:
+            - text: Comparison target
+            - combobox "Choose a catalog target for comparison" [ref=f7e121] [cursor=pointer]:
+              - option "rcw-36 — archive coordinates unavailable" [disabled] [selected]
+        - generic [ref=f7e122]:
+          - button "← 3D Explorer" [ref=f7e123] [cursor=pointer]
+          - button "Enter 3D Table (XR)" [ref=f7e124] [cursor=pointer]: Enter 3D Table (XR)↗
+      - status [ref=f7e125]: "Could not load the object catalog: HTTP 404: Not Found"
+      - generic [ref=f7e126]:
+        - generic [ref=f7e127]:
+          - generic [ref=f7e128]: ⚖
+          - strong [ref=f7e129]: Scientific Integrity Disclosures
+        - generic [ref=f7e130]:
+          - paragraph [ref=f7e131]:
+            - strong [ref=f7e132]: Photometric Notice
+            - text: ": Visual preview only; not calibrated for quantitative photometry. Validated astrophysical variability or proper motion requires PSF aperture photometry on unresampled Level 2 images."
+          - paragraph [ref=f7e133]:
+            - strong [ref=f7e134]: Epoch pairing
+            - text: ": The displayed pair uses the same detector and the earliest/latest valid UTC timestamps returned for the selected target. Wavelengths can differ; check each epoch’s metadata before interpreting visual changes."
+          - paragraph [ref=f7e135]:
+            - strong [ref=f7e136]: Quality flags
+            - text: ": Values shown come from each archive record. A visual comparison is not registered, normalized, or calibrated for quantitative photometry."
+  - status [ref=f7e137]:
+    - generic [ref=f7e139]:
+      - generic [ref=f7e140]: Opening observation comparison…
+      - button "Ambience · ON" [pressed] [ref=f7e143] [cursor=pointer]:
+        - generic [aria-hidden] [ref=f7e144]: ♪

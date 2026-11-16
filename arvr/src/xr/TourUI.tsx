@@ -103,11 +103,6 @@ export function TourCaption() {
         <small>
           {t('Guided tour')} · {Math.min(text.step + 1, TOUR.length)}/{TOUR.length}
         </small>
-        <div className="tour-dots" aria-hidden>
-          {TOUR.map((s, i) => (
-            <i key={s.id} className={i < text.step ? 'done' : i === text.step ? 'on' : ''} />
-          ))}
-        </div>
       </div>
       <strong>{text.title}</strong>
       <p>

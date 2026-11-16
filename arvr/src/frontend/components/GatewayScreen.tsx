@@ -306,11 +306,11 @@ export function GatewayScreen() {
                   )}
                   {apod.fallback ? (
                     <span className="fe-apod-badge fe-apod-badge--offline">
-                      ● Offline Mode
+                      Offline Mode
                     </span>
                   ) : (
                     <span className="fe-apod-badge">
-                      {apod.media_type === 'video' ? '● NASA Video' : '● Live NASA APOD'}
+                      {apod.media_type === 'video' ? 'NASA Video' : 'Live NASA APOD'}
                     </span>
                   )}
                   {(apod.credit || apod.copyright) && (

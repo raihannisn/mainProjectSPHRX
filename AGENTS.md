@@ -20,6 +20,8 @@ Do not rewrite modules unnecessarily.
 - Never overwrite unrelated files.
 - Keep changes small and phase-specific.
 - Verify source code before making assumptions.
+- When changing `arvr/src/xr/bodies.ts`, keep one sourced `arvr/content/bodies/{id}.json` record per selectable body. Each record needs English and Indonesian descriptions; hotspots may be empty when none are mapped.
+- Preserve narration fallback behavior: a missing backend catalog record must not suppress bundled body information, and failed Gemini TTS must be clearly labeled when browser speech is used. Run `npm run build` in `arvr/` to verify `check:content`.
 - Run relevant tests after modifications.
 - Never fabricate test results.
 

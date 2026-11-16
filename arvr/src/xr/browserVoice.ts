@@ -1,4 +1,4 @@
-/** Browser speech synthesis helpers; agent voice-over uses backend-generated audio instead of this fallback. */
+/** Browser speech synthesis fallback for narration when backend-generated audio is unavailable. */
 const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined
 
 function pickVoice(): SpeechSynthesisVoice | null {

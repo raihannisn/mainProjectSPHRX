@@ -52,8 +52,8 @@ export function SpherexPanel() {
   const found = meta ? flags.some((f) => isHit(f, meta)) : false
 
   const viewsList: { id: string; label: string }[] = []
-  if (obsIdB) viewsList.push({ id: 'live-compare', label: `● ${t('Live Comp')}` })
-  if (obsIdA) viewsList.push({ id: 'live-obs', label: `● ${t('Live Obs')}` })
+  if (obsIdB) viewsList.push({ id: 'live-compare', label: t('Live Comp') })
+  if (obsIdA) viewsList.push({ id: 'live-obs', label: t('Live Obs') })
   viewsList.push({ id: 'blink', label: `${t('Spot what moved')}` })
   for (const img of images) {
     viewsList.push({ id: img.id, label: t(img.label) })
@@ -117,7 +117,7 @@ export function SpherexPanel() {
       ) : view === 'live-compare' ? (
         <>
           <p>
-            <strong>{`● Epoch ${liveFrame === 0 ? 'A' : 'B'}`}:</strong> {liveActiveId} · {liveActiveObs?.detector || 'D'} · {liveActiveObs?.effective_wavelength_at_target || ''}
+            <strong>{`Epoch ${liveFrame === 0 ? 'A' : 'B'}`}:</strong> {liveActiveId} · {liveActiveObs?.detector || 'D'} · {liveActiveObs?.effective_wavelength_at_target || ''}
           </p>
           <div className="spherex-panel__actions">
             <button className="chip-btn" onClick={() => setLiveBlinking(!liveBlinking)}>
@@ -134,7 +134,7 @@ export function SpherexPanel() {
       ) : view === 'live-obs' ? (
         <>
           <p>
-            <strong>● LIVE:</strong> {obsDataA?.observation_id || obsIdA} · {obsDataA?.detector || ''} · {obsDataA?.observed_at_utc?.slice(0, 10) || ''}
+            <strong>LIVE:</strong> {obsDataA?.observation_id || obsIdA} · {obsDataA?.detector || ''} · {obsDataA?.observed_at_utc?.slice(0, 10) || ''}
             <br />
             <small style={{ color: '#9ba8bf' }}>{obsDataA?.effective_wavelength_at_target || 'Nominal band'} · {obsDataA?.quality_flag_meaning || 'Unflagged'}</small>
           </p>
