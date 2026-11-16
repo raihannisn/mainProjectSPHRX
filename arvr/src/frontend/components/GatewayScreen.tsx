@@ -5,6 +5,7 @@ import { TopBar } from './TopBar'
 import { ParticleField } from './ParticleField'
 import { SolarSystem3D } from './SolarSystem3D'
 import { originOf, runWormhole } from '../wormhole'
+import { startCameraAr } from '../../xr/cameraAr'
 
 type DeviceCaps = { ar: boolean; vr: boolean }
 
@@ -53,6 +54,16 @@ export function GatewayScreen() {
   const notify = (message: string) => {
     setToast(message)
     window.setTimeout(() => setToast(null), 3000)
+  }
+
+  /** Landing AR: the Solar System on the phone camera, no AR app (ARCore) needed; iPhone included. */
+  const startAr = async (event: React.MouseEvent<HTMLElement>) => {
+    const origin = originOf(event.currentTarget)
+    await startCameraAr() // inside the tap, so iOS can show its motion prompt
+    void runWormhole(
+      { origin, label: 'Opening AR…', waitForScene: false, minMs: 450 },
+      () => navigate('/explorer'),
+    )
   }
 
   const handleCapabilities = () => {
@@ -138,6 +149,9 @@ export function GatewayScreen() {
             >
               Enter expedition <span aria-hidden="true">↗</span>
             </button>
+            <button className="fe-btn-text" onClick={startAr} title="Solar System in your room, on your phone camera">
+              Try AR now ◉
+            </button>
             <button className="fe-btn-text" onClick={handleCapabilities}>
               Explore capabilities
             </button>
@@ -191,25 +205,10 @@ export function GatewayScreen() {
             <span>Explore the interactive 3D sky in the browser.</span>
             <span className="fe-cap-action">Open 3D Explorer <span aria-hidden="true">↗</span></span>
           </button>
-          <button
-            type="button"
-            className="fe-cap"
-            onClick={(event) => {
-              const origin = originOf(event.currentTarget)
-              void runWormhole(
-                {
-                  origin,
-                  label: 'Opening the Solar System Hub…',
-                  waitForScene: false,
-                  minMs: 580,
-                },
-                () => navigate('/explorer')
-              )
-            }}
-          >
-            <b>WebXR AR</b>
-            <small>{caps.ar ? 'SUPPORTED ON THIS DEVICE' : 'REQUIRES AR-CAPABLE DEVICE'}</small>
-            <span>Place the tabletop observatory in your own room.</span>
+          <button type="button" className="fe-cap" onClick={startAr}>
+            <b>AR</b>
+            <small>{caps.ar ? 'WEBXR + CAMERA AR' : 'CAMERA AR · ANY PHONE'}</small>
+            <span>See the Solar System in your own room through your camera. No AR app needed.</span>
             <span className="fe-cap-action">Explore AR <span aria-hidden="true">↗</span></span>
           </button>
           <button

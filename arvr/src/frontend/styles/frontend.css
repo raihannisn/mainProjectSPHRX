@@ -5197,3 +5197,193 @@
 @media (prefers-reduced-motion: reduce) {
   .cg-mic.is-recording { animation: none; }
 }
+
+/* ==========================================================================
+   Phone: full-screen explorer + floating panels (appended; no earlier rule changed)
+   Same composition as desktop: the scene fills the screen and the cards float over it,
+   compact and scrollable, instead of stacking below a short viewport.
+   ========================================================================== */
+@media (max-width: 680px) {
+  .fe-explorer {
+    display: block;
+    height: calc(100dvh - var(--nav-h, 64px));
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .fe-explorer .fe-viewport {
+    position: absolute;
+    inset: 0;
+    height: auto;
+    min-height: 0;
+  }
+
+  .fe-explorer .fe-view-hint,
+  .fe-explorer .fe-hud-head {
+    display: none;
+  }
+
+  /* Floating sheet along the bottom edge; empty areas pass touches through to the scene. */
+  .fe-explorer .fe-hud {
+    position: absolute;
+    z-index: 5;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: auto;
+    max-width: none;
+    max-height: min(34dvh, 280px);
+    padding: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    pointer-events: none;
+    scrollbar-width: none;
+  }
+
+  .fe-explorer .fe-hud::-webkit-scrollbar {
+    display: none;
+  }
+
+  .fe-explorer .fe-hud > * {
+    pointer-events: auto;
+  }
+
+  .fe-explorer .fe-hud-object,
+  .fe-explorer .fe-hud-telemetry,
+  .fe-explorer .fe-source-line,
+  .fe-explorer .fe-hud-actions,
+  .fe-explorer .fe-dock {
+    position: relative;
+    inset: auto;
+    transform: none;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    flex: 0 0 auto;
+  }
+
+  .fe-explorer .fe-hud-object {
+    padding: 12px 14px;
+    border-radius: 18px;
+  }
+
+  .fe-explorer .fe-hud-object h2 {
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+  }
+
+  .fe-explorer .fe-hud-object p {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+    font-size: 0.76rem;
+    line-height: 1.5;
+  }
+
+  .fe-explorer .fe-card-links {
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .fe-explorer .fe-card-link {
+    min-height: 34px;
+    padding: 0 12px;
+    font-size: 0.64rem;
+  }
+
+  .fe-explorer .fe-go-inside {
+    min-height: 40px;
+    margin-top: 0;
+  }
+
+  .fe-explorer .fe-surface-entry {
+    margin-top: 8px;
+  }
+
+  .fe-explorer .fe-voice {
+    margin-top: 8px;
+    gap: 6px;
+  }
+
+  /* Telemetry is already echoed in the title chip; only the NASA layer legend stays. */
+  .fe-explorer .fe-hud-telemetry {
+    padding: 10px 14px;
+    border-radius: 16px;
+  }
+
+  .fe-explorer .fe-hud-telemetry .fe-datum:not(.fe-datum-layer) {
+    display: none;
+  }
+
+  .fe-explorer .fe-hud-telemetry:not(:has(.fe-datum-layer)) {
+    display: none;
+  }
+
+  .fe-explorer .fe-source-line {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    padding: 8px 12px;
+    border-radius: 14px;
+    font-size: 0.62rem;
+  }
+
+  .fe-explorer .fe-hud-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .fe-explorer .fe-hud-actions button,
+  .fe-explorer .fe-hud-actions a {
+    flex: 1 1 calc(50% - 6px);
+    min-height: 40px;
+    padding: 8px 14px;
+    font-size: 0.74rem;
+  }
+
+  /* Gateway / Solar System shortcuts live in the hamburger menu on phones. */
+  .fe-explorer .fe-dock {
+    display: none;
+  }
+
+  .fe-explorer .fe-go-inside {
+    min-height: 36px;
+  }
+}
+
+/* ---- Cosmic Guide on phones: floating window with a back button (appended) ---- */
+.cg-icon-btn--back { border-radius: 999px; font-size: 1rem; }
+.cg-icon-btn--back:hover { color: var(--ui-gold-soft); }
+
+@media (max-width: 767px) {
+  .cg-window.cg-window--page {
+    position: fixed;
+    z-index: 9;
+    inset: auto 10px calc(10px + env(safe-area-inset-bottom, 0px)) 10px;
+    width: auto;
+    max-width: none;
+    height: min(560px, calc(100dvh - 96px));
+    min-height: 0;
+    max-height: none;
+    margin: 0;
+    border-radius: 22px;
+  }
+}
+
+/* AR Quick Look link (iPhone/iPad): the required <img> child stays invisible (appended) */
+.fe-ql-img { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.fe-card-link:has(> .fe-ql-img) { position: relative; }
+
+/* Explorer rail now holds up to five round toggles (3D, AR, back, pins, layer) (appended) */
+@media (min-width: 681px) {
+  .fe-model-rail { width: calc(var(--hit-target) * 5 + 32px); }
+}

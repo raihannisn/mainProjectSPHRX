@@ -92,6 +92,8 @@ export interface XRAppState {
   hoveredId: string | null
   mode: ViewMode
   gyroEnabled: boolean
+  /** Camera AR: the phone's camera feed behind the scene, no WebXR/ARCore needed (works on any device). */
+  cameraAr: boolean
   arAnchor: [number, number, number] | null
   /** True when an asteroid is shown as the procedural placeholder instead of a real shape model. */
   shapeIsIllustration: boolean
@@ -141,6 +143,7 @@ export interface XRAppState {
   setHovered: (id: string | null) => void
   setMode: (mode: ViewMode) => void
   setGyroEnabled: (on: boolean) => void
+  setCameraAr: (on: boolean) => void
   setArAnchor: (p: [number, number, number] | null) => void
   setLastGuideRequest: (r: GuideRequest) => void
   showToast: (msg: string | null, ms?: number) => void
@@ -219,6 +222,7 @@ export const useXRApp = create<XRAppState>((set) => ({
   hoveredId: null,
   mode: 'desktop',
   gyroEnabled: false,
+  cameraAr: false,
   arAnchor: null,
   shapeIsIllustration: false,
   lastGuideRequest: null,
@@ -258,6 +262,7 @@ export const useXRApp = create<XRAppState>((set) => ({
   setHovered: (hoveredId) => set({ hoveredId }),
   setMode: (mode) => set({ mode }),
   setGyroEnabled: (gyroEnabled) => set({ gyroEnabled }),
+  setCameraAr: (cameraAr) => set({ cameraAr }),
   setArAnchor: (arAnchor) => set({ arAnchor }),
   setLastGuideRequest: (lastGuideRequest) => set({ lastGuideRequest }),
   showToast: (toast, ms = 3000) => {

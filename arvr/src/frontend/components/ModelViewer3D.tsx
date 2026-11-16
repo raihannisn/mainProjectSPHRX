@@ -11,6 +11,7 @@ import { useSiteContent } from '../../xr/content'
 import { ErrorBoundary } from '../../xr/ErrorBoundary'
 import { useXRApp } from '../../xr/store'
 import { xrStore } from '../../xr/xrStore'
+import { GyroControls } from '../../xr/GyroControls'
 
 const SurfaceScene = lazy(() =>
   import('../../xr/surface/SurfaceScene').then((module) => ({ default: module.SurfaceScene })),
@@ -53,6 +54,20 @@ function FitCamera({ resetKey, radius = FRAME_RADIUS, lift = 0.18 }: { resetKey:
     else cam.clearViewOffset()
     cam.updateProjectionMatrix()
   }, [camera, width, height, resetKey, radius, lift])
+  return null
+}
+
+/** Camera AR with motion sensors: the camera stays at the origin and turns with the phone; the model hovers ahead. */
+function ArOrigin() {
+  const camera = useThree((s) => s.camera)
+  useEffect(() => {
+    camera.position.set(0, 0, 0)
+    camera.quaternion.identity() // face the model; motion sensors take over from here
+    camera.near = 0.05
+    camera.far = 60
+    ;(camera as PerspectiveCamera).clearViewOffset()
+    camera.updateProjectionMatrix()
+  }, [camera])
   return null
 }
 
@@ -102,6 +117,11 @@ export function ModelViewer3D({ bodyId, siteId = null, resetKey }: ModelViewer3D
     }
   }, [bodyId])
 
+  const cameraAr = useXRApp((s) => s.cameraAr)
+  const gyro = useXRApp((s) => s.gyroEnabled)
+  const arGyro = cameraAr && gyro && !siteId
+  // walkable surface: phone motion turns the view (look-around)
+  const surfaceGyro = !!siteId && gyro
   const reduceMotion = useMemo(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     [],
@@ -122,20 +142,30 @@ export function ModelViewer3D({ bodyId, siteId = null, resetKey }: ModelViewer3D
             <directionalLight position={[4, 2.5, 5]} intensity={2.4} />
             <directionalLight position={[-5, -1, -3]} intensity={0.25} color="#7fa6ff" />
             {siteId ? (
-              <FitSurfaceCamera siteId={siteId} />
+              <>
+                <FitSurfaceCamera siteId={siteId} />
+                {surfaceGyro && <GyroControls />}
+              </>
+            ) : arGyro ? (
+              <>
+                <ArOrigin />
+                <GyroControls />
+              </>
             ) : (
               <FitCamera resetKey={resetKey} radius={bodyId === 'solar' ? 3.4 : FRAME_RADIUS} lift={bodyId === 'solar' ? 0.55 : 0.18} />
             )}
-            <Suspense fallback={null}>
-              {siteId ? (
-                <SurfaceScene key={`${siteId}:${resetKey}`} siteId={siteId} mode="desktop" />
-              ) : bodyId === 'solar' ? (
-                <SolarSystemHub />
-              ) : (
-                <BodyExplorer key={bodyId} id={bodyId} vr={false} showTitle={false} showObjectCard={false} />
-              )}
-            </Suspense>
-            {!siteId && (
+            <group position={arGyro ? [0, -0.1, bodyId === 'solar' ? -7 : -4] : [0, 0, 0]} scale={arGyro ? (bodyId === 'solar' ? 0.3 : 0.42) : 1}>
+              <Suspense fallback={null}>
+                {siteId ? (
+                  <SurfaceScene key={`${siteId}:${resetKey}`} siteId={siteId} mode={surfaceGyro ? 'gyro' : 'desktop'} />
+                ) : bodyId === 'solar' ? (
+                  <SolarSystemHub />
+                ) : (
+                  <BodyExplorer key={bodyId} id={bodyId} vr={false} showTitle={false} showObjectCard={false} />
+                )}
+              </Suspense>
+            </group>
+            {!siteId && !arGyro && (
               <OrbitControls
                 key={resetKey}
                 makeDefault

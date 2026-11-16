@@ -1,4 +1,5 @@
 import { createXRStore } from '@react-three/xr'
+import { IS_IN_APP_BROWSER, IS_IOS } from './arSupport'
 
 /** Preferred headset refresh rate. Quest 3 supports 72/80/90/120 Hz; the library default picks the highest
  *  (120 Hz = 8.3 ms per frame), which a browser scene misses and then judders. 72 Hz gives 13.9 ms. */
@@ -61,16 +62,29 @@ export async function enterImmersive(mode: 'vr' | 'ar') {
           { planeDetection: false, depthSensing: false, hitTest: true, domOverlay: false, handTracking: false },
           BARE,
         ]
+  // Ask the browser first: without WebXR (iPhone Safari, in-app browsers, desktop) there is nothing to retry.
+  const xr = navigator.xr
+  const wanted = mode === 'vr' ? 'immersive-vr' : 'immersive-ar'
+  if (!xr || !(await xr.isSessionSupported(wanted).catch(() => false))) {
+    throw Object.assign(new Error(`WebXR ${wanted} is not available`), { name: 'NotSupportedError' })
+  }
+  // Last resort for AR: no required features at all (some Android builds reject even 'local-floor').
+  if (mode === 'ar') presets.push({ customSessionInit: { optionalFeatures: ['local-floor', 'local', 'hit-test'] } })
   let last: unknown
-  for (const p of presets) {
-    Object.assign(options, p)
-    try {
-      return await enterWhenReady(mode)
-    } catch (e) {
-      last = e
-      // only "this combination isn't supported" is worth retrying with fewer extras
-      if ((e as { name?: string })?.name !== 'NotSupportedError') break
+  try {
+    for (const p of presets) {
+      options.customSessionInit = undefined
+      Object.assign(options, p)
+      try {
+        return await enterWhenReady(mode)
+      } catch (e) {
+        last = e
+        // only "this combination isn't supported" is worth retrying with fewer extras
+        if ((e as { name?: string })?.name !== 'NotSupportedError') break
+      }
     }
+  } finally {
+    options.customSessionInit = undefined // never leak the AR fallback into a later VR start
   }
   throw last
 }
@@ -91,10 +105,15 @@ const BARE: Partial<StoreOptions> = { planeDetection: false, depthSensing: false
 /** A plain-language explanation (and what to try) for a failed VR/AR start. */
 export function xrErrorMessage(e: unknown, mode: 'vr' | 'ar'): string {
   const name = (e as { name?: string })?.name
+  if (name === 'NotSupportedError') {
+    if (mode === 'ar' && IS_IOS)
+      return 'iPhone and iPad can’t run web AR. Use “View in AR” on Mars or the Moon, or Look around.'
+    if (mode === 'ar' && IS_IN_APP_BROWSER) return 'AR doesn’t work inside this app’s browser. Open this page in Chrome (Android) or Safari (iPhone).'
+  }
   if (name === 'NotSupportedError')
     return mode === 'ar'
       ? 'This device’s browser can’t open AR. Try Chrome, and update “Google Play Services for AR” in the Play Store. You can still use Look around.'
-      : 'This device’s browser can’t open VR. On Meta Quest, use the built-in Browser.'
+      :'This device’s browser can’t open VR. On Meta Quest, use the built-in Browser.'
   if (name === 'SecurityError' || name === 'NotAllowedError') return 'The browser blocked it. Allow camera and motion access for this site, then try again.'
   if (name === 'InvalidStateError') return 'Another AR or VR view is already open. Close it and try again.'
   return mode === 'ar' ? 'AR could not start on this device. You can still use Look around.' : 'VR could not start on this device.'

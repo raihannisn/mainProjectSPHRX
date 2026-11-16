@@ -12,7 +12,10 @@ import { useAmbientAudio } from '../audio/ambientAudio'
 import { ModelViewer3D, MODEL_BODIES, isViewerBody } from './ModelViewer3D'
 import { BODY_BY_ID } from '../../xr/bodies'
 import { useBodyContent, useSiteContent } from '../../xr/content'
-import { useDeviceCaps } from '../../xr/device'
+import { quickLookUrl } from '../../xr/arSupport'
+import { startCameraAr, stopCameraAr } from '../../xr/cameraAr'
+import { CameraFeed } from '../../xr/CameraFeed'
+import { requestGyroPermission, useDeviceCaps } from '../../xr/device'
 import { KIND_LABEL } from '../../xr/InfoCard'
 import { localHotspot } from '../../xr/i18n'
 import { askGuide } from '../../xr/events'
@@ -34,6 +37,7 @@ const DEFAULT_SURFACE_SITE_BY_BODY: Record<string, string> = {
   moon: 'apollo11',
   bennu: 'bennu-nightingale',
 }
+let pendingArStop = 0
 const labelOf = (model: ViewportModel) => (model === 'solar' ? 'Solar System' : model === 'sky' ? 'Sky' : (BODY_BY_ID[model]?.name ?? model))
 const BODY_TYPE_LABEL: Record<string, string> = { planet: 'Planet', moon: 'Moon', asteroid: 'Near-Earth asteroid', star: 'Star' }
 
@@ -110,6 +114,22 @@ export function SkyExplorerScreen() {
   const entrySurfaceId = hotspot?.site ?? (bodyModel ? DEFAULT_SURFACE_SITE_BY_BODY[bodyModel] : undefined)
   const entrySurface = useSiteContent(entrySurfaceId ?? null)
   const xrIntent: 'vr' | 'ar' | null = caps.vr ? 'vr' : caps.ar ? 'ar' : null
+  const quickLook = quickLookUrl(bodyModel)
+  const cameraAr = useXRApp((s) => s.cameraAr)
+  const gyroOn = useXRApp((s) => s.gyroEnabled)
+  const arOn = surfaceMode ? gyroOn : cameraAr
+  // AR belongs to this screen: switch it off when leaving, or when the view has no model to show in AR.
+  // (deferred so React StrictMode's simulated unmount in dev cannot cancel AR started on the landing page)
+  useEffect(() => {
+    if (pendingArStop) window.clearTimeout(pendingArStop)
+    pendingArStop = 0
+    return () => {
+      pendingArStop = window.setTimeout(stopCameraAr, 0)
+    }
+  }, [])
+  useEffect(() => {
+    if (cameraAr && (!in3D || surfaceMode)) stopCameraAr()
+  }, [cameraAr, in3D, surfaceMode])
   // NASA image layers of the body (e.g. Mars colour / MOLA elevation), shared with the XR scene
   const bodyLayers = layersFor(bodyModel)
   const activeLayerId = useXRApp((s) => (bodyModel ? s.layer[bodyModel] : undefined))
@@ -300,7 +320,43 @@ export function SkyExplorerScreen() {
   /** Starts an immersive WebXR VR/AR session directly on the inline 3D canvas. */
   const handleImmersive = () => {
     if (!in3D || !xrIntent) return
-    enterImmersive(xrIntent).catch((err) => notify(xrErrorMessage(err, xrIntent)))
+    enterImmersive(xrIntent).catch((err) => {
+      // real AR (ARCore) failed: fall back to AR on the camera feed, which needs no AR app
+      if (xrIntent === 'ar') void handleCameraAr()
+      else notify(xrErrorMessage(err, xrIntent))
+    })
+  }
+
+  /** Walkable surface: turn the view by moving the phone (iOS asks for motion access on this tap). */
+  const handleGyro = async () => {
+    if (cameraAr) stopCameraAr()
+    if (!caps.gyro) {
+      notify('AR look-around needs a phone or tablet with motion sensors.')
+      return
+    }
+    if (gyroOn && !cameraAr) {
+      useXRApp.getState().setGyroEnabled(false)
+      notify('Motion look-around off.')
+      return
+    }
+    const ok = await requestGyroPermission()
+    useXRApp.getState().setGyroEnabled(ok)
+    notify(ok ? 'Move your phone to look around.' : 'Motion access was denied, so use touch controls.')
+  }
+
+  /** AR on the phone camera: no WebXR or Google Play Services for AR needed, works on iPhone too. */
+  const handleCameraAr = async () => {
+    if (cameraAr) {
+      stopCameraAr()
+      notify('AR off.')
+      return
+    }
+    if (!in3D || surfaceMode) {
+      notify('Open the Solar System or a planet to use AR.')
+      return
+    }
+    const motion = await startCameraAr()
+    notify(motion ? 'AR on. Move your phone to look around.' : 'AR on. Motion access was denied, so drag to turn the view.')
   }
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -479,6 +535,7 @@ export function SkyExplorerScreen() {
             setScale((value) => Math.max(0.75, Math.min(1.35, value - event.deltaY * 0.0006)))
           }}
         >
+          {cameraAr && in3D && !surfaceMode && <CameraFeed onError={notify} />}
           {in3D ? (
             <ModelViewer3D bodyId={bodyModel ?? 'solar'} siteId={surfaceSiteId} resetKey={viewKey} />
           ) : (
@@ -558,6 +615,18 @@ export function SkyExplorerScreen() {
                 3D
               </button>
             )}
+            {in3D && (
+              <button
+                type="button"
+                className={`fe-icon-btn fe-model-toggle fe-ar-toggle ${arOn ? 'selected' : ''}`}
+                onClick={() => void (surfaceMode ? handleGyro() : handleCameraAr())}
+                aria-pressed={arOn}
+                aria-label={surfaceMode ? (gyroOn ? 'Turn AR look-around off' : 'AR: look around by moving your phone') : cameraAr ? 'Turn AR off' : 'View in AR with your camera'}
+                title={surfaceMode ? (gyroOn ? 'Turn AR look-around off' : 'AR: look around by moving your phone') : cameraAr ? 'Turn AR off' : 'View in AR with your camera'}
+              >
+                AR
+              </button>
+            )}
             {!solar && (
               <button
                 type="button"
@@ -615,14 +684,18 @@ export function SkyExplorerScreen() {
                 </div>
                 <h2>Solar System</h2>
                 <p>Tap a planet to open its 3D model here. Planets sit at today's real direction from the Sun; sizes and distances are not to scale.</p>
-                {xrIntent && (
-                  <div className="fe-card-links">
+                <div className="fe-card-links">
+                  {xrIntent && (
                     <button type="button" className="fe-card-link" onClick={handleImmersive}>
                       <span>{xrIntent === 'vr' ? 'Enter VR' : 'Enter AR'}</span>
                       <span aria-hidden="true">↗</span>
                     </button>
-                  </div>
-                )}
+                  )}
+                  <button type="button" className="fe-card-link" onClick={() => void handleCameraAr()}>
+                    <span>AR with camera</span>
+                    <span aria-hidden="true">↗</span>
+                  </button>
+                </div>
               </div>
 
               <div className="fe-hud-card fe-hud-telemetry">
@@ -742,6 +815,21 @@ export function SkyExplorerScreen() {
                       <span>{xrIntent === 'vr' ? 'Enter VR' : 'Enter AR'}</span>
                       <span aria-hidden="true">↗</span>
                     </button>
+                  )}
+                  {!surfaceMode && (
+                    <button type="button" className="fe-card-link" onClick={() => void handleCameraAr()}>
+                      <span>AR with camera</span>
+                      <span aria-hidden="true">↗</span>
+                    </button>
+                  )}
+                  {!surfaceMode && quickLook && (
+                    // iPhone/iPad: Safari has no WebXR, so iOS opens the model itself (AR Quick Look).
+                    // Quick Look needs an <img> as the link's first child.
+                    <a className="fe-card-link" rel="ar" href={quickLook}>
+                      <img className="fe-ql-img" alt="" width={1} height={1} src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
+                      <span>View in AR</span>
+                      <span aria-hidden="true">↗</span>
+                    </a>
                   )}
                 </div>
                 {surfaceMode ? (

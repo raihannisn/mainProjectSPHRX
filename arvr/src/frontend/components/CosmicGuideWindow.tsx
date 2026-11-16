@@ -14,6 +14,8 @@ import { useVoiceInput, voiceInputSupported } from '../guide/useVoiceInput'
 interface CosmicGuideWindowProps {
   fullPage?: boolean
   initialObjectId?: string
+  /** Full-page (mobile) presentation only: shows a back button in the header. */
+  onBack?: () => void
 }
 
 interface OpenGuideDetail {
@@ -27,7 +29,7 @@ const voiceInputLanguage: 'en' | 'id' =
     ? 'id'
     : 'en'
 
-export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicGuideWindowProps) {
+export function CosmicGuideWindow({ fullPage = false, initialObjectId, onBack }: CosmicGuideWindowProps) {
   const [open, setOpen] = useState(fullPage)
   const [closing, setClosing] = useState(false)
   const [context, setContext] = useState(initialObjectId ?? '')
@@ -169,6 +171,11 @@ export function CosmicGuideWindow({ fullPage = false, initialObjectId }: CosmicG
       aria-labelledby="cg-title"
     >
       <header className="cg-head">
+        {fullPage && onBack && (
+          <button type="button" className="cg-icon-btn cg-icon-btn--back" aria-label="Back" title="Back" onClick={onBack}>
+            ←
+          </button>
+        )}
         <span className="cg-head-icon"><BotIcon /></span>
         <span className="cg-head-text">
           <h1 className="cg-title" id="cg-title">Cosmic Guide</h1>

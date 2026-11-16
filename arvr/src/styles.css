@@ -363,3 +363,6 @@ html, body, #root { margin: 0; height: 100%; overflow: hidden; background: var(-
   .intro, .intro *, .intro__title span { animation: none !important; transition: none !important; }
   .intro__orbit { stroke-dashoffset: 0; }
 }
+
+/* Camera AR: the rear camera fills the screen behind the transparent 3D canvas */
+.xr-camera-feed { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; background: #05060f; }
