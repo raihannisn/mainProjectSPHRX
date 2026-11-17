@@ -30,6 +30,8 @@ import { makeFadeable, useFadeIn } from '../fade'
 import { reportProblem } from '../loading'
 import { localHotspot, t, useT } from '../i18n'
 import { ControllerHints } from '../ControllerHints'
+import { SpatialTutorialVR } from './SpatialTutorialVR'
+import { VRDemoArena } from './VRDemoArena'
 import { ErrorBoundary } from '../ErrorBoundary'
 import { DEFAULT_ENVIRONMENT, type Hotspot, type SiteContent, type SiteEnvironment, type SiteModel, type ViewMode } from '../types'
 import { EarthInSky, SpaceSun, StarSky } from '../space'
@@ -115,6 +117,7 @@ export function SurfaceScene({ siteId, mode }: { siteId: string; mode: ViewMode 
       ))}
       {mode === 'vr' ? <VRWalker site={site} hf={hf} /> : <Walker site={site} hf={hf} gyro={mode === 'gyro'} />}
       {mode === 'vr' && <SuitPanelVR site={site} />}
+      {mode === 'vr' && <VRDemoArena spawn={site.spawn} hf={hf} />}
     </>
   )
 }
@@ -695,11 +698,18 @@ function VRWalker({ site, hf }: { site: SiteContent; hf: HeightField }) {
   const locomotion = useXRApp((s) => s.settings.locomotion)
   const heightOffset = useXRApp((s) => s.settings.heightOffset)
   const recenterSeen = useRef(useXRApp.getState().recenter)
-  // teleport (default): the left stick doesn't slide you around; the right stick aims the teleport arc
-  useXRControllerLocomotion(origin, locomotion === 'smooth' ? { speed: 2 * moveSpeed } : false, turn === 'smooth' ? { type: 'smooth', speed: 1.6 } : { type: 'snap', degrees: turn === 'snap45' ? 45 : 30 })
+  // Dual locomotion: left stick smooth walking + right stick snap/smooth turning.
+  // Teleport pointer on the right controller operates simultaneously for instant parabolic jumps.
+  useXRControllerLocomotion(
+    origin,
+    { speed: 2.2 * moveSpeed },
+    turn === 'smooth' ? { type: 'smooth', speed: 1.6 } : { type: 'snap', degrees: turn === 'snap45' ? 45 : 30 }
+  )
 
   const right = useXRInputSourceState('controller', 'right')
   const left = useXRInputSourceState('controller', 'left')
+  const rightHand = useXRInputSourceState('hand', 'right')
+  const leftHand = useXRInputSourceState('hand', 'left')
   const hop = useRef({ h: 0, v: 0, was: false })
   const seated = useXRApp((s) => s.settings.seated)
   const last = useRef({ x: 0, z: 0, yaw: 0, init: false })
@@ -723,10 +733,34 @@ function VRWalker({ site, hf }: { site: SiteContent; hf: HeightField }) {
       cam.getWorldPosition(head)
       recenterOrigin(o, cam, Math.atan2(-(site.spawn.lookAt.x - head.x), -(site.spawn.lookAt.z - head.z)))
     }
+
+    // Seamless Hand Tracking Locomotion (active when controllers are not held):
+    if (!right && !left && (leftHand || rightHand)) {
+      // Left pinch to cruise/walk forward
+      const isLeftPinch = Boolean(
+        ((leftHand?.inputSource as any)?.gamepad?.buttons?.[0]?.pressed) ||
+        leftHand?.events?.some((e) => e.type === 'selectstart' || e.type === 'select')
+      )
+      if (isLeftPinch) {
+        const cam = viewCamera(gl, defaultCamera)
+        cam.getWorldDirection(dir)
+        dir.y = 0
+        dir.normalize()
+        const cruiseSpeed = 2.0 * moveSpeed
+        o.position.x += dir.x * cruiseSpeed * dt
+        o.position.z += dir.z * cruiseSpeed * dt
+      }
+    }
+
     clampToTerrain(hf, o.position)
     const ground = hf.heightAt(o.position.x, o.position.z)
-    // low-gravity hop on A (right) or X (left): same push as on Earth, Mars pulls only 38% as hard
-    const pressed = right?.gamepad?.['a-button']?.state === 'pressed' || left?.gamepad?.['x-button']?.state === 'pressed'
+    // low-gravity hop on A (right) or X (left), or right-hand pinch in hand tracking:
+    const controllerJump = right?.gamepad?.['a-button']?.state === 'pressed' || left?.gamepad?.['x-button']?.state === 'pressed'
+    const handJump = !right && !left && Boolean(
+      ((rightHand?.inputSource as any)?.gamepad?.buttons?.[0]?.pressed) ||
+      rightHand?.events?.some((e) => e.type === 'selectstart' || e.type === 'select')
+    )
+    const pressed = controllerJump || handJump
     if (pressed && !hop.current.was && hop.current.h === 0) {
       if (world.g < 0.05) useXRApp.getState().showToast('On Bennu a jump would reach escape speed: you would float away into space!')
       else hop.current.v = 2.6
@@ -761,6 +795,7 @@ function VRWalker({ site, hf }: { site: SiteContent; hf: HeightField }) {
     <XROrigin ref={origin} position={[site.spawn.x, hf.heightAt(site.spawn.x, site.spawn.z), site.spawn.z]} rotation={[0, spawnYaw(site), 0]}>
       <WristMenu />
       <ControllerHints scene="surface" />
+      <SpatialTutorialVR />
     </XROrigin>
   )
 }

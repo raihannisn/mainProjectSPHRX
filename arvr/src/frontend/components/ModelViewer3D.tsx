@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
-import { XR } from '@react-three/xr'
+import { XR, useXR } from '@react-three/xr'
 import type { PerspectiveCamera } from 'three'
 import '../../xr/loading' // registers the /xr/ base-path URL modifier for textures and models
 import { BodyExplorer } from '../../xr/BodyExplorer'
@@ -16,6 +16,12 @@ import { GyroControls } from '../../xr/GyroControls'
 const SurfaceScene = lazy(() =>
   import('../../xr/surface/SurfaceScene').then((module) => ({ default: module.SurfaceScene })),
 )
+
+function SurfaceSceneHost({ siteId, resetKey, surfaceGyro }: { siteId: string; resetKey: number; surfaceGyro: boolean }) {
+  const xrMode = useXR((s) => s.mode)
+  const mode = xrMode === 'immersive-vr' ? 'vr' : surfaceGyro ? 'gyro' : 'desktop'
+  return <SurfaceScene key={`${siteId}:${resetKey}`} siteId={siteId} mode={mode} />
+}
 
 /** Bodies that have a 3D model + hotspot content in `arvr/content/bodies/`. */
 export const MODEL_BODIES = ['mars', 'moon', 'bennu'] as const
@@ -157,7 +163,7 @@ export function ModelViewer3D({ bodyId, siteId = null, resetKey }: ModelViewer3D
             <group position={arGyro ? [0, -0.1, bodyId === 'solar' ? -7 : -4] : [0, 0, 0]} scale={arGyro ? (bodyId === 'solar' ? 0.3 : 0.42) : 1}>
               <Suspense fallback={null}>
                 {siteId ? (
-                  <SurfaceScene key={`${siteId}:${resetKey}`} siteId={siteId} mode={surfaceGyro ? 'gyro' : 'desktop'} />
+                  <SurfaceSceneHost siteId={siteId} resetKey={resetKey} surfaceGyro={surfaceGyro} />
                 ) : bodyId === 'solar' ? (
                   <SolarSystemHub />
                 ) : (

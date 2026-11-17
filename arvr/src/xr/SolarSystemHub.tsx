@@ -101,6 +101,7 @@ export function SolarSystemHub({ tilt = 0 }: { tilt?: number }) {
       <CosmicStarfield />
       <ZodiacConstellations />
       <ShootingMeteors />
+      <AsteroidBelt />
       {paths.map((o) => {
         const b = BODY_BY_ID[o.id]
         return <HoloOrbitPath key={`orbit-${o.id}`} points={o.points} color={b.kind === 'asteroid' ? HOLO.amber : hasContent(b.id) ? HOLO.teal : HOLO.violet} active={hovered === `hub:${o.id}`} />
@@ -443,6 +444,109 @@ function ExploreMarker({ radius }: { radius: number }) {
       <lineSegments geometry={geom}>
         <lineBasicMaterial color={HOLO.teal} transparent opacity={0.9} blending={AdditiveBlending} depthWrite={false} toneMapped={false} />
       </lineSegments>
+    </group>
+  )
+}
+
+/** 4. Main Asteroid Belt: dense realistic debris field rotating between Mars and Jupiter with Ceres */
+function AsteroidBelt() {
+  const pointsRef = useRef<any>(null)
+  const { geometry, ceresPos } = useMemo(() => {
+    const count = 3000
+    const pos = new Float32Array(count * 3)
+    const col = new Float32Array(count * 3)
+
+    // Palette of realistic asteroid types: stony (S-type), carbonaceous (C-type), metallic/basaltic
+    const palette = [
+      new Color('#c4b5a0'), // light silicate / stony
+      new Color('#998d7e'), // dusty rocky
+      new Color('#6b6359'), // dark carbonaceous chondrite
+      new Color('#827b72'), // neutral grey asteroid
+      new Color('#d9cbb7'), // bright reflective mineral
+      new Color('#524b42'), // deep dark carbon
+    ]
+
+    // Inner edge: ~1.26, Center (Ceres/Vesta): ~1.42, Outer edge: ~1.58
+    const rMin = 1.26
+    const rMax = 1.58
+    const rCenter = 1.42
+
+    for (let i = 0; i < count; i++) {
+      // Gaussian distribution concentrated in the center of the belt
+      const u1 = Math.random()
+      const u2 = Math.random()
+      const gaussian = (u1 + u2 - 1.0) * 0.5
+      const radius = rCenter + gaussian * (rMax - rMin) * 0.6
+      const angle = Math.random() * Math.PI * 2
+
+      // Slight vertical inclination dispersion (higher in center of the belt)
+      const height = (Math.random() - 0.5) * 0.052 * Math.cos(angle * 1.5)
+
+      pos[i * 3] = radius * Math.cos(angle)
+      pos[i * 3 + 1] = height
+      pos[i * 3 + 2] = radius * Math.sin(angle)
+
+      const c = palette[i % palette.length]
+      const albedo = 0.75 + Math.random() * 0.5
+      col[i * 3] = c.r * albedo
+      col[i * 3 + 1] = c.g * albedo
+      col[i * 3 + 2] = c.b * albedo
+    }
+
+    const geo = new BufferGeometry()
+    geo.setAttribute('position', new BufferAttribute(pos, 3))
+    geo.setAttribute('color', new BufferAttribute(col, 3))
+
+    // Position of Ceres (dwarf planet) inside the belt
+    const ceresAngle = 1.35
+    const ceresR = 1.41
+    const ceresPos: [number, number, number] = [ceresR * Math.cos(ceresAngle), 0.008, ceresR * Math.sin(ceresAngle)]
+
+    return { geometry: geo, ceresPos }
+  }, [])
+
+  useEffect(() => () => geometry.dispose(), [geometry])
+
+  useFrame((_, dt) => {
+    if (pointsRef.current) {
+      // Slow Keplerian counter-clockwise orbit for the belt
+      pointsRef.current.rotation.y += dt * 0.015
+    }
+  })
+
+  return (
+    <group>
+      <points ref={pointsRef} geometry={geometry}>
+        <pointsMaterial
+          size={0.016}
+          vertexColors
+          transparent
+          opacity={0.82}
+          depthWrite={false}
+          sizeAttenuation
+        />
+      </points>
+
+      {/* Ceres: the largest asteroid / dwarf planet in the belt */}
+      <group position={ceresPos}>
+        <mesh>
+          <sphereGeometry args={[0.013, 16, 12]} />
+          <meshStandardMaterial color="#c2b5a3" roughness={0.9} />
+        </mesh>
+        <Billboard position={[0, -0.034, 0]}>
+          <Text
+            font={FONT_BOLD}
+            fontSize={0.042}
+            letterSpacing={0.06}
+            color="#a8b2d1"
+            anchorY="top"
+            outlineWidth={0.003}
+            outlineColor="#000"
+          >
+            CERES
+          </Text>
+        </Billboard>
+      </group>
     </group>
   )
 }

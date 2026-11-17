@@ -1347,7 +1347,7 @@ export function BodyExplorer({
         ) : content?.texture ? (
           <ErrorBoundary fallback={<PlainPlanet color={color} />}>
             <Suspense fallback={<PlainPlanet color={color} />}>
-              <TexturedPlanet url={layerUrl ?? content.texture} color={color} relief={id === 'mars' && q.marsRelief ? `/textures/mars_normal_${q.marsRelief}.png` : undefined} />
+              <TexturedPlanet url={layerUrl ?? content.texture} color={color} relief={id === 'mars' ? '/textures/mars_normal_2k.png' : undefined} />
             </Suspense>
           </ErrorBoundary>
         ) : (
@@ -1380,7 +1380,7 @@ export function BodyExplorer({
           <HoloOrbit radius={1.55} color={HOLO.teal} />
         </group>
       )}
-      {id === 'mars' && <Atmosphere color="#e3a07a" intensity={0.9} />}
+      {id === 'mars' && <Atmosphere color="#df7747" intensity={1.15} />}
       {id === 'uranus' && <UranusAtmosphere />}
       {id === 'earth' && <EarthAtmosphere />}
       {showTitle && (

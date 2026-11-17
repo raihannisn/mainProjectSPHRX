@@ -41,31 +41,31 @@ const loadSet = (name: string, size: Size, albedoAsColor = false): Promise<SetTe
   ]).then(([albedo, normal, rough]) => ({ albedo, normal, rough }))
 
 function useSets(size: Size | null, albedoAsColor = false) {
+  const effectiveSize: Size = size || '1k'
   const [sets, setSets] = useState<{ size: Size; gravel: SetTextures; dust: SetTextures; rock: SetTextures } | null>(null)
   useEffect(() => {
-    if (!size) return
     let alive = true
-    Promise.all([loadSet('gravel', size, albedoAsColor), loadSet('dust', size, albedoAsColor), loadSet('rock', size, albedoAsColor)])
-      .then(([gravel, dust, rock]) => alive && setSets({ size, gravel, dust, rock }))
+    Promise.all([loadSet('gravel', effectiveSize, albedoAsColor), loadSet('dust', effectiveSize, albedoAsColor), loadSet('rock', effectiveSize, albedoAsColor)])
+      .then(([gravel, dust, rock]) => alive && setSets({ size: effectiveSize, gravel, dust, rock }))
       .catch((e) => console.warn('[surface] textures unavailable, using procedural ground', e))
     return () => {
       alive = false
     }
-  }, [size, albedoAsColor])
-  return size && sets?.size === size ? sets : null
+  }, [effectiveSize, albedoAsColor])
+  return sets
 }
 
 /** Ground material: vertex colours × blended gravel / dust / rock detail, gravel normal + roughness maps. */
 export function useGroundMaterial(size: Size | null): MeshStandardMaterial {
-  const sets = useSets(size)
+  const sets = useSets(size || '1k')
   const material = useMemo(() => {
     if (!sets) return new MeshStandardMaterial({ vertexColors: true, map: getGroundTexture(), roughness: 1, metalness: 0 })
     const m = new MeshStandardMaterial({
       vertexColors: true,
-      roughness: 1,
-      metalness: 0,
+      roughness: 0.92,
+      metalness: 0.05,
       normalMap: sets.gravel.normal,
-      normalScale: new Vector2(1.1, 1.1),
+      normalScale: new Vector2(1.5, 1.5),
       roughnessMap: sets.gravel.rough,
     })
     m.onBeforeCompile = (shader) => {
@@ -127,7 +127,7 @@ export function useGroundMaterial(size: Size | null): MeshStandardMaterial {
 
 /** Rock material: scanned boulder detail (greyscale) tinted basalt-red, with its normal and roughness maps. */
 export function useRockMaterial(size: Size | null): MeshStandardMaterial {
-  const sets = useSets(size, true)
+  const sets = useSets(size || '1k', true)
   const material = useMemo(() => {
     if (!sets) return new MeshStandardMaterial({ color: '#5e3b2b', roughness: 1, flatShading: true })
     return new MeshStandardMaterial({

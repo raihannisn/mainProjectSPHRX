@@ -27,7 +27,10 @@ const options: StoreOptions = {
     default: { grabPointer: false },
     right: { grabPointer: false, teleportPointer: true },
   },
-  hand: { grabPointer: false },
+  hand: {
+    default: { grabPointer: false },
+    right: { grabPointer: false, teleportPointer: true },
+  },
   offerSession: false,
   hitTest: true,
   domOverlay: true,

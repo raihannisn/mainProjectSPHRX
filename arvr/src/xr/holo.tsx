@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { Billboard } from '@react-three/drei'
 import { AdditiveBlending, BackSide, BufferAttribute, BufferGeometry, Color, ShaderMaterial, Vector3, type Group } from 'three'
 import type { TierParams } from './quality'
 
@@ -104,56 +105,149 @@ export function makeHoloPlanetMaterial(s: HoloStyle) {
   })
 }
 
-/** Stylised Sun: a hot amber core with layered additive halos. */
+/** Stylised Sun: blazing white-gold incandescent core with volumetric billboard corona flare & solar sparks. */
 export function HoloSun({ radius }: { radius: number }) {
   const core = useMemo(
     () =>
       new ShaderMaterial({
         uniforms: holoUniforms,
-        vertexShader: /* glsl */ `varying vec3 vN; varying vec3 vW; varying vec3 vO;
-          void main() { vO = position; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; vN = normalize(mat3(modelMatrix) * normal); gl_Position = projectionMatrix * viewMatrix * w; }`,
-        fragmentShader: /* glsl */ `uniform float uTime; varying vec3 vN; varying vec3 vW; varying vec3 vO;
+        vertexShader: /* glsl */ `
+          varying vec3 vN;
+          varying vec3 vW;
+          varying vec3 vO;
+          void main() {
+            vO = position;
+            vec4 w = modelMatrix * vec4(position, 1.0);
+            vW = w.xyz;
+            vN = normalize(mat3(modelMatrix) * normal);
+            gl_Position = projectionMatrix * viewMatrix * w;
+          }
+        `,
+        fragmentShader: /* glsl */ `
+          uniform float uTime;
+          varying vec3 vN;
+          varying vec3 vW;
+          varying vec3 vO;
           ${NOISE}
           void main() {
             vec3 V = normalize(cameraPosition - vW);
             float c = max(dot(normalize(vN), V), 0.0);
-            float g = n3(normalize(vO) * 4.0 + uTime * 0.15) * 0.5 + n3(normalize(vO) * 9.0 - uTime * 0.1) * 0.5;
-            vec3 col = mix(vec3(1.0, 0.36, 0.07), vec3(1.0, 0.74, 0.32), pow(c, 0.8) * 0.75 + g * 0.4);
-            gl_FragColor = vec4(col * 0.92, 1.0);
+            // Dynamic boiling solar granulation
+            float g1 = n3(normalize(vO) * 5.0 + uTime * 0.18) * 0.5 + 0.5;
+            float g2 = n3(normalize(vO) * 12.0 - uTime * 0.12) * 0.5 + 0.5;
+            float plasma = g1 * 0.65 + g2 * 0.35;
+            
+            // Blazing white-gold center transitioning to rich fiery orange at the limb
+            vec3 coreWhite = vec3(1.0, 0.98, 0.92);
+            vec3 solarGold = vec3(1.0, 0.72, 0.22);
+            vec3 limbOrange = vec3(1.0, 0.38, 0.08);
+            
+            vec3 col = mix(solarGold, coreWhite, pow(c, 1.4) * 0.85);
+            col = mix(limbOrange, col, pow(c, 0.6));
+            col += plasma * 0.28 * solarGold;
+            
+            gl_FragColor = vec4(col * 1.35, 1.0);
             #include <colorspace_fragment>
-          }`,
+          }
+        `,
       }),
     [],
   )
-  const halo = useMemo(
+
+  // Smooth volumetric radial flare billboard - seamless exponential falloff into deep space
+  const coronaMaterial = useMemo(
     () =>
       new ShaderMaterial({
         transparent: true,
         depthWrite: false,
         blending: AdditiveBlending,
         uniforms: holoUniforms,
-        vertexShader: /* glsl */ `varying vec3 vN; varying vec3 vW; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; vN = normalize(mat3(modelMatrix) * normal); gl_Position = projectionMatrix * viewMatrix * w; }`,
-        fragmentShader: /* glsl */ `varying vec3 vN; varying vec3 vW;
+        vertexShader: /* glsl */ `
+          varying vec2 vUv;
           void main() {
-            float c = max(dot(normalize(vN), normalize(cameraPosition - vW)), 0.0);
-            float a = pow(c, 2.6);
-            gl_FragColor = vec4(vec3(1.0, 0.55, 0.18) * a * 0.55, a * 0.7);
-          }`,
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: /* glsl */ `
+          uniform float uTime;
+          varying vec2 vUv;
+          void main() {
+            vec2 center = vUv - 0.5;
+            float dist = length(center) * 2.0; // 0 at center, 1 at quad edge
+            if (dist > 1.0) discard;
+            
+            // Rotating solar corona rays
+            float angle = atan(center.y, center.x);
+            float rays1 = 1.0 + 0.18 * sin(angle * 10.0 + uTime * 0.2);
+            float rays2 = 1.0 + 0.12 * cos(angle * 16.0 - uTime * 0.15);
+            float rays = rays1 * rays2;
+            
+            // Exponential volumetric falloff - no hard circle cutoff
+            float innerGlow = exp(-dist * 3.8);
+            float outerHalo = exp(-dist * 1.7) * 0.45;
+            float total = (innerGlow * 1.4 + outerHalo) * rays;
+            
+            vec3 colorInner = vec3(1.0, 0.92, 0.65);
+            vec3 colorOuter = vec3(1.0, 0.42, 0.08);
+            vec3 col = mix(colorInner, colorOuter, smoothstep(0.0, 0.75, dist));
+            
+            gl_FragColor = vec4(col * total * 1.5, total * 0.9);
+          }
+        `,
       }),
     [],
   )
-  useEffect(() => () => (core.dispose(), halo.dispose()), [core, halo])
+
+  // Floating solar flare sparks (plasma particles)
+  const sparkGeom = useMemo(() => {
+    const count = 75
+    const pos = new Float32Array(count * 3)
+    for (let i = 0; i < count; i++) {
+      const u = Math.random()
+      const v = Math.random()
+      const theta = u * 2.0 * Math.PI
+      const phi = Math.acos(2.0 * v - 1.0)
+      const r = radius * (1.05 + Math.random() * 0.7)
+      pos[i * 3] = r * Math.sin(phi) * Math.cos(theta)
+      pos[i * 3 + 1] = r * Math.cos(phi)
+      pos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta)
+    }
+    const g = new BufferGeometry()
+    g.setAttribute('position', new BufferAttribute(pos, 3))
+    return g
+  }, [radius])
+
+  const sparksRef = useRef<any>(null)
+  useFrame(({ clock }) => {
+    if (sparksRef.current) {
+      sparksRef.current.rotation.y = clock.elapsedTime * 0.04
+      sparksRef.current.rotation.z = Math.sin(clock.elapsedTime * 0.03) * 0.1
+    }
+  })
+
+  useEffect(() => () => {
+    core.dispose()
+    coronaMaterial.dispose()
+    sparkGeom.dispose()
+  }, [core, coronaMaterial, sparkGeom])
+
   return (
     <group>
+      {/* 1. Photosphere sphere */}
       <mesh material={core}>
-        <sphereGeometry args={[radius, 40, 28]} />
+        <sphereGeometry args={[radius, 48, 36]} />
       </mesh>
-      <mesh material={halo} scale={1.9}>
-        <sphereGeometry args={[radius, 32, 20]} />
-      </mesh>
-      <mesh material={halo} scale={3.1}>
-        <sphereGeometry args={[radius, 24, 16]} />
-      </mesh>
+      {/* 2. Volumetric Solar Corona Billboard */}
+      <Billboard>
+        <mesh material={coronaMaterial}>
+          <planeGeometry args={[radius * 7.5, radius * 7.5]} />
+        </mesh>
+      </Billboard>
+      {/* 3. Solar Sparks */}
+      <points ref={sparksRef} geometry={sparkGeom}>
+        <pointsMaterial size={0.024} color="#ffd166" transparent opacity={0.85} blending={AdditiveBlending} depthWrite={false} sizeAttenuation />
+      </points>
     </group>
   )
 }

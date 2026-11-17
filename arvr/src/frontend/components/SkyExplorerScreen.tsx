@@ -622,12 +622,22 @@ export function SkyExplorerScreen() {
               <button
                 type="button"
                 className={`fe-icon-btn fe-model-toggle fe-ar-toggle ${arOn ? 'selected' : ''}`}
-                onClick={() => void (surfaceMode ? handleGyro() : handleCameraAr())}
-                aria-pressed={arOn}
-                aria-label={surfaceMode ? (gyroOn ? 'Turn AR look-around off' : 'AR: look around by moving your phone') : cameraAr ? 'Turn AR off' : 'View in AR with your camera'}
-                title={surfaceMode ? (gyroOn ? 'Turn AR look-around off' : 'AR: look around by moving your phone') : cameraAr ? 'Turn AR off' : 'View in AR with your camera'}
+                onClick={() => {
+                  if (surfaceMode) {
+                    if (caps.vr) {
+                      enterImmersive('vr').catch((err) => notify(xrErrorMessage(err, 'vr')))
+                    } else {
+                      navigate(`/xr/surface/${requestedSurface?.id || 'gale'}`)
+                    }
+                  } else {
+                    void handleCameraAr()
+                  }
+                }}
+                aria-pressed={surfaceMode ? false : arOn}
+                aria-label={surfaceMode ? 'Enter VR Mode' : cameraAr ? 'Turn AR off' : 'View in AR with your camera'}
+                title={surfaceMode ? 'Enter VR Mode (WebXR / Headset)' : cameraAr ? 'Turn AR off' : 'View in AR with your camera'}
               >
-                AR
+                {surfaceMode ? 'VR' : 'AR'}
               </button>
             )}
             {!solar && (
@@ -806,67 +816,132 @@ export function SkyExplorerScreen() {
                       <line x1="19" y1="12" x2="5" y2="12" />
                       <polyline points="12 19 5 12 12 5" />
                     </svg>
-                    <span>{surfaceMode ? `Back to ${backName}` : hotspot ? `Back to ${backName}` : 'Back to Solar System'}</span>
+                    <span>{surfaceMode ? `Back to ${backName || 'Mars'}` : hotspot ? `Back to ${backName}` : 'Back to Solar System'}</span>
                   </button>
 
-                  {!surfaceMode && !hotspot && (
-                    <button
-                      type="button"
-                      className="fe-planet-btn fe-planet-btn--secondary"
-                      onClick={exitPlanet}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
-                      <span>Exit Planet</span>
-                    </button>
-                  )}
-
-                  {!surfaceMode && !hotspot && bodyContent?.source && (
-                    <a
-                      className="fe-planet-btn fe-planet-btn--secondary"
-                      href={bodyContent.source.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={bodyContent.source.label}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <line x1="7" y1="17" x2="17" y2="7" />
-                        <polyline points="7 7 17 7 17 17" />
-                      </svg>
-                      <span className="fe-btn-text-truncate">{bodyContent.source.label}</span>
-                    </a>
-                  )}
-
-                  {!surfaceMode && (
-                    <button
-                      type="button"
-                      className={`fe-planet-btn fe-planet-btn--secondary ${cameraAr ? 'is-active' : ''}`}
-                      onClick={() => void handleCameraAr()}
-                      title={cameraAr ? 'Turn AR off' : 'View in AR with camera'}
-                    >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                        <circle cx="12" cy="13" r="4" />
-                      </svg>
-                      <span>{cameraAr ? 'Exit AR Camera' : 'AR with Camera'}</span>
-                    </button>
-                  )}
-
-                  {!surfaceMode && entrySurface && entrySurface.body === bodyModel && (
+                  {/* Surface Mode: match Rapli's original layout (NASA Facts + Back to Orbit + Enter VR) */}
+                  {surfaceMode ? (
                     <>
-                      <button type="button" className="fe-planet-btn fe-planet-btn--gold" onClick={enterSurface}>
-                        <span>GO INSIDE</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <line x1="7" y1="7" x2="17" y2="17" />
-                          <polyline points="17 7 17 7 17 17" />
+                      <a
+                        className="fe-planet-btn fe-planet-btn--secondary"
+                        href={requestedSurface?.conditionsSource?.url || bodyContent?.source?.url || 'https://science.nasa.gov/mars/facts/'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={requestedSurface?.conditionsSource?.label || bodyContent?.source?.label || 'NASA Science – Mars Facts'}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <line x1="7" y1="17" x2="17" y2="7" />
+                          <polyline points="7 7 17 7 17 17" />
                         </svg>
+                        <span className="fe-btn-text-truncate">{requestedSurface?.conditionsSource?.label || bodyContent?.source?.label || 'NASA Science – Mars Facts'}</span>
+                      </a>
+
+                      <button
+                        type="button"
+                        className="fe-planet-btn fe-planet-btn--secondary"
+                        onClick={exitPlanet}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                        <span>Back to Orbit</span>
                       </button>
-                      {hotspot && hotspot.site !== entrySurface.id && (
-                        <p className="fe-surface-note">
-                          No walkable terrain is mapped for {hotspot.title}; opening {entrySurface.name} instead.
-                        </p>
+
+                      <button
+                        type="button"
+                        className="fe-planet-btn fe-planet-btn--gold"
+                        onClick={() => {
+                          if (caps.vr) {
+                            enterImmersive('vr').catch((err) => notify(xrErrorMessage(err, 'vr')))
+                          } else {
+                            navigate(`/xr/surface/${requestedSurface?.id || 'gale'}`)
+                          }
+                        }}
+                        title="Enter VR Experience (WebXR / Headset)"
+                      >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M21 7H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h4l2 3h6l2-3h4a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" />
+                          <circle cx="7.5" cy="12" r="2.5" />
+                          <circle cx="16.5" cy="12" r="2.5" />
+                        </svg>
+                        <span>Enter VR Mode</span>
+                      </button>
+
+                      {caps.gyro && (
+                        <button
+                          type="button"
+                          className={`fe-planet-btn fe-planet-btn--secondary ${gyroOn ? 'is-active' : ''}`}
+                          onClick={() => void handleGyro()}
+                          title="Look around by turning phone"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                          </svg>
+                          <span>{gyroOn ? 'Exit Gyro Look' : 'Phone Look-Around'}</span>
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {!hotspot && (
+                        <button
+                          type="button"
+                          className="fe-planet-btn fe-planet-btn--secondary"
+                          onClick={exitPlanet}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                          <span>Exit Planet</span>
+                        </button>
+                      )}
+
+                      {!hotspot && bodyContent?.source && (
+                        <a
+                          className="fe-planet-btn fe-planet-btn--secondary"
+                          href={bodyContent.source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={bodyContent.source.label}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <line x1="7" y1="17" x2="17" y2="7" />
+                            <polyline points="7 7 17 7 17 17" />
+                          </svg>
+                          <span className="fe-btn-text-truncate">{bodyContent.source.label}</span>
+                        </a>
+                      )}
+
+                      <button
+                        type="button"
+                        className={`fe-planet-btn fe-planet-btn--secondary ${cameraAr ? 'is-active' : ''}`}
+                        onClick={() => void handleCameraAr()}
+                        title={cameraAr ? 'Turn AR off' : 'View in AR with camera'}
+                      >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                          <circle cx="12" cy="13" r="4" />
+                        </svg>
+                        <span>{cameraAr ? 'Exit AR Camera' : 'AR with Camera'}</span>
+                      </button>
+
+                      {entrySurface && entrySurface.body === bodyModel && (
+                        <>
+                          <button type="button" className="fe-planet-btn fe-planet-btn--gold" onClick={enterSurface}>
+                            <span>GO INSIDE</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <line x1="7" y1="7" x2="17" y2="17" />
+                              <polyline points="17 7 17 7 17 17" />
+                            </svg>
+                          </button>
+                          {hotspot && hotspot.site !== entrySurface.id && (
+                            <p className="fe-surface-note">
+                              No walkable terrain is mapped for {hotspot.title}; opening {entrySurface.name} instead.
+                            </p>
+                          )}
+                        </>
                       )}
                     </>
                   )}
