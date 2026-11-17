@@ -10,5 +10,8 @@
     "label": "NASA Science – Venus Facts",
     "url": "https://science.nasa.gov/venus/venus-facts/"
   },
+  "texture": "/textures/venus.jpg",
+  "textureKind": "data",
+  "textureCredit": "NASA/JPL-Caltech: Magellan radar mosaic with gaps filled; radar has no visible colour, so the orange tint is artificial (NASA 3D Resources)",
   "hotspots": []
 }

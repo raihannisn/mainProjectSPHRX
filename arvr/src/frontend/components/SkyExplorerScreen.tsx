@@ -249,17 +249,6 @@ export function SkyExplorerScreen() {
     notify(target === 'solar' ? 'Solar System.' : `3D model: ${labelOf(target)}.`)
   }
 
-  const resetView = (message: string) => {
-    if (in3D) {
-      useXRApp.getState().selectHotspot(null)
-      setViewKey((key) => key + 1)
-    } else {
-      setRotation({ x: 0, y: 0 })
-      setScale(1)
-    }
-    notify(message)
-  }
-
   const togglePins = () => {
     const next = !useXRApp.getState().settings.pins
     useXRApp.getState().setSetting('pins', next)
@@ -358,6 +347,30 @@ export function SkyExplorerScreen() {
     const motion = await startCameraAr()
     notify(motion ? 'AR on. Move your phone to look around.' : 'AR on. Motion access was denied, so drag to turn the view.')
   }
+
+  /** The object card's buttons: two per row, short labels, the odd one out spans the row. */
+  type CardAction = { key: string; label: string; icon: string; title?: string; onClick?: () => void; href?: string; ar?: boolean; pressed?: boolean }
+  const backName = bodyContent?.name || (bodyModel ? labelOf(bodyModel) : '')
+  const bodyActions: CardAction[] = [
+    surfaceMode
+      ? { key: 'back', icon: '←', label: backName, title: `Back to ${backName}`, onClick: exitSurface }
+      : hotspot
+        ? { key: 'back', icon: '←', label: backName, title: `Back to ${backName}`, onClick: () => useXRApp.getState().selectHotspot(null) }
+        : { key: 'back', icon: '←', label: 'Solar System', title: 'Back to the Solar System', onClick: exitPlanet },
+    ...(!surfaceMode
+      ? [{ key: 'ar', icon: '◉', label: 'AR camera', title: cameraAr ? 'Turn AR off' : 'View in AR with your camera', onClick: () => void handleCameraAr(), pressed: cameraAr }]
+      : []),
+    ...(!surfaceMode && xrIntent
+      ? [{ key: 'xr', icon: '⬡', label: xrIntent === 'vr' ? 'Enter VR' : 'Enter AR', onClick: handleImmersive }]
+      : []),
+    ...(!surfaceMode && quickLook ? [{ key: 'ql', icon: '◉', label: 'View in AR', href: quickLook, ar: true }] : []),
+    ...(!surfaceMode && !hotspot && bodyContent?.source
+      ? [{ key: 'src', icon: '↗', label: bodyContent.source.label, title: bodyContent.source.label, href: bodyContent.source.url }]
+      : []),
+    ...(surfaceMode && requestedSurface?.conditionsSource
+      ? [{ key: 'src', icon: '↗', label: requestedSurface.conditionsSource.label, title: requestedSurface.conditionsSource.label, href: requestedSurface.conditionsSource.url }]
+      : []),
+  ]
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (in3D) return // the 3D view has its own orbit controls
@@ -482,7 +495,7 @@ export function SkyExplorerScreen() {
       : 'Play AI voice'
 
   // Honest labels for the 3D mode: the selected pin's own Fact / Illustration / Candidate kind,
-  // otherwise "3D model" (or "Illustration" when an asteroid falls back to the procedural placeholder).
+  // otherwise "Source NASA" for NASA data (or "Illustration" for textures and shapes that are not mission data).
   const bodyTag = solar
     ? { label: 'ILLUSTRATION', tone: 'demo' }
     : !bodyModel
@@ -494,7 +507,7 @@ export function SkyExplorerScreen() {
         }
       : modelIsIllustration
         ? { label: 'ILLUSTRATION', tone: 'demo' }
-        : { label: '3D MODEL', tone: 'fact' }
+        : { label: 'SOURCE NASA', tone: 'fact' }
   const headTag = surfaceMode ? { label: 'WALKABLE SURFACE', tone: 'fact' } : bodyTag ?? targetTag
   const headLoading = surfaceMode ? requestedSurface === undefined : solar ? false : bodyModel ? bodyContent === undefined : targetLoading || observationsLoading
   const bodyCredit = bodyContent
@@ -543,7 +556,7 @@ export function SkyExplorerScreen() {
           )}
           <div className="fe-sky-title">
             <div className="fe-eyebrow">
-              <span>{surfaceMode ? 'Walkable surface · 3D terrain' : solar ? '3D chart · not to scale' : bodyModel ? (modelIsIllustration ? '3D illustration · not to scale' : '3D model · NASA data') : 'All-sky explorer · IRSA SPHEREx field'}</span>
+              <span>{surfaceMode ? 'Walkable surface · 3D terrain' : solar ? '3D chart · compressed scale' : bodyModel ? (modelIsIllustration ? '3D illustration · not to scale' : '3D model · NASA data') : 'All-sky explorer · IRSA SPHEREx field'}</span>
             </div>
             <h2>{in3D ? viewName : selectedId === 'rcw-36' ? 'Vela Molecular Ridge' : currentName}</h2>
             <p className="fe-sky-coords">
@@ -568,18 +581,8 @@ export function SkyExplorerScreen() {
               )}
             </p>
           </div>
+          <div className="fe-controls">
           <div className="fe-toolbar">
-            <button
-              className="fe-icon-btn"
-              onClick={() => resetView(in3D ? '3D view reset.' : 'Sky view orientation reset.')}
-              aria-label="Reset view"
-              title="Reset view"
-            >
-              ⌖
-            </button>
-            <button className="fe-icon-btn" onClick={() => (in3D ? resetView('View recentered.') : notify('View recentered to target.'))} aria-label="Recenter">
-              ◎
-            </button>
             <button
               className={`fe-icon-btn ${audioOn ? 'selected' : ''}`}
               onClick={() => {
@@ -600,8 +603,8 @@ export function SkyExplorerScreen() {
               <BotIcon />
             </button>
           </div>
-          {/* New controls live in their own rail under the toolbar, so the four existing buttons never move.
-              Round toggles only: one steps through the 3D bodies, the others act on the body that is shown. */}
+          <span className="fe-controls-sep" aria-hidden="true" />
+          {/* Round toggles only: one steps through the 3D bodies, the others act on the body that is shown. */}
           <div className="fe-model-rail" role="group" aria-label="3D model controls">
             {!surfaceMode && (
               <button
@@ -663,6 +666,7 @@ export function SkyExplorerScreen() {
               </button>
             )}
           </div>
+          </div>
           <div className="fe-view-hint">
             {surfaceMode ? 'WASD TO WALK · DRAG TO LOOK · SHIFT TO RUN · SPACE TO JUMP' : in3D ? 'DRAG TO TURN · SCROLL TO ZOOM' : 'DRAG TO ROTATE SKY · SCROLL TO ZOOM'}
           </div>
@@ -683,17 +687,17 @@ export function SkyExplorerScreen() {
                   <span className={`fe-tag ${headTag.tone}`}>{headTag.label}</span>
                 </div>
                 <h2>Solar System</h2>
-                <p>Tap a planet to open its 3D model here. Planets sit at today's real direction from the Sun; sizes and distances are not to scale.</p>
-                <div className="fe-card-links">
+                <p>Tap a planet to open its 3D model here. Planets start at today's real position and orbit at their real relative speeds (1 s ≈ 7 days). Distances and sizes are real values on a compressed scale, so the whole system fits on screen.</p>
+                <div className="fe-card-actions">
                   {xrIntent && (
-                    <button type="button" className="fe-card-link" onClick={handleImmersive}>
-                      <span>{xrIntent === 'vr' ? 'Enter VR' : 'Enter AR'}</span>
-                      <span aria-hidden="true">↗</span>
+                    <button type="button" className="fe-act" onClick={handleImmersive}>
+                      <span aria-hidden="true">⬡</span>
+                      <span className="fe-act-label">{xrIntent === 'vr' ? 'Enter VR' : 'Enter AR'}</span>
                     </button>
                   )}
-                  <button type="button" className="fe-card-link" onClick={() => void handleCameraAr()}>
-                    <span>AR with camera</span>
-                    <span aria-hidden="true">↗</span>
+                  <button type="button" className={`fe-act${xrIntent ? '' : ' fe-act--wide'}${cameraAr ? ' is-on' : ''}`} aria-pressed={cameraAr} onClick={() => void handleCameraAr()}>
+                    <span aria-hidden="true">◉</span>
+                    <span className="fe-act-label">AR camera</span>
                   </button>
                 </div>
               </div>
@@ -719,7 +723,7 @@ export function SkyExplorerScreen() {
                 </div>
               </div>
 
-              <div className="fe-hud-card fe-source-line">Source: JPL approximate planetary positions · NASA imagery</div>
+              <div className="fe-hud-card fe-source-line">Positions: NASA JPL Keplerian elements (Standish) · Radii: NASA Planetary Fact Sheet · Bennu: JPL SBDB, OSIRIS-REx</div>
             </>
           ) : bodyModel && (surfaceMode || bodyTag) ? (
             <>
@@ -771,83 +775,42 @@ export function SkyExplorerScreen() {
                     )}
                   </div>
                 )}
-                <div className="fe-card-links">
-                  {surfaceMode ? (
-                    <button type="button" className="fe-card-link" onClick={exitSurface}>
-                      <span aria-hidden="true">←</span>
-                      <span>Back to {bodyContent?.name || labelOf(bodyModel)}</span>
-                    </button>
-                  ) : hotspot ? (
-                    <button
-                      type="button"
-                      className="fe-card-link"
-                      onClick={() => useXRApp.getState().selectHotspot(null)}
-                    >
-                      <span aria-hidden="true">←</span>
-                      <span>Back to {bodyContent?.name || labelOf(bodyModel)}</span>
-                    </button>
-                  ) : (
-                    <button type="button" className="fe-card-link" onClick={exitPlanet}>
-                      <span aria-hidden="true">←</span>
-                      <span>Back to Solar System</span>
-                    </button>
-                  )}
-                  {!surfaceMode && (
-                    <button type="button" className="fe-card-link" onClick={exitPlanet}>
-                      <span aria-hidden="true">✕</span>
-                      <span>Exit planet</span>
-                    </button>
-                  )}
-                  {!surfaceMode && !hotspot && bodyContent?.source && (
-                    <a className="fe-card-link" href={bodyContent.source.url} target="_blank" rel="noopener noreferrer">
-                      <span aria-hidden="true">↗</span>
-                      <span>{bodyContent.source.label}</span>
-                    </a>
-                  )}
-                  {surfaceMode && requestedSurface?.conditionsSource && (
-                    <a className="fe-card-link" href={requestedSurface.conditionsSource.url} target="_blank" rel="noopener noreferrer">
-                      <span aria-hidden="true">↗</span>
-                      <span>{requestedSurface.conditionsSource.label}</span>
-                    </a>
-                  )}
-                  {!surfaceMode && xrIntent && (
-                    <button type="button" className="fe-card-link" onClick={handleImmersive}>
-                      <span>{xrIntent === 'vr' ? 'Enter VR' : 'Enter AR'}</span>
-                      <span aria-hidden="true">↗</span>
-                    </button>
-                  )}
-                  {!surfaceMode && (
-                    <button type="button" className="fe-card-link" onClick={() => void handleCameraAr()}>
-                      <span>AR with camera</span>
-                      <span aria-hidden="true">↗</span>
-                    </button>
-                  )}
-                  {!surfaceMode && quickLook && (
-                    // iPhone/iPad: Safari has no WebXR, so iOS opens the model itself (AR Quick Look).
-                    // Quick Look needs an <img> as the link's first child.
-                    <a className="fe-card-link" rel="ar" href={quickLook}>
-                      <img className="fe-ql-img" alt="" width={1} height={1} src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
-                      <span>View in AR</span>
-                      <span aria-hidden="true">↗</span>
-                    </a>
+                <div className="fe-card-actions">
+                  {bodyActions.map((a, i) => {
+                    const cls = `fe-act${bodyActions.length % 2 === 1 && i === bodyActions.length - 1 ? ' fe-act--wide' : ''}${a.pressed ? ' is-on' : ''}`
+                    const inner = (
+                      <>
+                        {a.ar && (
+                          // iPhone/iPad: Safari has no WebXR, so iOS opens the model itself (AR Quick Look); it needs an <img> first child.
+                          <img className="fe-ql-img" alt="" width={1} height={1} src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
+                        )}
+                        <span aria-hidden="true">{a.icon}</span>
+                        <span className="fe-act-label">{a.label}</span>
+                      </>
+                    )
+                    return a.href ? (
+                      <a key={a.key} className={cls} href={a.href} title={a.title} {...(a.ar ? { rel: 'ar' } : { target: '_blank', rel: 'noopener noreferrer' })}>
+                        {inner}
+                      </a>
+                    ) : (
+                      <button key={a.key} type="button" className={cls} title={a.title} aria-pressed={a.pressed} onClick={a.onClick}>
+                        {inner}
+                      </button>
+                    )
+                  })}
+                  {!surfaceMode && entrySurface && entrySurface.body === bodyModel && (
+                    <>
+                      <button type="button" className="fe-btn-gold fe-go-inside" onClick={enterSurface}>
+                        <span>GO INSIDE</span><span aria-hidden="true">↘</span>
+                      </button>
+                      {hotspot && hotspot.site !== entrySurface.id && (
+                        <p className="fe-surface-note">
+                          No walkable terrain is mapped for {hotspot.title}; opening {entrySurface.name} instead.
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
-                {surfaceMode ? (
-                  <button type="button" className="fe-btn-gold fe-go-inside" onClick={exitSurface}>
-                    <span>BACK TO ORBIT</span><span aria-hidden="true">↗</span>
-                  </button>
-                ) : entrySurface && entrySurface.body === bodyModel ? (
-                  <div className="fe-surface-entry">
-                    <button type="button" className="fe-btn-gold fe-go-inside" onClick={enterSurface}>
-                      <span>GO INSIDE</span><span aria-hidden="true">↘</span>
-                    </button>
-                    {hotspot && hotspot.site !== entrySurface.id && (
-                      <p className="fe-surface-note">
-                        No walkable terrain is mapped for {hotspot.title}; opening {entrySurface.name} instead.
-                      </p>
-                    )}
-                  </div>
-                ) : null}
               </div>
 
               <div className="fe-hud-card fe-hud-telemetry">

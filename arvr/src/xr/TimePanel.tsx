@@ -55,7 +55,7 @@ export function TimePanel() {
           ×
         </button>
       </header>
-      <p className="time-note">{t('Planets are where they really are on this date (NASA JPL orbits). Sizes and distances are not to scale.')}</p>
+      <p className="time-note">{t('Planets are where they really are on this date (NASA JPL orbits). Distances and sizes are real values on a compressed scale.')}</p>
       <input
         className="time-range"
         type="range"

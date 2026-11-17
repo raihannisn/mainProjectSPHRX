@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "npm run check:content && tsc --noEmit && vite build",
+    "build": "npm run check:content && npm run check:orbits && tsc --noEmit && vite build",
     "preview": "vite preview --host",
     "check:content": "node scripts/check-content.mjs",
+    "check:orbits": "node scripts/check-orbits.mjs",
     "vr": "npm run build && vite preview --host",
     "smoke:xr": "node scripts/smoke-xr.mjs"
   },

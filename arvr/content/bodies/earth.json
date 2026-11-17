@@ -10,5 +10,8 @@
     "label": "NASA Science – Earth Facts",
     "url": "https://science.nasa.gov/earth/facts/"
   },
+  "texture": "/textures/earth.jpg",
+  "textureKind": "data",
+  "textureCredit": "NASA Blue Marble Next Generation (MODIS), via NASA GIBS",
   "hotspots": []
 }

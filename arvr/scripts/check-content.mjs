@@ -1,5 +1,5 @@
 // Fails (exit 1) if body narration coverage or hotspot content is incomplete or invalid.
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -11,6 +11,12 @@ const siteIds = new Set(readdirSync(siteDir).filter((f) => f.endsWith('.json')).
 const bodiesModule = readFileSync(join(appRoot, 'src', 'xr', 'bodies.ts'), 'utf8')
 const bodiesMatch = bodiesModule.match(/export const BODIES: BodyInfo\[\] = \[([\s\S]*?)\n\]/)
 const KINDS = new Set(['fact', 'illustration', 'candidate'])
+let provenance = {}
+try {
+  provenance = JSON.parse(readFileSync(join(appRoot, 'public', 'textures', 'provenance.json'), 'utf8'))
+} catch {
+  /* no generated textures yet */
+}
 const words = (s) => String(s ?? '').trim().split(/\s+/).filter(Boolean).length
 const errors = []
 const bodyRecords = new Map()
@@ -33,6 +39,17 @@ for (const { file, path, site } of files) {
     continue
   }
   if (!site && typeof body.id === 'string') bodyRecords.set(body.id, body)
+  if (!site && body.texture) {
+    const textureFile = join(appRoot, 'public', body.texture.replace(/^\//, ''))
+    if (!existsSync(textureFile)) errors.push(`${file}: texture ${body.texture} is not in public/`)
+    if (!String(body.textureCredit ?? '').trim()) errors.push(`${file}: texture needs a textureCredit that names the NASA source`)
+    const kind = body.textureKind ?? 'data'
+    if (kind !== 'data' && kind !== 'illustration') errors.push(`${file}: textureKind must be data|illustration`)
+    if (kind === 'illustration' && !/illustration/i.test(String(body.textureCredit ?? ''))) errors.push(`${file}: an illustration texture must say so in textureCredit`)
+    const recorded = provenance[body.id]
+    if (recorded && recorded.kind !== kind) errors.push(`${file}: textureKind ${kind} differs from provenance kind ${recorded.kind}`)
+    if (recorded && recorded.credit !== body.textureCredit) errors.push(`${file}: textureCredit differs from public/textures/provenance.json`)
+  }
   const ids = new Set()
   for (const [i, h] of (body.hotspots ?? []).entries()) {
     const at = `${file} hotspot[${i}] ${h.id ?? '(no id)'}`

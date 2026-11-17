@@ -10,5 +10,8 @@
     "label": "NASA Science – Mercury Facts",
     "url": "https://science.nasa.gov/mercury/facts/"
   },
+  "texture": "/textures/mercury.jpg",
+  "textureKind": "data",
+  "textureCredit": "NASA MESSENGER MDIS global mosaic, 166 m, monochrome (NASA Mercury Trek)",
   "hotspots": []
 }

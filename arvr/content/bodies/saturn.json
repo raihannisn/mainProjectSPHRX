@@ -10,5 +10,8 @@
     "label": "NASA Science – Saturn Facts",
     "url": "https://science.nasa.gov/saturn/facts/"
   },
+  "texture": "/textures/saturn.jpg",
+  "textureKind": "illustration",
+  "textureCredit": "Illustration, not mission data: NASA/JPL-Caltech planetary map from NASA 3D Resources (NASA labels it fictional); ring geometry from the NASA NSSDC Saturnian Rings Fact Sheet",
   "hotspots": []
 }

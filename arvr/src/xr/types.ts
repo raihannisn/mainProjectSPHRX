@@ -90,6 +90,8 @@ export interface BodyContent {
   description?: Partial<Record<'en' | 'id', string>>
   source?: { label: string; url: string }
   texture?: string
+  /** 'illustration' = artist or generated texture (NASA-credited, not mission data); default 'data' */
+  textureKind?: 'data' | 'illustration'
   textureCredit?: string
   model?: string
   modelCredit?: string

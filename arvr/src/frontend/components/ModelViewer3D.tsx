@@ -152,7 +152,7 @@ export function ModelViewer3D({ bodyId, siteId = null, resetKey }: ModelViewer3D
                 <GyroControls />
               </>
             ) : (
-              <FitCamera resetKey={resetKey} radius={bodyId === 'solar' ? 3.4 : FRAME_RADIUS} lift={bodyId === 'solar' ? 0.55 : 0.18} />
+              <FitCamera resetKey={resetKey} radius={bodyId === 'solar' ? 3.4 : bodyId === 'saturn' ? 2.5 : FRAME_RADIUS} lift={bodyId === 'solar' ? 0.55 : 0.18} />
             )}
             <group position={arGyro ? [0, -0.1, bodyId === 'solar' ? -7 : -4] : [0, 0, 0]} scale={arGyro ? (bodyId === 'solar' ? 0.3 : 0.42) : 1}>
               <Suspense fallback={null}>

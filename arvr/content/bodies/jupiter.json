@@ -10,5 +10,8 @@
     "label": "NASA Science – Jupiter Facts",
     "url": "https://science.nasa.gov/jupiter/jupiter-facts/"
   },
+  "texture": "/textures/jupiter.jpg",
+  "textureKind": "data",
+  "textureCredit": "NASA/JPL/Space Science Institute: Cassini ISS cylindrical map of Jupiter (PIA07782)",
   "hotspots": []
 }

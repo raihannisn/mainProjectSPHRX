@@ -3,9 +3,7 @@
  * FastAPI by Vite during development and routed to the API service in Vercel.
  */
 
-export const BASE_URL: string =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ||
-  'https://nasa-spherex-backend.vercel.app'
+export const BASE_URL: string = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() || ''
 
 export const API_URL = BASE_URL
 
@@ -430,6 +428,41 @@ export interface AgentChatMessage {
   content: string
 }
 
+async function postForAnswer(path: string, body: unknown, timeoutMs: number): Promise<GuideReply & { status?: number }> {
+  const response = await fetch(toApiUrl(path), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(timeoutMs),
+  })
+  if (!response.ok) {
+    let detail = `HTTP ${response.status}`
+    try {
+      const errorBody: unknown = await response.json()
+      if (isRecord(errorBody) && typeof errorBody.detail === 'string') detail += `: ${errorBody.detail}`
+    } catch {
+      // Keep the HTTP status when the error body is not JSON.
+    }
+    return { ok: false, error: detail, status: response.status }
+  }
+  const data: unknown = await response.json()
+  if (isRecord(data)) {
+    const answer =
+      typeof data.reply === 'string'
+        ? data.reply
+        : isRecord(data.data) && typeof data.data.message === 'string'
+          ? data.data.message
+          : ''
+    if (answer.trim()) return { ok: true, text: answer.trim() }
+  }
+  return { ok: false, error: 'The Agent returned an invalid or empty response.' }
+}
+
+/**
+ * Cosmic Guide / narration question. Uses POST /api/agent/chat, which receives the object id and answers from
+ * that object's backend catalog record. A backend without that route (older deployment) gets the plain
+ * /api/ai/chat question instead, so the Guide still answers, just without the catalog record.
+ */
 export async function requestAgentChat(
   messages: AgentChatMessage[],
   objectId: string | undefined,
@@ -438,38 +471,24 @@ export async function requestAgentChat(
 ): Promise<GuideReply> {
   const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user')
   const question = lastUserMsg?.content ?? ''
-  const contextPrefix = objectId ? `[Target: ${objectId}] ` : ''
 
   try {
-    const response = await fetch(toApiUrl('/api/ai/chat'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: `${contextPrefix}${question}` }),
-      signal: AbortSignal.timeout(timeoutMs),
-    })
+    const grounded = await postForAnswer(
+      '/api/agent/chat',
+      {
+        ...(objectId ? { objectId } : {}),
+        lang,
+        messages: messages.slice(-10).map((m) => ({ role: m.role === 'assistant' ? 'bot' : 'user', content: m.content.slice(0, 500) })),
+      },
+      timeoutMs,
+    )
+    if (grounded.ok) return grounded
+    // route missing (404/405) or the request shape refused (422): try the legacy endpoint
+    if (grounded.status !== 404 && grounded.status !== 405 && grounded.status !== 422) return { ok: false, error: grounded.error }
 
-    if (!response.ok) {
-      let detail = `HTTP ${response.status}`
-      try {
-        const body: unknown = await response.json()
-        if (isRecord(body) && typeof body.detail === 'string') detail += `: ${body.detail}`
-      } catch {
-        // Keep the HTTP status when the error body is not JSON.
-      }
-      return { ok: false, error: detail }
-    }
-
-    const body: unknown = await response.json()
-    if (isRecord(body)) {
-      const answer =
-        typeof body.reply === 'string'
-          ? body.reply
-          : isRecord(body.data) && typeof body.data.message === 'string'
-            ? body.data.message
-            : ''
-      if (answer.trim()) return { ok: true, text: answer.trim() }
-    }
-    return { ok: false, error: 'The Agent returned an invalid or empty response.' }
+    const contextPrefix = objectId ? `[Target: ${objectId}] ` : ''
+    const legacy = await postForAnswer('/api/ai/chat', { message: `${contextPrefix}${question}` }, timeoutMs)
+    return legacy.ok ? legacy : { ok: false, error: legacy.error }
   } catch (error: unknown) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) }
   }

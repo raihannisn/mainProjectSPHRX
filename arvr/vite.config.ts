@@ -25,7 +25,7 @@ function offlineManifest(): Plugin {
           else {
             // Prefix with the Vite base path so cached URLs resolve under /xr/.
             const url = base.replace(/\/$/, '') + '/' + relative(out, full).split(sep).join('/')
-            if (/.map$|offline-manifest|sw.js$|(emulate|music_room|living_room|office_large|office_small|meeting_room|meta)-/.test(url)) continue
+            if (/.map$|offline-manifest|provenance.json$|sw.js$|(emulate|music_room|living_room|office_large|office_small|meeting_room|meta)-/.test(url)) continue
             files.push(url)
             bytes += st.size
           }

@@ -31,10 +31,8 @@ function solveKepler(M: number, e: number) {
   return E
 }
 
-/** heliocentric ecliptic position (AU) from elements in degrees */
-function toXYZ(a: number, e: number, I: number, node: number, argPeri: number, Mdeg: number): [number, number, number] {
-  const M = ((((Mdeg + 180) % 360) + 360) % 360 - 180) * RAD
-  const E = solveKepler(M, e)
+/** heliocentric ecliptic position (AU) from the ECCENTRIC anomaly E (radians) and elements in degrees */
+function xyzFromE(a: number, e: number, I: number, node: number, argPeri: number, E: number): [number, number, number] {
   const xp = a * (Math.cos(E) - e)
   const yp = a * Math.sqrt(1 - e * e) * Math.sin(E)
   const w = argPeri * RAD, O = node * RAD, i = I * RAD
@@ -44,6 +42,56 @@ function toXYZ(a: number, e: number, I: number, node: number, argPeri: number, M
     (cw * sO + sw * cO * ci) * xp + (-sw * sO + cw * cO * ci) * yp,
     sw * si * xp + cw * si * yp,
   ]
+}
+
+/** heliocentric ecliptic position (AU) from elements in degrees and the mean anomaly in degrees */
+function toXYZ(a: number, e: number, I: number, node: number, argPeri: number, Mdeg: number): [number, number, number] {
+  const M = ((((Mdeg + 180) % 360) + 360) % 360 - 180) * RAD
+  return xyzFromE(a, e, I, node, argPeri, solveKepler(M, e))
+}
+
+/** [a (AU), e, I (deg), node (deg), argument of perihelion (deg)] of a body's orbit on a date, or null. */
+export function orbitElements(id: string, ms: number): [number, number, number, number, number] | null {
+  if (id === 'bennu') return [BENNU.a, BENNU.e, BENNU.I, BENNU.node, BENNU.argPeri]
+  const p = J2000[id]
+  if (!p) return null
+  const T = (jd(ms) - 2451545.0) / 36525
+  const [a, e, I, , peri, node] = p.el.map((v, k) => v + p.rate[k] * T) as Elements
+  return [a, e, I, node, peri - node]
+}
+
+/**
+ * The whole orbit as a closed loop of heliocentric ecliptic points [x, y, z, x, y, z, ...] in AU, sampled
+ * evenly in eccentric anomaly (so the loop is smooth at perihelion). The Sun is at the origin, i.e. at a focus
+ * of the ellipse, and the shape is exactly the JPL orbit: nothing is flattened to a circle.
+ */
+export function orbitPathAU(id: string, ms: number, n = 192): number[] | null {
+  const el = orbitElements(id, ms)
+  if (!el) return null
+  const [a, e, I, node, argPeri] = el
+  const out: number[] = []
+  for (let i = 0; i < n; i++) out.push(...xyzFromE(a, e, I, node, argPeri, (i / n) * 2 * Math.PI))
+  return out
+}
+
+/**
+ * The Moon around Earth (NASA Moon Fact Sheet: semi-major axis 384,400 km, eccentricity 0.0549, inclination
+ * 5.145 deg to the ecliptic, sidereal period 27.3217 d). Shape, tilt and period are real; the orientation of the
+ * ellipse is fixed (the real one precesses, with an 18.6-year node cycle), which is not modelled.
+ */
+export const MOON_ORBIT = { aKm: 384399, e: 0.0549, I: 5.145, periodDays: 27.321661 }
+
+/** Moon offset from Earth in units of its semi-major axis (ecliptic frame) after `days` days. */
+export function moonOffset(days: number): [number, number, number] {
+  const M = (days / MOON_ORBIT.periodDays) * 2 * Math.PI
+  return xyzFromE(1, MOON_ORBIT.e, MOON_ORBIT.I, 0, 0, solveKepler(((M + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI, MOON_ORBIT.e))
+}
+
+/** The Moon's ellipse as a closed loop, in units of its semi-major axis. */
+export function moonPath(n = 96): number[] {
+  const out: number[] = []
+  for (let i = 0; i < n; i++) out.push(...xyzFromE(1, MOON_ORBIT.e, MOON_ORBIT.I, 0, 0, (i / n) * 2 * Math.PI))
+  return out
 }
 
 /** Heliocentric ecliptic position in AU of a body on a date, or null if we don't have its orbit. */

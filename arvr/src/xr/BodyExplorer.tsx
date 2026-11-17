@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { Billboard, Text, useGLTF, useTexture } from '@react-three/drei'
-import { MeshStandardMaterial, SRGBColorSpace, SphereGeometry, Vector2, type BufferGeometry, type Group, type Material, type Mesh } from 'three'
+import { BufferGeometry, CanvasTexture, DoubleSide, Float32BufferAttribute, MeshStandardMaterial, SRGBColorSpace, SphereGeometry, Vector2, type Group, type Material, type Mesh } from 'three'
 import { useBodyContent, useSitesForBody } from './content'
 import { BODY_BY_ID } from './bodies'
 import { makeLumpyGeometry } from './geo'
@@ -39,6 +39,69 @@ function BodyMesh({ geometry, material, children }: { geometry: BufferGeometry; 
 }
 
 const sphere = withBVH(new SphereGeometry(1, 96, 64))
+
+/**
+ * Saturn's rings from the NASA NSSDC Saturnian Rings Fact Sheet (radii in Saturn equatorial radii, 60,268 km):
+ * C 1.239-1.526, B 1.526-1.950, Cassini Division 1.950-2.030, A 2.030-2.270, Encke Gap at 2.214. Opacity follows
+ * the optical depth (alpha = 1 - e^-tau with a typical tau per ring), brightness follows the albedo. The look
+ * is a drawing: no photograph of the rings is applied, which is why Saturn is labelled an illustration.
+ */
+const RING_INNER = 1.239
+const RING_OUTER = 2.27
+const RING_AXIAL_TILT = (26.73 * Math.PI) / 180 // NASA Saturn Fact Sheet: obliquity to orbit
+
+function makeRingTexture(): CanvasTexture {
+  const w = 1024
+  const c = document.createElement('canvas')
+  c.width = w
+  c.height = 4
+  const g = c.getContext('2d')!
+  const at = (r: number) => ((r - RING_INNER) / (RING_OUTER - RING_INNER)) * w
+  const band = (from: number, to: number, tau: number, albedo: number) => {
+    const alpha = 1 - Math.exp(-tau)
+    const v = Math.round(255 * Math.min(1, 0.45 + albedo * 0.9))
+    g.fillStyle = `rgba(${v}, ${Math.round(v * 0.93)}, ${Math.round(v * 0.78)}, ${alpha.toFixed(3)})`
+    g.fillRect(at(from), 0, at(to) - at(from), 4)
+  }
+  band(1.239, 1.526, 0.2, 0.2) // C ring
+  band(1.526, 1.95, 1.4, 0.5) // B ring
+  band(1.95, 2.03, 0.05, 0.3) // Cassini Division
+  band(2.03, 2.27, 0.7, 0.5) // A ring
+  g.clearRect(at(2.212), 0, at(2.2165) - at(2.212), 4) // Encke Gap
+  const tex = new CanvasTexture(c)
+  tex.colorSpace = SRGBColorSpace
+  return tex
+}
+
+/** A flat ring whose u coordinate runs from the inner to the outer edge, so the strip texture maps by radius. */
+function makeRingGeometry(inner: number, outer: number, segments = 128): BufferGeometry {
+  const pos: number[] = []
+  const uv: number[] = []
+  const idx: number[] = []
+  for (let i = 0; i <= segments; i++) {
+    const a = (i / segments) * Math.PI * 2
+    const cos = Math.cos(a), sin = Math.sin(a)
+    pos.push(cos * inner, 0, sin * inner, cos * outer, 0, sin * outer)
+    uv.push(0, 0.5, 1, 0.5)
+    if (i < segments) idx.push(i * 2, i * 2 + 1, i * 2 + 2, i * 2 + 1, i * 2 + 3, i * 2 + 2)
+  }
+  const g = new BufferGeometry()
+  g.setAttribute('position', new Float32BufferAttribute(pos, 3))
+  g.setAttribute('uv', new Float32BufferAttribute(uv, 2))
+  g.setIndex(idx)
+  return g
+}
+
+function SaturnRings() {
+  const geometry = useMemo(() => makeRingGeometry(RING_INNER, RING_OUTER), [])
+  const texture = useMemo(() => makeRingTexture(), [])
+  useEffect(() => () => { geometry.dispose(); texture.dispose() }, [geometry, texture])
+  return (
+    <mesh geometry={geometry} renderOrder={1}>
+      <meshBasicMaterial map={texture} side={DoubleSide} transparent depthWrite={false} toneMapped={false} />
+    </mesh>
+  )
+}
 
 function TexturedPlanet({ url, relief, color }: { url: string; relief?: string; color: string }) {
   // colour map + (Mars) MOLA relief normal map arrive together, then fade in over the plain-colour globe
@@ -170,7 +233,8 @@ export function BodyExplorer({
   const layer = layers.find((l) => l.id === layerId)
   const layerUrl = layer?.url
   const isAsteroid = content?.type === 'asteroid' || info?.kind === 'asteroid'
-  const plainSphereIsIllustration = content !== undefined && content !== null && !isAsteroid && !content.texture
+  const plainSphereIsIllustration =
+    content !== undefined && content !== null && !isAsteroid && (!content.texture || content.textureKind === 'illustration')
   useEffect(() => {
     useXRApp.setState({ shapeIsIllustration: illustration || plainSphereIsIllustration })
   }, [illustration, plainSphereIsIllustration])
@@ -194,6 +258,7 @@ export function BodyExplorer({
 
   return (
     <group>
+      <group rotation={[0, 0, id === 'saturn' ? RING_AXIAL_TILT : 0]}>
       <group ref={manip}>
       <group ref={spin}>
         {isAsteroid ? (
@@ -211,6 +276,8 @@ export function BodyExplorer({
         {content && <Hotspots content={content} geometry={geometry} />}
         {id === 'bennu' && q.bursts && <BennuEjecta surface={geometry ? (geometry.attributes.position.array as Float32Array) : null} />}
       </group>
+      {id === 'saturn' && <SaturnRings />}
+      </group>
       </group>
 
       {showObjectCard && (
@@ -227,9 +294,11 @@ export function BodyExplorer({
 
       {content !== undefined && <SceneReady />}
       {/* the Solar System chart's language: a faint orbit ring with ticks around the body */}
-      <group rotation={[0.22, 0, 0]}>
-        <HoloOrbit radius={1.55} color={HOLO.teal} />
-      </group>
+      {id !== 'saturn' && (
+        <group rotation={[0.22, 0, 0]}>
+          <HoloOrbit radius={1.55} color={HOLO.teal} />
+        </group>
+      )}
       {id === 'mars' && <Atmosphere color="#e3a07a" intensity={0.9} />}
       {showTitle && (
         <Billboard position={[0, 1.38, 0]}>

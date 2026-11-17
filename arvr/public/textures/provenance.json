@@ -1,0 +1,74 @@
+{
+  "earth": {
+    "file": "textures/earth.jpg",
+    "kind": "data",
+    "credit": "NASA Blue Marble Next Generation (MODIS), via NASA GIBS",
+    "source": "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/BlueMarble_NextGeneration/default/500m/3/{row}/{col}.jpeg (50 tiles)",
+    "sourceSha256": "87b8166dca825912a58d07483999d79411a9b4be84657caa560ec927baef52bb",
+    "retrieved": "2026-11-17",
+    "width": 2048,
+    "height": 1024,
+    "bytes": 238176,
+    "sha256": "781c037750550c221f9bfebf5d9648a8aec8c00a6808291b9fbe18d0b4c7a29c"
+  },
+  "jupiter": {
+    "file": "textures/jupiter.jpg",
+    "kind": "data",
+    "credit": "NASA/JPL/Space Science Institute: Cassini ISS cylindrical map of Jupiter (PIA07782)",
+    "source": "https://assets.science.nasa.gov/content/dam/science/psd/photojournal/pia/pia07/pia07782/PIA07782.jpg",
+    "sourceSha256": "6b835ddd8036ea9efd25def04f75aa60b69b096025a37eeae5e9b6978e0a2281",
+    "retrieved": "2026-11-17",
+    "width": 2048,
+    "height": 1024,
+    "bytes": 289293,
+    "sha256": "33cf4cd03c460ac9889cbf8adc649e8ffcb0d6c457d26db92782853319635cf7"
+  },
+  "mercury": {
+    "file": "textures/mercury.jpg",
+    "kind": "data",
+    "credit": "NASA MESSENGER MDIS global mosaic, 166 m, monochrome (NASA Mercury Trek)",
+    "source": "https://trek.nasa.gov/tiles/Mercury/EQ/Mercury_MESSENGER_MDIS_Basemap_BDR_Mosaic_Global_166m/1.0.0//default/default028mm/3/{row}/{col}.jpg (128 tiles)",
+    "sourceSha256": "952f4813c0f10bb9eccd27e16c716e1c38c02e6c23890836ffa089619d5906a8",
+    "retrieved": "2026-11-17",
+    "width": 2048,
+    "height": 1024,
+    "bytes": 424880,
+    "sha256": "f257e6ad00620d9d79f113c4bc907e5bf47820a4ac29e14068d2a793309ce17b"
+  },
+  "neptune": {
+    "file": "textures/neptune.jpg",
+    "kind": "illustration",
+    "credit": "Illustration, not mission data: texture by Don Davis with JPL/Caltech cloud features (NASA 3D Resources; NASA labels it fictional)",
+    "source": "https://assets.science.nasa.gov/content/dam/science/cds/3d/resources/image/neptune/Neptune.jpg",
+    "sourceSha256": "e9bb2b7bcfb98d3f1adc6f2e20e833a00c11e9677238d8a00ae7431214ca70aa",
+    "retrieved": "2026-11-17",
+    "width": 720,
+    "height": 360,
+    "bytes": 48873,
+    "sha256": "0b26b214eb1a57f382668b93c6d6fc9836a3bea8fecc5d741ad0a08ed1e23e2b"
+  },
+  "saturn": {
+    "file": "textures/saturn.jpg",
+    "kind": "illustration",
+    "credit": "Illustration, not mission data: NASA/JPL-Caltech planetary map from NASA 3D Resources (NASA labels it fictional); ring geometry from the NASA NSSDC Saturnian Rings Fact Sheet",
+    "source": "https://assets.science.nasa.gov/content/dam/science/cds/3d/resources/image/saturn/Saturn.jpg",
+    "sourceSha256": "d959a239e3d87630daf08e2a688dcbf315fe01b1fd474e55522770108f40aca7",
+    "retrieved": "2026-11-17",
+    "width": 720,
+    "height": 360,
+    "bytes": 52549,
+    "sha256": "612b92b0bef51ffb751d29ec6ff30a95d5c208ceae28130babcbf097d16c46c0"
+  },
+  "venus": {
+    "file": "textures/venus.jpg",
+    "kind": "data",
+    "credit": "NASA/JPL-Caltech: Magellan radar mosaic with gaps filled; radar has no visible colour, so the orange tint is artificial (NASA 3D Resources)",
+    "source": "https://assets.science.nasa.gov/content/dam/science/cds/3d/resources/image/venus/Venus.jpg",
+    "sourceSha256": "e395bced59e95339efbdd002d4a0bbbf81fe323a6694f3a4039120560c80e789",
+    "retrieved": "2026-11-17",
+    "width": 1440,
+    "height": 720,
+    "bytes": 331035,
+    "sha256": "6cdda5928ed59cd6fc8012ecce491abf0e188a699915de54ab14dd7abac73643"
+  }
+}

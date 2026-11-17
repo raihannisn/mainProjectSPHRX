@@ -10,5 +10,8 @@
     "label": "NASA Science – Neptune Facts",
     "url": "https://science.nasa.gov/neptune/neptune-facts/"
   },
+  "texture": "/textures/neptune.jpg",
+  "textureKind": "illustration",
+  "textureCredit": "Illustration, not mission data: texture by Don Davis with JPL/Caltech cloud features (NASA 3D Resources; NASA labels it fictional)",
   "hotspots": []
 }

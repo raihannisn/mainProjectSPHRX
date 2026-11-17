@@ -3,6 +3,7 @@ import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
 import { fetchSystemStatus, type SystemStatus } from '../api'
 import { useXRApp } from '../../xr/store'
 import { originOf, runWormhole } from '../wormhole'
+import spaceAppsLogo from '../assets/space-apps-logo.png'
 
 type NavState = 'top' | 'island' | 'island-open'
 
@@ -231,7 +232,9 @@ export function TopBar() {
                   handleNav(event, '/', () => setMenuOpen(false))
                 }}
               >
-                <span className="fe-brand-mark">S</span>
+                <span className="fe-brand-mark">
+                  <img src={spaceAppsLogo} alt="" width={36} height={36} decoding="async" />
+                </span>
                 <span className="fe-brand-text">
                   SPHEREx <span className="fe-brand-sep fe-muted">/</span>{' '}
                   <span className="fe-brand-sub">COSMIC EXPEDITION</span>

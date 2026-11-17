@@ -5387,3 +5387,131 @@
 @media (min-width: 681px) {
   .fe-model-rail { width: calc(var(--hit-target) * 5 + 32px); }
 }
+
+/* ---- Explorer object card actions: one grid, two compact glass pills per row (appended) ---- */
+.fe-card-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.fe-act {
+  min-width: 0;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid rgba(79, 227, 214, 0.26);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(13, 27, 52, 0.4) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  color: var(--soft);
+  font: 600 0.64rem var(--mono);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.fe-act > span:first-of-type { flex: none; color: var(--teal); font-size: 0.82rem; line-height: 1; }
+.fe-act-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fe-act:hover { border-color: rgba(79, 227, 214, 0.7); background: rgba(79, 227, 214, 0.14); color: #fff; }
+.fe-act:active { transform: scale(0.97); }
+.fe-act:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.fe-act.is-on { border-color: rgba(229, 192, 123, 0.85); background: rgba(212, 175, 55, 0.2); color: var(--ui-gold-soft); }
+.fe-act.is-on > span:first-of-type { color: var(--ui-gold-soft); }
+.fe-act--wide { grid-column: 1 / -1; }
+.fe-act:has(> .fe-ql-img) { position: relative; }
+.fe-card-actions .fe-go-inside { grid-column: 1 / -1; margin-top: 2px; min-height: 44px; }
+.fe-card-actions .fe-surface-note { grid-column: 1 / -1; }
+
+@media (max-width: 680px) {
+  .fe-explorer .fe-hud { max-height: min(42dvh, 340px); }
+  .fe-explorer .fe-card-actions { gap: 6px; margin-top: 8px; }
+  .fe-explorer .fe-act { min-height: 36px; font-size: 0.6rem; padding: 0 10px; }
+  .fe-explorer .fe-card-actions .fe-go-inside { min-height: 40px; }
+}
+
+/* ---- Explorer controls: one glass capsule instead of two stacked boxes (appended) ----
+   Music + Cosmic Guide, a divider, then the 3D / AR / back / pins / layer toggles. Row on wide screens,
+   a slim column on phones. */
+.fe-controls {
+  position: absolute;
+  z-index: 5;
+  top: 96px;
+  right: clamp(20px, 3vw, 48px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid rgba(79, 227, 214, 0.3);
+  border-radius: 999px;
+  background: radial-gradient(120% 140% at 100% 0%, rgba(79, 227, 214, 0.12) 0%, transparent 60%),
+              linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(13, 27, 52, 0.4) 50%, rgba(6, 15, 30, 0.55) 100%);
+  box-shadow: inset 0 1.5px 1px rgba(255, 255, 255, 0.22), 0 18px 46px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+}
+.fe-controls .fe-toolbar,
+.fe-controls .fe-model-rail {
+  position: static;
+  inset: auto;
+  width: auto;
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.fe-controls .fe-icon-btn { width: 40px; height: 40px; min-width: 40px; min-height: 40px; padding: 0; font-size: 0.95rem; }
+.fe-controls .fe-model-toggle { font: 700 0.66rem var(--mono); letter-spacing: 0.04em; }
+.fe-controls-sep { flex: none; align-self: stretch; width: 1px; margin: 6px 2px; background: rgba(199, 205, 230, 0.2); }
+
+@media (max-width: 680px) {
+  .fe-explorer .fe-controls {
+    top: 12px;
+    right: 12px;
+    flex-direction: column;
+    border-radius: 28px;
+    gap: 6px;
+  }
+  .fe-explorer .fe-controls .fe-toolbar,
+  .fe-explorer .fe-controls .fe-model-rail {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
+    justify-content: flex-start;
+  }
+  .fe-explorer .fe-controls-sep { align-self: stretch; width: auto; height: 1px; margin: 2px 6px; }
+}
+
+/* keep the card pills at their small mono size against the app-wide button typography (appended) */
+.fe-app .fe-card-actions .fe-act {
+  font: 600 0.64rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  padding: 0 10px;
+}
+
+/* ---- Brand mark: NASA Space Apps Challenge logo instead of the "S" monogram (appended) ---- */
+.fe-brand-link .fe-brand-mark {
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: #0a2a6e;
+  box-shadow: 0 0 18px rgba(79, 227, 214, 0.2);
+}
+.fe-brand-mark img { display: block; width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 680px) {
+  .fe-brand-link .fe-brand-mark { width: 32px !important; height: 32px !important; }
+}
+@media (max-width: 360px) {
+  .fe-brand-link .fe-brand-mark { width: 28px !important; height: 28px !important; }
+}

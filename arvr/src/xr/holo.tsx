@@ -183,6 +183,37 @@ export function HoloOrbit({ radius, color = HOLO.teal, active = false }: { radiu
   )
 }
 
+/**
+ * A glowing orbit drawn from real points (an ellipse, possibly tilted), with tick marks pointing away from
+ * the Sun every 1/24 of the loop. `points` is a closed loop [x, y, z, ...] in hub units, Sun at the origin.
+ */
+export function HoloOrbitPath({ points, color = HOLO.teal, active = false }: { points: number[]; color?: string; active?: boolean }) {
+  const geom = useMemo(() => {
+    const n = points.length / 3
+    const pts: number[] = []
+    for (let i = 0; i < n; i++) {
+      const j = ((i + 1) % n) * 3
+      pts.push(points[i * 3], points[i * 3 + 1], points[i * 3 + 2], points[j], points[j + 1], points[j + 2])
+    }
+    for (let k = 0; k < 24; k++) {
+      const i = Math.round((k / 24) * n) % n
+      const x = points[i * 3], y = points[i * 3 + 1], z = points[i * 3 + 2]
+      const r = Math.hypot(x, y, z) || 1
+      const len = k % 6 === 0 ? 0.06 : 0.025
+      pts.push(x, y, z, x + (x / r) * len, y + (y / r) * len, z + (z / r) * len)
+    }
+    const g = new BufferGeometry()
+    g.setAttribute('position', new BufferAttribute(new Float32Array(pts), 3))
+    return g
+  }, [points])
+  useEffect(() => () => geom.dispose(), [geom])
+  return (
+    <lineSegments geometry={geom}>
+      <lineBasicMaterial color={color} transparent opacity={active ? 0.85 : 0.3} blending={AdditiveBlending} depthWrite={false} toneMapped={false} />
+    </lineSegments>
+  )
+}
+
 function rand(seed: number) {
   let s = seed >>> 0
   return () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296)

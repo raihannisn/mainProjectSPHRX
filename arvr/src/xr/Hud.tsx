@@ -124,7 +124,7 @@ export function Hud({ inAR = false }: { inAR?: boolean }) {
 
       {!bodyId && !surface && !inAR && (
         <nav className="body-chips" aria-label="Destinations">
-          <span className="badge">{t('Not to scale')}</span>
+          <span className="badge">{t('Compressed scale')}</span>
           <button className="chip chip--live" onClick={() => app().selectBody('spherex')}>
             {t('SPHEREx sky (table)')}
           </button>
