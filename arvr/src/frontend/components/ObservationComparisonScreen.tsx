@@ -114,9 +114,101 @@ function formatCoordinate(value: number | undefined, sexagesimal: string | undef
   return value === undefined ? 'Unavailable' : `${value.toFixed(4)}°`
 }
 
+function TargetSelectorDropdown({
+  targets,
+  selectedId,
+  selectedObject,
+  onSelect,
+  isId,
+}: {
+  targets: ObjectInfo[]
+  selectedId: string
+  selectedObject: ObjectInfo | null
+  onSelect: (id: string) => void
+  isId: boolean
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false)
+    }
+    document.addEventListener('mousedown', handleOutside)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
+  const current = targets.find((t) => t.id === selectedId) || selectedObject
+
+  return (
+    <div className="fe-custom-target-picker" ref={dropdownRef}>
+      <span className="fe-picker-label">{isId ? 'Target Observasi' : 'Comparison Target'}</span>
+      <button
+        type="button"
+        className={`fe-target-trigger ${isOpen ? 'is-open' : ''}`}
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <div className="fe-target-trigger-content">
+          <span className="fe-target-icon" aria-hidden="true">⌖</span>
+          <span className="fe-target-current-name">{current?.name || selectedId}</span>
+          <span className="fe-target-current-type">{current?.type || 'Catalog Target'}</span>
+        </div>
+        <span className={`fe-target-chevron ${isOpen ? 'rotate' : ''}`} aria-hidden="true">▾</span>
+      </button>
+
+      {isOpen && (
+        <ul className="fe-target-menu" role="listbox">
+          {targets.map((entry) => {
+            const isSelected = entry.id === selectedId
+            return (
+              <li
+                key={entry.id}
+                role="option"
+                aria-selected={isSelected}
+                className={`fe-target-option ${isSelected ? 'selected' : ''}`}
+                onClick={() => {
+                  if (entry.id) {
+                    onSelect(entry.id)
+                    setIsOpen(false)
+                  }
+                }}
+              >
+                <div className="fe-option-main">
+                  <span className="fe-option-name">{entry.name}</span>
+                  <span className="fe-option-type">{entry.type}</span>
+                </div>
+                <div className="fe-option-meta">
+                  <span>RA {entry.ra !== undefined ? `${entry.ra.toFixed(2)}°` : '—'} · DEC {entry.dec !== undefined ? `${entry.dec.toFixed(2)}°` : '—'}</span>
+                  {isSelected && <span className="fe-option-check">✓</span>}
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+      {selectedObject?.coordinate_provenance === 'project_search_position' && (
+        <small className="fe-target-picker-note">{isId ? 'Menggunakan posisi nominal pencarian, bukan centroid fisik.' : 'Using a nominal search position, not a physical centroid.'}</small>
+      )}
+    </div>
+  )
+}
+
 export function ObservationComparisonScreen() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const lang = useXRApp((s) => s.settings.lang)
+  const isId = lang === 'id'
   const targetId = searchParams.get('target') || 'rcw-36'
   const selectedObservationId = searchParams.get('obs')
 
@@ -436,29 +528,13 @@ export function ObservationComparisonScreen() {
                 </>
               )}
             </div>
-            <label className="fe-compare-target-picker">
-              <span>Comparison target</span>
-              <select
-                className="fe-obs-select"
-                value={targetId}
-                onChange={(event) => handleTargetChange(event.currentTarget.value)}
-                aria-label="Choose a catalog target for comparison"
-              >
-                {!comparisonTargets.some((entry) => entry.id === targetId) && (
-                  <option value={targetId} disabled>
-                    {object?.name || targetId} — archive coordinates unavailable
-                  </option>
-                )}
-                {comparisonTargets.map((entry) => (
-                  <option key={entry.id} value={entry.id}>
-                    {entry.name} · {entry.type}
-                  </option>
-                ))}
-              </select>
-              {object?.coordinate_provenance === 'project_search_position' && (
-                <small>Using a nominal search position, not a physical centroid.</small>
-              )}
-            </label>
+            <TargetSelectorDropdown
+              targets={comparisonTargets}
+              selectedId={targetId}
+              selectedObject={object}
+              onSelect={handleTargetChange}
+              isId={isId}
+            />
           </div>
 
           <div className="fe-compare-nav">
@@ -519,27 +595,27 @@ export function ObservationComparisonScreen() {
             {/* The Visual Comparison Instrument */}
             <section className="fe-hud-card fe-instrument-card">
               <div className="fe-compare-controls">
-                <div className="fe-tabs" role="tablist" aria-label="Mode perbandingan observasi">
+                <div className="fe-tabs" role="tablist" aria-label={isId ? 'Mode perbandingan observasi' : 'Observation comparison mode'}>
                   <button
                     type="button"
                     className={`fe-tab ${mode === 'wipe' ? 'active' : ''}`}
                     onClick={() => setMode('wipe')}
                   >
-                    ↔ Slider Pembanding
+                    {isId ? '↔ Slider Pembanding' : '↔ Comparison Slider'}
                   </button>
                   <button
                     type="button"
                     className={`fe-tab ${mode === 'blink' ? 'active' : ''}`}
                     onClick={() => setMode('blink')}
                   >
-                    ✦ Kedipan (Blink)
+                    {isId ? '✦ Kedipan (Blink)' : '✦ Blink Comparator'}
                   </button>
                   <button
                     type="button"
                     className={`fe-tab ${mode === 'side' ? 'active' : ''}`}
                     onClick={() => setMode('side')}
                   >
-                    ◫ Berdampingan
+                    {isId ? '◫ Berdampingan' : '◫ Side by Side'}
                   </button>
                 </div>
 
@@ -549,7 +625,13 @@ export function ObservationComparisonScreen() {
               </div>
 
               {/* Viewport Stages */}
-              <div className="fe-comparison-view-container">
+              <div className={`fe-comparison-view-container ${mode === 'side' ? 'side-mode' : ''}`}>
+                <div className="fe-reticle-bracket tl" aria-hidden="true" />
+                <div className="fe-reticle-bracket tr" aria-hidden="true" />
+                <div className="fe-reticle-bracket bl" aria-hidden="true" />
+                <div className="fe-reticle-bracket br" aria-hidden="true" />
+                <div className="fe-reticle-crosshair" aria-hidden="true" />
+
                 {/* 1. SLIDER / WIPER MODE */}
                 {mode === 'wipe' && (
                   <div
@@ -649,14 +731,14 @@ export function ObservationComparisonScreen() {
                         className="fe-btn-dock"
                         onClick={() => setBlinkPlaying((v) => !v)}
                       >
-                        {blinkPlaying ? '⏸ Jeda' : '▶ Putar'}
+                        {blinkPlaying ? (isId ? '⏸ Jeda' : '⏸ Pause') : (isId ? '▶ Putar' : '▶ Play')}
                       </button>
                       <button
                         type="button"
                         className="fe-btn-dock"
                         onClick={() => setBlinkSpeed((s) => (s === 'fast' ? 'normal' : 'fast'))}
                       >
-                        {blinkSpeed === 'fast' ? '⚡ Cepat (450ms)' : '🐢 Cadence (850ms)'}
+                        {blinkSpeed === 'fast' ? (isId ? '⚡ Cepat (450ms)' : '⚡ Fast (450ms)') : (isId ? '🐢 Cadence (850ms)' : '🐢 Cadence (850ms)')}
                       </button>
                       <button
                         type="button"
@@ -666,7 +748,7 @@ export function ObservationComparisonScreen() {
                           setBlinkEpoch((e) => (e === 'A' ? 'B' : 'A'))
                         }}
                       >
-                        Kedipkan ({blinkEpoch === 'A' ? 'T1 ➔ T2' : 'T2 ➔ T1'})
+                        {isId ? `Kedipkan (${blinkEpoch === 'A' ? 'T1 ➔ T2' : 'T2 ➔ T1'})` : `Toggle (${blinkEpoch === 'A' ? 'T1 ➔ T2' : 'T2 ➔ T1'})`}
                       </button>
                     </div>
                   </div>
@@ -695,7 +777,9 @@ export function ObservationComparisonScreen() {
 
               {/* Intuitive Wiper Usage Hint */}
               <div className="fe-compare-hint">
-                DRAG THE SLIDER TO COMPARE T1 AND T2 IMAGES · SELECT BLINK FOR AUTOMATIC SWITCHING
+                {isId
+                  ? 'GESER SLIDER UNTUK MEMBANDINGKAN T1 & T2 · PILIH KEDIPAN UNTUK PERGANTIAN OTOMATIS'
+                  : 'DRAG THE SLIDER TO COMPARE T1 AND T2 IMAGES · SELECT BLINK FOR AUTOMATIC SWITCHING'}
               </div>
             </section>
 
@@ -751,7 +835,7 @@ export function ObservationComparisonScreen() {
 
               <div className="fe-data-grid">
                 <div className="fe-datum">
-                  <span>Panjang Gelombang (λ)</span>
+                  <span>{isId ? 'Panjang Gelombang (λ)' : 'Wavelength (λ)'}</span>
                   <strong style={{ color: '#4fe3d6' }}>{pair[0].effective_wavelength_at_target || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
@@ -759,7 +843,7 @@ export function ObservationComparisonScreen() {
                   <strong>{pair[0].bandwidth_at_target || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
-                  <span>Detektor</span>
+                  <span>{isId ? 'Detektor' : 'Detector'}</span>
                   <strong>{pair[0].detector || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
@@ -775,7 +859,7 @@ export function ObservationComparisonScreen() {
                   rel="noopener noreferrer"
                   className="fe-btn-gold"
                 >
-                  <span>↓ Unduh FITS (Level 2)</span>
+                  <span>{isId ? '↓ Unduh FITS (Level 2)' : '↓ Download FITS (Level 2)'}</span>
                   <span aria-hidden="true">↗</span>
                 </a>
               </div>
@@ -791,7 +875,7 @@ export function ObservationComparisonScreen() {
 
               <div className="fe-data-grid">
                 <div className="fe-datum">
-                  <span>Panjang Gelombang (λ)</span>
+                  <span>{isId ? 'Panjang Gelombang (λ)' : 'Wavelength (λ)'}</span>
                   <strong style={{ color: '#38bdf8' }}>{pair[1].effective_wavelength_at_target || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
@@ -799,7 +883,7 @@ export function ObservationComparisonScreen() {
                   <strong>{pair[1].bandwidth_at_target || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
-                  <span>Detektor</span>
+                  <span>{isId ? 'Detektor' : 'Detector'}</span>
                   <strong>{pair[1].detector || 'Unavailable'}</strong>
                 </div>
                 <div className="fe-datum">
@@ -815,7 +899,7 @@ export function ObservationComparisonScreen() {
                   rel="noopener noreferrer"
                   className="fe-btn-gold"
                 >
-                  <span>↓ Unduh FITS (Level 2)</span>
+                  <span>{isId ? '↓ Unduh FITS (Level 2)' : '↓ Download FITS (Level 2)'}</span>
                   <span aria-hidden="true">↗</span>
                 </a>
               </div>
@@ -836,28 +920,28 @@ export function ObservationComparisonScreen() {
                   type="button"
                   className="fe-ai-chip"
                   onClick={() =>
-                    void handleAskAi(`Apa yang berbeda antara epoch T1 dan T2 untuk ${object?.name || targetId}?`)
+                    void handleAskAi(isId ? `Apa yang berbeda antara epoch T1 dan T2 untuk ${object?.name || targetId}?` : `What are the astrophysical differences between epoch T1 and T2 for ${object?.name || targetId}?`)
                   }
                 >
-                  Beda T1 vs T2?
+                  {isId ? 'Beda T1 vs T2?' : 'Variability (T1 vs T2)?'}
                 </button>
                 <button
                   type="button"
                   className="fe-ai-chip"
                   onClick={() =>
-                    void handleAskAi(`Bagaimana perbedaan panjang gelombang memengaruhi perbandingan ${object?.name || targetId}?`)
+                    void handleAskAi(isId ? `Bagaimana perbedaan panjang gelombang memengaruhi perbandingan ${object?.name || targetId}?` : `How do wavelength differences affect the comparison of ${object?.name || targetId}?`)
                   }
                 >
-                  Konteks panjang gelombang
+                  {isId ? 'Konteks panjang gelombang' : 'Wavelength context'}
                 </button>
                 <button
                   type="button"
                   className="fe-ai-chip"
                   onClick={() =>
-                    void handleAskAi(`Apa yang diketahui dari katalog tentang ${object?.name || targetId}?`)
+                    void handleAskAi(isId ? `Apa yang diketahui dari katalog tentang ${object?.name || targetId}?` : `What astrophysical properties are known from the catalog for ${object?.name || targetId}?`)
                   }
                 >
-                  Tentang target
+                  {isId ? 'Tentang target' : 'About target'}
                 </button>
               </div>
 
@@ -866,7 +950,7 @@ export function ObservationComparisonScreen() {
                 <input
                   type="text"
                   className="fe-ai-input"
-                  placeholder="Ask about spectral variability or astrophysics..."
+                  placeholder={isId ? "Tanyakan tentang variabilitas spektral atau astrofisika..." : "Ask about spectral variability or astrophysics..."}
                   value={aiPrompt}
                   maxLength={500}
                   onChange={(e) => setAiPrompt(e.target.value)}
@@ -881,7 +965,7 @@ export function ObservationComparisonScreen() {
                   disabled={aiLoading || !aiPrompt.trim()}
                   onClick={() => void handleAskAi(aiPrompt)}
                 >
-                  {aiLoading ? 'Answering…' : 'Send ↗'}
+                  {aiLoading ? (isId ? 'Menganalisis…' : 'Answering…') : (isId ? 'Kirim ↗' : 'Send ↗')}
                 </button>
               </div>
 
@@ -891,15 +975,15 @@ export function ObservationComparisonScreen() {
               {aiDisplayedText && !aiLoading && (
                 <div className="fe-ai-reply-box">
                   <div className="fe-ai-reply-head">
-                    <span className="fe-ai-badge">✦ Sintesis Astrofisika</span>
+                    <span className="fe-ai-badge">✦ {isId ? 'Sintesis Astrofisika' : 'Astrophysical Synthesis'}</span>
                     <div className="fe-ai-reply-actions">
                       <button
                         type="button"
                         className="fe-ai-btn-copy"
                         onClick={handleCopyAi}
-                        title="Salin analisis ke clipboard"
+                        title={isId ? "Salin analisis ke clipboard" : "Copy analysis to clipboard"}
                       >
-                        {copied ? 'Tersalin ✓' : '📋 Salin'}
+                        {copied ? (isId ? 'Tersalin ✓' : 'Copied ✓') : (isId ? '📋 Salin' : '📋 Copy')}
                       </button>
                       {isTyping && (
                         <button
@@ -910,7 +994,7 @@ export function ObservationComparisonScreen() {
                             setIsTyping(false)
                           }}
                         >
-                          Lewati ⏭
+                          {isId ? 'Lewati ⏭' : 'Skip ⏭'}
                         </button>
                       )}
                       <button
@@ -922,7 +1006,7 @@ export function ObservationComparisonScreen() {
                           setLastQuestion(null)
                           setAiError(null)
                         }}
-                        title="Tutup"
+                        title={isId ? "Tutup" : "Close"}
                       >
                         ×
                       </button>

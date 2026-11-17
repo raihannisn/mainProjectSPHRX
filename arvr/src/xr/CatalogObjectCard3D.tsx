@@ -35,20 +35,20 @@ export function CatalogObjectCard3D({
           : 'AI summary is not available.')
   const speechLabel =
     speechStatus === 'loading'
-      ? 'PREPARING AI VOICE…'
+      ? 'PREPARING AUDIO NARRATION…'
       : speechStatus === 'playing'
-        ? engine === 'browser'
-          ? 'BROWSER VOICE PLAYING'
-          : 'AI VOICE PLAYING'
+        ? 'AUDIO NARRATION PLAYING'
         : speechStatus === 'ready'
-          ? engine === 'browser'
-            ? '▶ REPLAY BROWSER VOICE'
-            : '▶ REPLAY AI VOICE'
+          ? '▶ REPLAY AUDIO NARRATION'
           : speechStatus === 'error'
-            ? engine === 'browser'
-              ? 'BROWSER VOICE UNAVAILABLE'
-              : 'AI VOICE UNAVAILABLE'
+            ? 'AUDIO NARRATION UNAVAILABLE'
             : 'NO NARRATION AVAILABLE'
+
+  const humanSpeechError = speechError
+    ? speechError.includes('HTTP') || speechError.includes('429') || speechError.includes('404')
+      ? 'Using system audio narration.'
+      : speechError
+    : null
 
   return (
     <group visible={!hidden} position={[-1.62, 0.08, 0.12]} rotation={[0, 0.42, 0]}>
@@ -135,17 +135,17 @@ export function CatalogObjectCard3D({
         >
           {speechLabel}
         </Text>
-        {speechError && (
+        {humanSpeechError && (
           <Text
             font={FONT}
             position={[-0.7, -1.0, 0]}
             fontSize={0.027}
             maxWidth={1.4}
-            color="#fbbf24"
+            color="#cbd5e1"
             anchorX="left"
             anchorY="top"
           >
-            {speechError}
+            {humanSpeechError}
           </Text>
         )}
       </PopIn>

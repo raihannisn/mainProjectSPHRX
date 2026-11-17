@@ -45,7 +45,7 @@ export const HOLO_STYLES: Record<string, HoloStyle> = {
 /** Shared: where the Sun is in world space (the stage origin), updated once per frame. */
 export const holoUniforms = { uSun: { value: new Vector3() }, uTime: { value: 0 } }
 
-const NOISE = /* glsl */ `
+export const NOISE = /* glsl */ `
   float h3(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
   float n3(vec3 x) {
     vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);

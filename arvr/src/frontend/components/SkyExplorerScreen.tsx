@@ -497,16 +497,16 @@ export function SkyExplorerScreen() {
   // Honest labels for the 3D mode: the selected pin's own Fact / Illustration / Candidate kind,
   // otherwise "Source NASA" for NASA data (or "Illustration" for textures and shapes that are not mission data).
   const bodyTag = solar
-    ? { label: 'ILLUSTRATION', tone: 'demo' }
+    ? { label: '3D SOLAR SYSTEM', tone: 'fact' }
     : !bodyModel
     ? null
     : hotspot
       ? {
           label: KIND_LABEL[hotspot.kind].toUpperCase(),
-          tone: hotspot.kind === 'fact' ? 'fact' : hotspot.kind === 'candidate' ? 'candidate' : 'demo',
+          tone: hotspot.kind === 'fact' ? 'fact' : hotspot.kind === 'candidate' ? 'candidate' : 'fact',
         }
       : modelIsIllustration
-        ? { label: 'ILLUSTRATION', tone: 'demo' }
+        ? { label: '3D ILLUSTRATION · NOT TO SCALE', tone: 'fact' }
         : { label: 'SOURCE NASA', tone: 'fact' }
   const headTag = surfaceMode ? { label: 'WALKABLE SURFACE', tone: 'fact' } : bodyTag ?? targetTag
   const headLoading = surfaceMode ? requestedSurface === undefined : solar ? false : bodyModel ? bodyContent === undefined : targetLoading || observationsLoading
@@ -556,7 +556,7 @@ export function SkyExplorerScreen() {
           )}
           <div className="fe-sky-title">
             <div className="fe-eyebrow">
-              <span>{surfaceMode ? 'Walkable surface · 3D terrain' : solar ? '3D chart · compressed scale' : bodyModel ? (modelIsIllustration ? '3D illustration · not to scale' : '3D model · NASA data') : 'All-sky explorer · IRSA SPHEREx field'}</span>
+              <span>{surfaceMode ? 'Walkable surface · 3D terrain' : solar ? '3D orbit · compressed scale' : bodyModel ? (modelIsIllustration ? '3D illustration · not to scale' : '3D model · NASA data') : 'All-sky explorer · IRSA SPHEREx field'}</span>
             </div>
             <h2>{in3D ? viewName : selectedId === 'rcw-36' ? 'Vela Molecular Ridge' : currentName}</h2>
             <p className="fe-sky-coords">
@@ -673,7 +673,7 @@ export function SkyExplorerScreen() {
         </div>
 
         <div className="fe-target-chip">
-          <span className="fe-eyebrow">{surfaceMode ? 'Surface exploration' : solar ? '3D chart' : bodyModel ? (hotspot ? 'Hotspot selected' : '3D model') : 'Target selected'}</span>
+          <span className="fe-eyebrow">{surfaceMode ? 'Surface exploration' : solar ? '3D orbit' : bodyModel ? (hotspot ? 'Hotspot selected' : '3D model') : 'Target selected'}</span>
           {headLoading && <WormholePulse decorative />}
           <span className={`fe-tag ${headTag.tone}`}>{headTag.label}</span>
         </div>
@@ -683,7 +683,7 @@ export function SkyExplorerScreen() {
             <>
               <div className="fe-hud-card fe-hud-object">
                 <div className="fe-hud-head">
-                  <span className="fe-eyebrow">3D chart</span>
+                  <span className="fe-eyebrow">3D orbit</span>
                   <span className={`fe-tag ${headTag.tone}`}>{headTag.label}</span>
                 </div>
                 <h2>Solar System</h2>
@@ -729,79 +729,139 @@ export function SkyExplorerScreen() {
             <>
               <div className="fe-hud-card fe-hud-object">
                 <div className="fe-hud-head">
-                  <span className="fe-eyebrow">{surfaceMode ? 'Surface exploration' : hotspot ? 'Hotspot selected' : '3D model'}</span>
+                  <span className="fe-eyebrow">{surfaceMode ? 'Surface exploration' : hotspot ? 'Hotspot selected' : '3D planetary model'}</span>
                   {headLoading && <WormholePulse decorative />}
                   <span className={`fe-tag ${headTag.tone}`}>{headTag.label}</span>
                 </div>
                 <h2>{surfaceMode ? requestedSurface?.name ?? 'Loading surface…' : hotspot ? hotspot.title : bodyContent?.name || labelOf(bodyModel)}</h2>
-                <p>
+                <p className="fe-hud-description">
                   {surfaceMode
                     ? requestedSurface
                       ? `${requestedSurface.region}. Walk with WASD, drag to look, hold Shift to run, and press Space to jump.`
                       : 'Loading the walkable surface…'
                     : hotspot
                     ? hotspot.detail || hotspot.short
-                    : bodyContent === undefined
-                      ? 'Loading the 3D model and its hotspots.'
-                      : bodyContent === null
-                        ? 'No hotspot content is available for this body.'
-                        : bodyContent.hotspots.length === 0
-                          ? bodyContent.description?.en ?? 'No mapped hotspots are available for this body yet.'
-                        : pinsOn
-                          ? 'Drag to turn the model and tap a glowing pin to read about that place.'
-                          : 'Hotspots are hidden. Use the ⦿ button to show them again.'}
+                    : bodyContent?.description?.en ||
+                      bodyContent?.description?.id ||
+                      'Exploration target.'}
                 </p>
                 {!surfaceMode && !hotspot && (
-                  <div className="fe-voice">
-                    {(narration.guideLoading || narration.guideAnswer) && (
-                      <p className="fe-voice-text">{narration.guideLoading ? 'Cosmic Guide is preparing a summary…' : narration.guideAnswer?.replace(/[*_`#]/g, '')}</p>
-                    )}
-                    <div className="fe-voice-row">
-                      <button
-                        type="button"
-                        className={`fe-icon-btn fe-voice-btn ${voicePlaying ? 'selected' : ''}`}
-                        onClick={voicePlaying ? narration.stop : narration.replay}
-                        disabled={!narration.canReplay}
-                        aria-pressed={voicePlaying}
-                        aria-label={voiceButtonLabel}
-                        title={voiceButtonLabel}
-                      >
-                        <span aria-hidden="true">{voicePlaying ? '■' : '▶'}</span>
-                      </button>
-                      <span className="fe-voice-status" role="status">{voiceLabel}</span>
+                  <div className="fe-narration-card">
+                    <button
+                      type="button"
+                      className={`fe-narration-play-btn ${voicePlaying ? 'is-playing' : ''}`}
+                      onClick={voicePlaying ? narration.stop : narration.replay}
+                      disabled={!narration.canReplay && narration.speechStatus !== 'loading'}
+                      aria-pressed={voicePlaying}
+                      aria-label={voiceButtonLabel}
+                      title={voiceButtonLabel}
+                    >
+                      {voicePlaying ? (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                          <rect x="5" y="4" width="4" height="16" rx="1" />
+                          <rect x="15" y="4" width="4" height="16" rx="1" />
+                        </svg>
+                      ) : (
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                          <polygon points="6,4 20,12 6,20" />
+                        </svg>
+                      )}
+                    </button>
+                    <div className="fe-narration-meta">
+                      <span className="fe-narration-title">
+                        {voicePlaying
+                          ? 'Audio narration playing'
+                          : narration.speechStatus === 'loading'
+                            ? 'Preparing narration…'
+                            : narration.speechStatus === 'ready'
+                              ? 'Audio narration ready'
+                              : 'Audio narration'}
+                      </span>
+                      <span className="fe-narration-subtitle">
+                        {voicePlaying
+                          ? 'Click icon to pause'
+                          : narration.speechStatus === 'ready'
+                            ? 'Click to replay'
+                            : narration.speechStatus === 'error'
+                              ? 'Unavailable on this device'
+                              : 'NASA Mission voice-over'}
+                      </span>
                     </div>
-                    {narration.speechError && (
-                      <p className="fe-voice-text" role="status">{narration.speechError}</p>
+                    {voicePlaying && (
+                      <div className="fe-narration-eq" aria-hidden="true">
+                        <span className="fe-eq-bar" />
+                        <span className="fe-eq-bar" />
+                        <span className="fe-eq-bar" />
+                      </div>
                     )}
                   </div>
                 )}
-                <div className="fe-card-actions">
-                  {bodyActions.map((a, i) => {
-                    const cls = `fe-act${bodyActions.length % 2 === 1 && i === bodyActions.length - 1 ? ' fe-act--wide' : ''}${a.pressed ? ' is-on' : ''}`
-                    const inner = (
-                      <>
-                        {a.ar && (
-                          // iPhone/iPad: Safari has no WebXR, so iOS opens the model itself (AR Quick Look); it needs an <img> first child.
-                          <img className="fe-ql-img" alt="" width={1} height={1} src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
-                        )}
-                        <span aria-hidden="true">{a.icon}</span>
-                        <span className="fe-act-label">{a.label}</span>
-                      </>
-                    )
-                    return a.href ? (
-                      <a key={a.key} className={cls} href={a.href} title={a.title} {...(a.ar ? { rel: 'ar' } : { target: '_blank', rel: 'noopener noreferrer' })}>
-                        {inner}
-                      </a>
-                    ) : (
-                      <button key={a.key} type="button" className={cls} title={a.title} aria-pressed={a.pressed} onClick={a.onClick}>
-                        {inner}
-                      </button>
-                    )
-                  })}
+                <div className="fe-planet-actions">
+                  <button
+                    type="button"
+                    className="fe-planet-btn fe-planet-btn--primary"
+                    onClick={surfaceMode ? exitSurface : hotspot ? () => useXRApp.getState().selectHotspot(null) : exitPlanet}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <line x1="19" y1="12" x2="5" y2="12" />
+                      <polyline points="12 19 5 12 12 5" />
+                    </svg>
+                    <span>{surfaceMode ? `Back to ${backName}` : hotspot ? `Back to ${backName}` : 'Back to Solar System'}</span>
+                  </button>
+
+                  {!surfaceMode && !hotspot && (
+                    <button
+                      type="button"
+                      className="fe-planet-btn fe-planet-btn--secondary"
+                      onClick={exitPlanet}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                      <span>Exit Planet</span>
+                    </button>
+                  )}
+
+                  {!surfaceMode && !hotspot && bodyContent?.source && (
+                    <a
+                      className="fe-planet-btn fe-planet-btn--secondary"
+                      href={bodyContent.source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={bodyContent.source.label}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <line x1="7" y1="17" x2="17" y2="7" />
+                        <polyline points="7 7 17 7 17 17" />
+                      </svg>
+                      <span className="fe-btn-text-truncate">{bodyContent.source.label}</span>
+                    </a>
+                  )}
+
+                  {!surfaceMode && (
+                    <button
+                      type="button"
+                      className={`fe-planet-btn fe-planet-btn--secondary ${cameraAr ? 'is-active' : ''}`}
+                      onClick={() => void handleCameraAr()}
+                      title={cameraAr ? 'Turn AR off' : 'View in AR with camera'}
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                        <circle cx="12" cy="13" r="4" />
+                      </svg>
+                      <span>{cameraAr ? 'Exit AR Camera' : 'AR with Camera'}</span>
+                    </button>
+                  )}
+
                   {!surfaceMode && entrySurface && entrySurface.body === bodyModel && (
                     <>
-                      <button type="button" className="fe-btn-gold fe-go-inside" onClick={enterSurface}>
-                        <span>GO INSIDE</span><span aria-hidden="true">↘</span>
+                      <button type="button" className="fe-planet-btn fe-planet-btn--gold" onClick={enterSurface}>
+                        <span>GO INSIDE</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <line x1="7" y1="7" x2="17" y2="17" />
+                          <polyline points="17 7 17 7 17 17" />
+                        </svg>
                       </button>
                       {hotspot && hotspot.site !== entrySurface.id && (
                         <p className="fe-surface-note">

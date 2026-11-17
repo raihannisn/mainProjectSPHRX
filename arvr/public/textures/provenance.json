@@ -11,6 +11,42 @@
     "bytes": 238176,
     "sha256": "781c037750550c221f9bfebf5d9648a8aec8c00a6808291b9fbe18d0b4c7a29c"
   },
+  "earth_clouds": {
+    "file": "textures/earth_clouds.jpg",
+    "kind": "data",
+    "credit": "NASA / Solar System Scope 2K Earth cloud layer (MODIS)",
+    "source": "https://commons.wikimedia.org/wiki/File:Solarsystemscope_texture_2k_earth_clouds.jpg",
+    "sourceSha256": "fffd7f68d41b37274822150e54a6ef605af1d3ec35624d9f628c3b896bfa42ed",
+    "retrieved": "2026-11-17",
+    "width": 2048,
+    "height": 1024,
+    "bytes": 965676,
+    "sha256": "fffd7f68d41b37274822150e54a6ef605af1d3ec35624d9f628c3b896bfa42ed"
+  },
+  "earth_lights": {
+    "file": "textures/earth_lights.jpg",
+    "kind": "data",
+    "credit": "NASA / Solar System Scope 2K Earth night city lights (DMSP/VIIRS)",
+    "source": "https://commons.wikimedia.org/wiki/File:Solarsystemscope_texture_2k_earth_nightmap.jpg",
+    "sourceSha256": "c16fd1bc096ab91a5c5265c6ff9847c43f489f2e2ee790ccdbcbd03251cf3a5a",
+    "retrieved": "2026-11-17",
+    "width": 2048,
+    "height": 1024,
+    "bytes": 255287,
+    "sha256": "c16fd1bc096ab91a5c5265c6ff9847c43f489f2e2ee790ccdbcbd03251cf3a5a"
+  },
+  "earth_specular": {
+    "file": "textures/earth_specular.jpg",
+    "kind": "data",
+    "credit": "NASA Blue Marble ocean water reflection mask",
+    "source": "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_specular_2048.jpg",
+    "sourceSha256": "467f5e30f8a03fde176cb398e7f626896efe31daa025d78fdc4b8c50784df77f",
+    "retrieved": "2026-11-17",
+    "width": 2048,
+    "height": 1024,
+    "bytes": 223594,
+    "sha256": "467f5e30f8a03fde176cb398e7f626896efe31daa025d78fdc4b8c50784df77f"
+  },
   "jupiter": {
     "file": "textures/jupiter.jpg",
     "kind": "data",
@@ -70,5 +106,29 @@
     "height": 720,
     "bytes": 331035,
     "sha256": "6cdda5928ed59cd6fc8012ecce491abf0e188a699915de54ab14dd7abac73643"
+  },
+  "uranus": {
+    "file": "textures/uranus.jpg",
+    "kind": "data",
+    "credit": "NASA/JPL-Caltech and Solar System Scope (Voyager 2 imagery)",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/9/95/Solarsystemscope_texture_2k_uranus.jpg",
+    "sourceSha256": "d15239d46f82d3ea13d2b260b5b29b2a382f42f2916dae0694d0387b1204a09d",
+    "retrieved": "2026-11-17",
+    "width": 2048,
+    "height": 1024,
+    "bytes": 77751,
+    "sha256": "d15239d46f82d3ea13d2b260b5b29b2a382f42f2916dae0694d0387b1204a09d"
+  },
+  "sun": {
+    "file": "textures/sun.jpg",
+    "kind": "data",
+    "credit": "NASA/SDO and SOHO via Solar System Scope",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/c/cb/Solarsystemscope_texture_2k_sun.jpg",
+    "sourceSha256": "ff0f076ba65e03b5ab518451bc96699325be38e3ccbdd5869ee1c00f3a0c8816",
+    "retrieved": "2026-11-17",
+    "width": 2048,
+    "height": 1024,
+    "bytes": 822427,
+    "sha256": "ff0f076ba65e03b5ab518451bc96699325be38e3ccbdd5869ee1c00f3a0c8816"
   }
 }

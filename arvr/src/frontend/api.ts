@@ -3,7 +3,12 @@
  * FastAPI by Vite during development and routed to the API service in Vercel.
  */
 
-export const BASE_URL: string = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() || ''
+const envBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim()
+
+export const BASE_URL: string =
+  envBaseUrl && !envBaseUrl.includes('127.0.0.1') && !envBaseUrl.includes('localhost')
+    ? envBaseUrl
+    : 'https://helios-cosmic-explorer.vercel.app'
 
 export const API_URL = BASE_URL
 

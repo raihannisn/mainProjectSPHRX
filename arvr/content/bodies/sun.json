@@ -2,6 +2,9 @@
   "id": "sun",
   "name": "Sun",
   "type": "star",
+  "texture": "/textures/sun.jpg",
+  "textureKind": "data",
+  "textureCredit": "NASA/SDO and SOHO via Solar System Scope",
   "description": {
     "en": "The Sun is the star at the center of our solar system. Its gravity holds the solar system together, and its energy supports life on Earth.",
     "id": "Matahari adalah bintang di pusat tata surya kita. Gravitasinya menjaga tata surya tetap terikat, dan energinya mendukung kehidupan di Bumi."

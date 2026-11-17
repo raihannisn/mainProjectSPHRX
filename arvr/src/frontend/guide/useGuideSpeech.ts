@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { requestAgentSpeech } from '../api'
 import { playAgentSpeech, stopAgentSpeech, unlockAgentSpeech } from '../../xr/agentSpeech'
-import { stopBrowserVoice } from '../../xr/browserVoice'
+import { speakWithBrowser, stopBrowserVoice } from '../../xr/browserVoice'
 import type { ChatMessage } from './guideStore'
 
 const STORAGE_KEY = 'cosmic-guide-voice'
@@ -109,10 +109,18 @@ export function useGuideSpeech(messages: ChatMessage[], active: boolean) {
         setStatus('playing')
         await playAgentSpeech(speech.data)
         if (run.current === mine) setStatus('idle')
-      } catch (speechError: unknown) {
-        if (run.current === mine) {
-          setStatus('error')
-          setError(speechError instanceof Error ? speechError.message : String(speechError))
+      } catch {
+        // Fall back seamlessly to browser speech synthesis
+        if (run.current !== mine) return
+        try {
+          setStatus('playing')
+          await speakWithBrowser(text)
+          if (run.current === mine) setStatus('idle')
+        } catch (browserError: unknown) {
+          if (run.current === mine) {
+            setStatus('error')
+            setError(browserError instanceof Error ? browserError.message : String(browserError))
+          }
         }
       }
     })()

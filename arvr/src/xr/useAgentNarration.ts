@@ -97,22 +97,19 @@ export function useAgentNarration({
         return
       }
 
-      const fallBackToBrowserVoice = async (reason: string) => {
-        const statusCode = reason.match(/HTTP \d{3}/)?.[0]
-        const notice = `AI voice unavailable${statusCode ? ` (${statusCode})` : ''}; using browser voice.`
+      const fallBackToBrowserVoice = async (_reason?: string) => {
         setSpeechBlob(null)
         setSpeechText(narrationText)
         setSpeechEngine('browser')
         setSpeechStatus('playing')
-        setSpeechError(notice)
+        setSpeechError(null)
         try {
           await speakWithBrowser(narrationText)
           if (active && !controller.signal.aborted) setSpeechStatus('ready')
         } catch (error: unknown) {
           if (active && !controller.signal.aborted) {
-            const detail = error instanceof Error ? error.message : String(error)
             setSpeechStatus('error')
-            setSpeechError(`${notice} ${detail}`)
+            setSpeechError('Voice playback is unavailable on this device.')
           }
         }
       }

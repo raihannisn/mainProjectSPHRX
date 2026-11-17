@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Billboard, Text } from '@react-three/drei'
-import { AdditiveBlending, BufferAttribute, BufferGeometry, DoubleSide, IcosahedronGeometry, MeshBasicMaterial, SphereGeometry, Vector3, type Group, type Mesh } from 'three'
+import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, DoubleSide, IcosahedronGeometry, MeshBasicMaterial, SphereGeometry, Vector3, type Group, type Mesh } from 'three'
 import { BODIES, BODY_BY_ID, type BodyInfo } from './bodies'
 import { hasContent } from './content'
 import { useXRApp } from './store'
@@ -98,6 +98,9 @@ export function SolarSystemHub({ tilt = 0 }: { tilt?: number }) {
   return (
     <group ref={root} rotation={[tilt, 0, 0]}>
       <SceneReady />
+      <CosmicStarfield />
+      <ZodiacConstellations />
+      <ShootingMeteors />
       {paths.map((o) => {
         const b = BODY_BY_ID[o.id]
         return <HoloOrbitPath key={`orbit-${o.id}`} points={o.points} color={b.kind === 'asteroid' ? HOLO.amber : hasContent(b.id) ? HOLO.teal : HOLO.violet} active={hovered === `hub:${o.id}`} />
@@ -119,6 +122,287 @@ export function SolarSystemHub({ tilt = 0 }: { tilt?: number }) {
         </Text>
       </Billboard>
     </group>
+  )
+}
+
+/** 1. 3D Cosmic Starfield: twinkling points spanning the deep background */
+function CosmicStarfield() {
+  const pointsRef = useRef<any>(null)
+  const { positions, colors } = useMemo(() => {
+    const count = 1200
+    const pos = new Float32Array(count * 3)
+    const col = new Float32Array(count * 3)
+    const palette = [
+      new Color('#e0f2fe'),
+      new Color('#ffffff'),
+      new Color('#fef08a'),
+      new Color('#a5f3fc'),
+      new Color('#e9d5ff'),
+    ]
+
+    for (let i = 0; i < count; i++) {
+      const u = Math.random()
+      const v = Math.random()
+      const theta = u * 2.0 * Math.PI
+      const phi = Math.acos(2.0 * v - 1.0)
+      const r = 28 + Math.random() * 26
+
+      const sinPhi = Math.sin(phi)
+      pos[i * 3] = r * sinPhi * Math.cos(theta)
+      pos[i * 3 + 1] = r * Math.cos(phi) * 0.78
+      pos[i * 3 + 2] = r * sinPhi * Math.sin(theta)
+
+      const c = palette[i % palette.length]
+      col[i * 3] = c.r
+      col[i * 3 + 1] = c.g
+      col[i * 3 + 2] = c.b
+    }
+    return { positions: pos, colors: col }
+  }, [])
+
+  const geometry = useMemo(() => {
+    const geo = new BufferGeometry()
+    geo.setAttribute('position', new BufferAttribute(positions, 3))
+    geo.setAttribute('color', new BufferAttribute(colors, 3))
+    return geo
+  }, [positions, colors])
+
+  useEffect(() => () => geometry.dispose(), [geometry])
+
+  useFrame(({ clock }) => {
+    if (pointsRef.current) {
+      pointsRef.current.rotation.y = clock.elapsedTime * 0.0012
+    }
+  })
+
+  return (
+    <points ref={pointsRef} geometry={geometry}>
+      <pointsMaterial
+        size={0.15}
+        vertexColors
+        transparent
+        opacity={0.8}
+        depthWrite={false}
+        blending={AdditiveBlending}
+        sizeAttenuation
+      />
+    </points>
+  )
+}
+
+/** 2. 13 Zodiac Constellations: subtle star lines & markers along the ecliptic band */
+interface ZodiacDef {
+  name: string
+  pts: [number, number][]
+  edges: [number, number][]
+}
+
+const ZODIAC_13: ZodiacDef[] = [
+  {
+    name: 'Aries',
+    pts: [[-0.9, 0.4], [-0.2, 0.55], [0.5, 0.25], [1.1, -0.2]],
+    edges: [[0, 1], [1, 2], [2, 3]],
+  },
+  {
+    name: 'Taurus',
+    pts: [[0, 0], [-0.5, 0.45], [0.5, 0.45], [-1.0, 1.1], [1.1, 1.2], [-0.3, -0.6]],
+    edges: [[0, 1], [0, 2], [1, 3], [2, 4], [0, 5]],
+  },
+  {
+    name: 'Gemini',
+    pts: [[-0.6, 1.1], [-0.6, 0.3], [-0.7, -0.7], [0.6, 1.0], [0.6, 0.2], [0.7, -0.7]],
+    edges: [[0, 1], [1, 2], [3, 4], [4, 5], [1, 4]],
+  },
+  {
+    name: 'Cancer',
+    pts: [[0, 0.2], [-0.7, 0.7], [0.7, 0.7], [0, -0.8]],
+    edges: [[0, 1], [0, 2], [0, 3]],
+  },
+  {
+    name: 'Leo',
+    pts: [[0.8, 0.6], [1.1, 0.9], [0.9, 1.3], [0.4, 1.2], [0.3, 0.6], [0.3, 0], [-0.6, -0.2], [-1.2, 0.3], [-0.6, -0.7]],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [6, 8], [5, 8]],
+  },
+  {
+    name: 'Virgo',
+    pts: [[0, 1.2], [0.5, 0.6], [-0.5, 0.5], [0, 0], [0.8, -0.6], [-0.7, -0.8], [0, -1.2]],
+    edges: [[0, 1], [0, 2], [1, 3], [2, 3], [3, 4], [3, 5], [4, 6], [5, 6]],
+  },
+  {
+    name: 'Libra',
+    pts: [[0, 0.8], [-0.9, 0.2], [0.9, 0.2], [-0.9, -0.6], [0.9, -0.6]],
+    edges: [[0, 1], [0, 2], [1, 3], [2, 4], [1, 2]],
+  },
+  {
+    name: 'Scorpius',
+    pts: [[0.9, 0.8], [0.5, 0.6], [0.2, 0.2], [-0.1, -0.3], [-0.4, -0.8], [-0.8, -1.0], [-1.1, -0.6], [-0.9, -0.2]],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7]],
+  },
+  {
+    name: 'Ophiuchus',
+    pts: [[0, 1.2], [-0.8, 0.5], [0.8, 0.5], [-0.9, -0.7], [0.9, -0.7], [-1.4, 0], [1.4, 0]],
+    edges: [[0, 1], [0, 2], [1, 3], [2, 4], [3, 4], [1, 5], [2, 6]],
+  },
+  {
+    name: 'Sagittarius',
+    pts: [[-0.2, 0.7], [-0.6, 0.2], [0.2, 0.2], [-0.8, -0.5], [0.4, -0.5], [0.9, -0.1], [-1.2, 0.1]],
+    edges: [[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4], [2, 5], [4, 5], [1, 6], [3, 6]],
+  },
+  {
+    name: 'Capricornus',
+    pts: [[-1.1, 0.6], [-0.3, 0.4], [0.8, 0.7], [1.1, 0.2], [0.3, -0.7], [-0.8, -0.5]],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0], [1, 4]],
+  },
+  {
+    name: 'Aquarius',
+    pts: [[-0.8, 0.8], [-0.3, 0.7], [0.3, 0.9], [0.8, 0.7], [-0.7, 0.1], [-0.1, -0.1], [0.5, 0.1], [1.0, -0.1], [-0.5, -0.6], [0.1, -0.8], [0.7, -0.6]],
+    edges: [[0, 1], [1, 2], [2, 3], [4, 5], [5, 6], [6, 7], [8, 9], [9, 10], [1, 4], [5, 8]],
+  },
+  {
+    name: 'Pisces',
+    pts: [[0, -0.9], [-0.7, -0.2], [-1.1, 0.6], [-0.7, 1.0], [-1.3, 1.0], [0.6, -0.1], [0.9, 0.6], [1.3, 0.8], [0.9, 1.1]],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 2], [0, 5], [5, 6], [6, 7], [7, 8], [8, 6]],
+  },
+]
+
+function ZodiacConstellations() {
+  const R = 36
+  const scale = 2.2
+
+  const { linePositions, starPositions, labelCenters } = useMemo(() => {
+    const lPos: number[] = []
+    const sPos: number[] = []
+    const centers: Array<{ name: string; pos: [number, number, number] }> = []
+
+    const N = ZODIAC_13.length
+    for (let i = 0; i < N; i++) {
+      const z = ZODIAC_13[i]
+      const angle = (i / N) * Math.PI * 2
+      const cx = Math.cos(angle) * R
+      const cy = Math.sin(angle * 2.0) * 3.2
+      const cz = Math.sin(angle) * R
+
+      const tangent = [-Math.sin(angle), 0, Math.cos(angle)]
+      const up = [0, 1, 0]
+
+      const transformedPts: Array<[number, number, number]> = z.pts.map(([u, v]) => [
+        cx + tangent[0] * u * scale + up[0] * v * scale,
+        cy + tangent[1] * u * scale + up[1] * v * scale,
+        cz + tangent[2] * u * scale + up[2] * v * scale,
+      ])
+
+      transformedPts.forEach(([x, y, zCoord]) => sPos.push(x, y, zCoord))
+
+      z.edges.forEach(([idxA, idxB]) => {
+        const a = transformedPts[idxA]
+        const b = transformedPts[idxB]
+        if (a && b) {
+          lPos.push(a[0], a[1], a[2], b[0], b[1], b[2])
+        }
+      })
+
+      centers.push({
+        name: z.name,
+        pos: [cx + up[0] * 3.2, cy + up[1] * 3.2, cz + up[2] * 3.2],
+      })
+    }
+
+    return {
+      linePositions: new Float32Array(lPos),
+      starPositions: new Float32Array(sPos),
+      labelCenters: centers,
+    }
+  }, [R, scale])
+
+  const lineGeo = useMemo(() => {
+    const g = new BufferGeometry()
+    g.setAttribute('position', new BufferAttribute(linePositions, 3))
+    return g
+  }, [linePositions])
+
+  const starGeo = useMemo(() => {
+    const g = new BufferGeometry()
+    g.setAttribute('position', new BufferAttribute(starPositions, 3))
+    return g
+  }, [starPositions])
+
+  useEffect(() => () => {
+    lineGeo.dispose()
+    starGeo.dispose()
+  }, [lineGeo, starGeo])
+
+  return (
+    <group>
+      <lineSegments geometry={lineGeo}>
+        <lineBasicMaterial color="#38bdf8" transparent opacity={0.18} depthWrite={false} blending={AdditiveBlending} />
+      </lineSegments>
+      <points geometry={starGeo}>
+        <pointsMaterial size={0.24} color="#a5f3fc" transparent opacity={0.55} depthWrite={false} blending={AdditiveBlending} sizeAttenuation />
+      </points>
+      {labelCenters.map((lbl, idx) => (
+        <Billboard key={idx} position={lbl.pos}>
+          <Text font={FONT} fontSize={0.28} letterSpacing={0.06} color="#7dd3fc" fillOpacity={0.28} anchorY="middle">
+            {lbl.name.toUpperCase()}
+          </Text>
+        </Billboard>
+      ))}
+    </group>
+  )
+}
+
+/** 3. Shooting Meteors: fast animated streaks occasionally traversing the sky */
+function ShootingMeteors() {
+  const meteors = useRef([
+    { pos: new Vector3(-24, 12, -18), dir: new Vector3(1, -0.4, 0.7).normalize(), speed: 24, life: 0, maxLife: 1.1, delay: 1 },
+    { pos: new Vector3(18, 15, -24), dir: new Vector3(-0.9, -0.5, 0.5).normalize(), speed: 26, life: 0, maxLife: 0.95, delay: 5 },
+  ])
+
+  const positions = useMemo(() => new Float32Array(meteors.current.length * 6), [])
+  const geom = useMemo(() => {
+    const g = new BufferGeometry()
+    g.setAttribute('position', new BufferAttribute(positions, 3))
+    return g
+  }, [positions])
+
+  useEffect(() => () => geom.dispose(), [geom])
+
+  useFrame((_, dt) => {
+    const p = positions
+    meteors.current.forEach((m, idx) => {
+      m.delay -= dt
+      if (m.delay <= 0) {
+        m.life += dt
+        if (m.life >= m.maxLife) {
+          m.life = 0
+          m.delay = 3.5 + Math.random() * 5.5
+          const angle = Math.random() * Math.PI * 2
+          m.pos.set(Math.cos(angle) * 32, 9 + Math.random() * 12, Math.sin(angle) * 32)
+          m.dir.set(-Math.cos(angle) * 0.7 + (Math.random() - 0.5), -0.5 - Math.random() * 0.4, -Math.sin(angle) * 0.7 + (Math.random() - 0.5)).normalize()
+          m.speed = 22 + Math.random() * 8
+        } else {
+          m.pos.addScaledVector(m.dir, m.speed * dt)
+        }
+      }
+
+      const active = m.delay <= 0 && m.life < m.maxLife
+      const head = m.pos
+      const tailLen = active ? 2.8 : 0
+      const tail = head.clone().addScaledVector(m.dir, -tailLen)
+
+      p[idx * 6] = head.x
+      p[idx * 6 + 1] = head.y
+      p[idx * 6 + 2] = head.z
+      p[idx * 6 + 3] = tail.x
+      p[idx * 6 + 4] = tail.y
+      p[idx * 6 + 5] = tail.z
+    })
+    geom.attributes.position.needsUpdate = true
+  })
+
+  return (
+    <lineSegments geometry={geom}>
+      <lineBasicMaterial color="#ffffff" transparent opacity={0.65} depthWrite={false} blending={AdditiveBlending} />
+    </lineSegments>
   )
 }
 
