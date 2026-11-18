@@ -7,7 +7,7 @@ import './styles.css'
 import './menu.css'
 import { onAskGuide } from './xr'
 import { App } from './App'
-import { EMULATE, startEmulator } from './xr/emulator'
+import { EMULATE, realHeadsetPresent, startEmulator } from './xr/emulator'
 import { registerServiceWorker } from './xr/offline'
 
 registerServiceWorker()
@@ -25,6 +25,10 @@ function render() {
   )
 }
 
-// ?emulate → simulated Quest 3 must be installed before device detection runs
-if (EMULATE) startEmulator().catch((e) => console.error('[emulate]', e)).finally(render)
-else render()
+// ?emulate → simulated Quest 3 must be installed before device detection runs, but never over a real headset
+if (EMULATE) {
+  realHeadsetPresent()
+    .then((real) => (real ? undefined : startEmulator()))
+    .catch((e) => console.error('[emulate]', e))
+    .finally(render)
+} else render()
