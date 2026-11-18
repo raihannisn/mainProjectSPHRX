@@ -95,6 +95,10 @@ export interface XRAppState {
   /** Camera AR: the phone's camera feed behind the scene, no WebXR/ARCore needed (works on any device). */
   cameraAr: boolean
   arAnchor: [number, number, number] | null
+  /** AR (camera or passthrough): the model is pinned in one place; false = it floats in front of where you aim */
+  arLocked: boolean
+  /** bumped by "Reset": the model comes back in front of you and the phone's compass is re-centred */
+  arResetNonce: number
   /** True when an asteroid is shown as the procedural placeholder instead of a real shape model. */
   shapeIsIllustration: boolean
   lastGuideRequest: GuideRequest | null
@@ -144,6 +148,8 @@ export interface XRAppState {
   setMode: (mode: ViewMode) => void
   setGyroEnabled: (on: boolean) => void
   setCameraAr: (on: boolean) => void
+  setArLocked: (locked: boolean) => void
+  resetAr: () => void
   setArAnchor: (p: [number, number, number] | null) => void
   setLastGuideRequest: (r: GuideRequest) => void
   showToast: (msg: string | null, ms?: number) => void
@@ -224,6 +230,8 @@ export const useXRApp = create<XRAppState>((set) => ({
   gyroEnabled: false,
   cameraAr: false,
   arAnchor: null,
+  arLocked: false,
+  arResetNonce: 0,
   shapeIsIllustration: false,
   lastGuideRequest: null,
   toast: null,
@@ -262,7 +270,9 @@ export const useXRApp = create<XRAppState>((set) => ({
   setHovered: (hoveredId) => set({ hoveredId }),
   setMode: (mode) => set({ mode }),
   setGyroEnabled: (gyroEnabled) => set({ gyroEnabled }),
-  setCameraAr: (cameraAr) => set({ cameraAr }),
+  setCameraAr: (cameraAr) => set({ cameraAr, arLocked: false }),
+  setArLocked: (arLocked) => set({ arLocked }),
+  resetAr: () => set((s) => ({ arLocked: false, arResetNonce: s.arResetNonce + 1 })),
   setArAnchor: (arAnchor) => set({ arAnchor }),
   setLastGuideRequest: (lastGuideRequest) => set({ lastGuideRequest }),
   showToast: (toast, ms = 3000) => {

@@ -12,6 +12,8 @@ import { ErrorBoundary } from '../../xr/ErrorBoundary'
 import { useXRApp } from '../../xr/store'
 import { xrStore } from '../../xr/xrStore'
 import { GyroControls } from '../../xr/GyroControls'
+import { ArAnchor } from '../../xr/ArAnchor'
+import { haptic } from '../../xr/feedback'
 
 const SurfaceScene = lazy(() =>
   import('../../xr/surface/SurfaceScene').then((module) => ({ default: module.SurfaceScene })),
@@ -75,6 +77,57 @@ function ArOrigin() {
     camera.updateProjectionMatrix()
   }, [camera])
   return null
+}
+
+/**
+ * Holds the scene content. In AR (the phone camera, or a headset's passthrough) it is pinned in one place that
+ * you choose with Place / Reset; otherwise it sits at the origin as before.
+ */
+function Placed({ bodyId, siteId, arGyro, children }: { bodyId: string; siteId: string | null; arGyro: boolean; children: React.ReactNode }) {
+  const xrMode = useXR((s) => s.mode)
+  if (!siteId && xrMode === 'immersive-ar') return <ArAnchor bodyId={bodyId} mode="xr">{children}</ArAnchor>
+  if (arGyro) return <ArAnchor bodyId={bodyId} mode="camera">{children}</ArAnchor>
+  return <group>{children}</group>
+}
+
+/** Place / Pick up and Reset on the page, for the phone's camera view (a headset gets 3D buttons instead). */
+function ArControlsOverlay() {
+  const locked = useXRApp((s) => s.arLocked)
+  return (
+    <>
+      {!locked && <div className="ar-reticle" aria-hidden="true" />}
+      <div className="ar-controls" role="group" aria-label="AR placement">
+        <p className="ar-hint" role="status">
+          {locked ? 'Pinned. Move your phone around it.' : 'Aim at a spot, then tap Place here.'}
+        </p>
+        <div className="ar-buttons">
+          <button
+            type="button"
+            className={`fe-icon-btn ar-btn${locked ? '' : ' selected'}`}
+            aria-pressed={locked}
+            onClick={() => {
+              useXRApp.getState().setArLocked(!locked)
+              haptic(0.2, 20)
+            }}
+          >
+            <span aria-hidden="true">{locked ? '↥' : '◎'}</span>
+            <span>{locked ? 'Pick up' : 'Place here'}</span>
+          </button>
+          <button
+            type="button"
+            className="fe-icon-btn ar-btn"
+            onClick={() => {
+              useXRApp.getState().resetAr()
+              haptic(0.2, 20)
+            }}
+          >
+            <span aria-hidden="true">↺</span>
+            <span>Reset</span>
+          </button>
+        </div>
+      </div>
+    </>
+  )
 }
 
 function FitSurfaceCamera({ siteId }: { siteId: string }) {
@@ -160,7 +213,7 @@ export function ModelViewer3D({ bodyId, siteId = null, resetKey }: ModelViewer3D
             ) : (
               <FitCamera resetKey={resetKey} radius={bodyId === 'solar' ? 3.4 : bodyId === 'saturn' ? 2.5 : FRAME_RADIUS} lift={bodyId === 'solar' ? 0.55 : 0.18} />
             )}
-            <group position={arGyro ? [0, -0.1, bodyId === 'solar' ? -7 : -4] : [0, 0, 0]} scale={arGyro ? (bodyId === 'solar' ? 0.3 : 0.42) : 1}>
+            <Placed bodyId={bodyId} siteId={siteId} arGyro={arGyro}>
               <Suspense fallback={null}>
                 {siteId ? (
                   <SurfaceSceneHost siteId={siteId} resetKey={resetKey} surfaceGyro={surfaceGyro} />
@@ -170,7 +223,7 @@ export function ModelViewer3D({ bodyId, siteId = null, resetKey }: ModelViewer3D
                   <BodyExplorer key={bodyId} id={bodyId} vr={false} showTitle={false} showObjectCard={false} />
                 )}
               </Suspense>
-            </group>
+            </Placed>
             {!siteId && !arGyro && (
               <OrbitControls
                 key={resetKey}
@@ -185,6 +238,7 @@ export function ModelViewer3D({ bodyId, siteId = null, resetKey }: ModelViewer3D
           </XR>
         </Canvas>
       </ErrorBoundary>
+      {arGyro && <ArControlsOverlay />}
     </div>
   )
 }

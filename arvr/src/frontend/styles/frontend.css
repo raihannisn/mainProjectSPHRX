@@ -5946,3 +5946,61 @@
 @media (max-width: 360px) {
   .fe-brand-link .fe-brand-mark { width: 28px !important; height: 28px !important; }
 }
+
+/* ---- AR: place / pick up and reset the model in one spot (appended; no earlier rule changed) ---- */
+.ar-reticle {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 50%;
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  border: 2px solid rgba(79, 227, 214, 0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+.ar-reticle::before,
+.ar-reticle::after {
+  content: "";
+  position: absolute;
+  background: rgba(79, 227, 214, 0.9);
+}
+.ar-reticle::before { left: 50%; top: 8px; bottom: 8px; width: 2px; margin-left: -1px; }
+.ar-reticle::after { top: 50%; left: 8px; right: 8px; height: 2px; margin-top: -1px; }
+.ar-controls {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  /* under the title card and the toolbar, above the object card: the free part of a phone-sized AR view */
+  top: 190px;
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100% - 24px);
+}
+.ar-hint {
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(6, 15, 30, 0.72);
+  border: 1px solid rgba(79, 227, 214, 0.3);
+  color: #dff6f3;
+  font: 0.7rem var(--mono, ui-monospace, monospace);
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+.ar-buttons { display: flex; gap: 10px; }
+.ar-btn {
+  width: auto;
+  min-width: var(--hit-target, 44px);
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 0.72rem var(--mono, ui-monospace, monospace);
+  letter-spacing: 0.04em;
+}

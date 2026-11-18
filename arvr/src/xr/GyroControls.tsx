@@ -11,6 +11,8 @@ export function GyroControls() {
   const camera = useThree((s) => s.camera)
   const reading = useRef<{ a: number; b: number; g: number } | null>(null)
   const alpha0 = useRef<number | null>(null)
+  const resetNonce = useXRApp((s) => s.arResetNonce)
+  const smoothed = useRef(false)
   const tmp = useMemo(
     () => ({
       euler: new Euler(),
@@ -19,6 +21,7 @@ export function GyroControls() {
       zee: new Vector3(0, 0, 1),
       yee: new Vector3(0, 1, 0),
       qh: new Quaternion(),
+      target: new Quaternion(),
     }),
     [],
   )
@@ -43,17 +46,32 @@ export function GyroControls() {
     }
   }, [])
 
-  useFrame(() => {
+  // "Reset" in AR: whatever the phone points at now is "forward" again
+  useEffect(() => {
+    if (resetNonce > 0 && reading.current) {
+      alpha0.current = reading.current.a
+      smoothed.current = false
+    }
+  }, [resetNonce])
+
+  useFrame((_, dt) => {
     const r = reading.current
     if (!r) return
     const orient = MathUtils.degToRad((screen.orientation?.angle ?? 0) as number)
-    const { euler, q0, q1, zee, yee, qh } = tmp
+    const { euler, q0, q1, zee, yee, qh, target } = tmp
     euler.set(MathUtils.degToRad(r.b), MathUtils.degToRad(r.a - (alpha0.current ?? 0)), -MathUtils.degToRad(r.g), 'YXZ')
-    camera.quaternion.setFromEuler(euler)
-    camera.quaternion.multiply(q1)
-    camera.quaternion.multiply(q0.setFromAxisAngle(zee, -orient))
+    target.setFromEuler(euler)
+    target.multiply(q1)
+    target.multiply(q0.setFromAxisAngle(zee, -orient))
     // surface mode: start facing the scene's point of interest
-    camera.quaternion.premultiply(qh.setFromAxisAngle(yee, useXRApp.getState().headingOffset))
+    target.premultiply(qh.setFromAxisAngle(yee, useXRApp.getState().headingOffset))
+    // the sensor jitters a little: a light low-pass keeps the pinned model steady instead of trembling
+    if (!smoothed.current) {
+      camera.quaternion.copy(target)
+      smoothed.current = true
+    } else {
+      camera.quaternion.slerp(target, 1 - Math.exp(-Math.min(dt, 0.05) * 16))
+    }
   })
 
   return null
