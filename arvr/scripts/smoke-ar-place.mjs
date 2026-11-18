@@ -27,7 +27,7 @@ const browser = await chromium.launch({ channel: process.env.PW_CHANNEL ?? 'msed
   const errors = []
   page.on('pageerror', (e) => errors.push(e.message))
   // an iPhone asks for motion access when you tap; the emulated phone grants it
-  await page.addInitScript(() => { if (window.DeviceOrientationEvent) DeviceOrientationEvent.requestPermission = async () => 'granted' })
+  await page.addInitScript(() => { if (window.DeviceOrientationEvent) DeviceOrientationEvent.requestPermission = async () => 'granted'; window.__arNoTrack = true /* this part moves the sensors without moving the picture */ })
   await page.route('**/api/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"status":"ok"}' }))
   await page.goto(`${base}/explorer`, { waitUntil: 'domcontentloaded' })
   await page.waitForSelector('.model3d canvas', { timeout: 40000 })
@@ -125,6 +125,83 @@ const browser = await chromium.launch({ channel: process.env.PW_CHANNEL ?? 'msed
   }))
   check('the controls fit inside the phone screen', await page.evaluate(() => { const c = document.querySelector('.ar-controls').getBoundingClientRect(); return c.left >= 0 && c.right <= innerWidth && c.bottom <= innerHeight }))
   check('no page errors (camera AR)', errors.length === 0, errors.slice(0, 3).join(' | '))
+  await ctx.close()
+}
+
+// ------------------------------------------------------------------ pinned model follows the camera PICTURE
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, permissions: ['camera'] })
+  const page = await ctx.newPage()
+  const errors = []
+  page.on('pageerror', (e) => errors.push(e.message))
+  await page.addInitScript(() => {
+    if (window.DeviceOrientationEvent) DeviceOrientationEvent.requestPermission = async () => 'granted'
+    // a camera that films a textured table which we can slide: window.__shift is how far it has moved, in picture pixels
+    window.__shift = 0
+    const pattern = document.createElement('canvas')
+    pattern.width = 1200
+    pattern.height = 640
+    const pc = pattern.getContext('2d')
+    let seed = 5
+    const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647 }
+    pc.fillStyle = '#777'
+    pc.fillRect(0, 0, 1200, 640)
+    for (let i = 0; i < 2200; i++) {
+      const g = Math.floor(30 + rnd() * 200)
+      pc.fillStyle = `rgb(${g},${g},${g})`
+      const r = 4 + rnd() * 18
+      pc.beginPath(); pc.arc(rnd() * 1200, rnd() * 640, r, 0, 6.3); pc.fill()
+    }
+    const cam = document.createElement('canvas')
+    cam.width = 360
+    cam.height = 640
+    const cc = cam.getContext('2d')
+    const draw = () => { cc.drawImage(pattern, 420 - window.__shift, 0, 360, 640, 0, 0, 360, 640) }
+    draw()
+    cam.style.cssText = 'position:fixed;left:0;top:0;width:90px;height:160px;opacity:0.02;pointer-events:none;z-index:-1'
+    document.addEventListener('DOMContentLoaded', () => document.body.appendChild(cam))
+    setInterval(draw, 33)
+    window.__arFrameSource = cam // stands in for the camera picture the page reads (the real video element still plays the fake device)
+  })
+  await page.route('**/api/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"status":"ok"}' }))
+  await page.goto(`${base}/explorer`, { waitUntil: 'domcontentloaded' })
+  await page.waitForSelector('.model3d canvas', { timeout: 40000 })
+  await page.waitForTimeout(3000)
+  await page.evaluate(() => {
+    window.__alpha = 10
+    window.__beta = 50
+    setInterval(() => window.dispatchEvent(new DeviceOrientationEvent('deviceorientation', { alpha: window.__alpha, beta: window.__beta, gamma: 0, absolute: false })), 20)
+  })
+  await page.locator('[title="View in AR with your camera"]').first().click()
+  await page.waitForSelector('.ar-controls', { timeout: 15000 })
+  await page.waitForFunction(() => !!window.__arAnchor?.group?.current, null, { timeout: 15000 })
+  await page.waitForTimeout(2500)
+  const screenX = () =>
+    page.evaluate(() => {
+      const g = window.__arAnchor.group.current
+      const st = g.__r3f.root.getState()
+      const v = g.position.clone().project(st.camera)
+      const r = st.gl.domElement.getBoundingClientRect()
+      return { x: r.left + ((v.x + 1) / 2) * r.width, y: r.top + ((1 - v.y) / 2) * r.height }
+    })
+  const box = await page.evaluate(() => { const r = document.querySelector('.model3d canvas').getBoundingClientRect(); return { l: r.left, t: r.top, w: r.width, h: r.height } })
+  await page.touchscreen.tap(box.l + box.w * 0.5, box.t + box.h * 0.42)
+  await page.waitForTimeout(1500)
+  check('pinned (picture-following test)', (await page.evaluate(() => window.__xrApp.getState().arLocked)) === true)
+  const p0 = await screenX()
+  // slide the table 110 picture pixels to the right, smoothly, as if the phone moved left
+  await page.evaluate(() => new Promise((res) => { let n = 0; const t = setInterval(() => { window.__shift += 3.6; if (++n >= 30) { clearInterval(t); res() } }, 40) }))
+  await page.waitForTimeout(1200)
+  const p1 = await screenX()
+  const s = Math.max(box.w / 360, box.h / 640)
+  const expected = 110 * s
+  check('pinned: when the table slides in the picture, the model slides with it', Math.abs(p1.x - p0.x - expected) < Math.abs(expected) * 0.35, `moved ${(p1.x - p0.x).toFixed(0)} px, the table moved ${expected.toFixed(0)} px`)
+  // and back again: no drift
+  await page.evaluate(() => new Promise((res) => { let n = 0; const t = setInterval(() => { window.__shift -= 3.6; if (++n >= 30) { clearInterval(t); res() } }, 40) }))
+  await page.waitForTimeout(1200)
+  const p2 = await screenX()
+  check('... and back to where it was when the table slides back', Math.abs(p2.x - p0.x) < 40 && Math.abs(p2.y - p0.y) < 40, `off by ${(p2.x - p0.x).toFixed(0)}, ${(p2.y - p0.y).toFixed(0)} px`)
+  check('no page errors (picture tracking)', errors.length === 0, errors.slice(0, 3).join(' | '))
   await ctx.close()
 }
 

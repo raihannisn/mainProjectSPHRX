@@ -12,7 +12,7 @@ import { ErrorBoundary } from '../../xr/ErrorBoundary'
 import { useXRApp } from '../../xr/store'
 import { xrStore } from '../../xr/xrStore'
 import { GyroControls } from '../../xr/GyroControls'
-import { ArAnchor } from '../../xr/ArAnchor'
+import { ArAnchor, AR_FOV } from '../../xr/ArAnchor'
 import { haptic } from '../../xr/feedback'
 
 const SurfaceScene = lazy(() =>
@@ -73,8 +73,15 @@ function ArOrigin() {
     camera.quaternion.identity() // face the model; motion sensors take over from here
     camera.near = 0.05
     camera.far = 60
+    // a phone camera sees a wider picture than the viewer's usual lens; the model is held to the picture, so this
+    // mostly sets its perspective
+    ;(camera as PerspectiveCamera).fov = AR_FOV
     ;(camera as PerspectiveCamera).clearViewOffset()
     camera.updateProjectionMatrix()
+    return () => {
+      ;(camera as PerspectiveCamera).fov = FOV
+      camera.updateProjectionMatrix()
+    }
   }, [camera])
   return null
 }

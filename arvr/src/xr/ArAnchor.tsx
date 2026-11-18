@@ -6,6 +6,7 @@ import { useXRApp } from './store'
 import { viewCamera } from './viewCamera'
 import { Button, GlassPanel } from './ui3d'
 import { haptic } from './feedback'
+import { createTracker, rotationFromQuaternion, type Tracker } from './visualTracker'
 
 /**
  * AR keeps the model in ONE place, on a surface, that you choose.
@@ -17,6 +18,9 @@ import { haptic } from './feedback'
  * "Reset" brings it back and re-centres the compass. (The phone's motion sensors give turning, not position, so
  * walking toward the model does not change its distance.)
  *
+ * Once pinned, the model is held to the table in the camera picture itself (see visualTracker): the picture is
+ * followed frame by frame, so it stays on that spot when you lean, step or turn, not only when you turn.
+ *
  * Headset passthrough (WebXR AR): the floor is known (y = 0), so the model is placed in front of you, pinned after a
  * moment, with 3D Place / Reset buttons under it.
  */
@@ -25,6 +29,13 @@ import { haptic } from './feedback'
 export function contentRadius(bodyId: string) {
   return bodyId === 'solar' ? 3.4 : bodyId === 'saturn' ? 2.5 : 1.62
 }
+/** The AR camera's vertical field of view. The model is held in the picture, so this only sets its perspective. */
+export const AR_FOV = 60
+const TRACK_WIDTH = 96
+
+/** The tracker that follows the camera picture while a model is pinned (shared by the driver and the anchor). */
+const arTrack: { tracker: Tracker | null; w: number; h: number } = { tracker: null, w: 0, h: 0 }
+
 /** The Solar System chart is a flat disc, so it lies on the surface; a planet is a ball that rests on it. */
 const isFlat = (bodyId: string) => bodyId === 'solar'
 
@@ -44,6 +55,7 @@ const _pos = new Vector3()
 const _dir = new Vector3()
 const _hit = new Vector3()
 const _ndc = new Vector2()
+const _nd2 = new Vector3()
 
 /** Where a ray from `origin` along `dir` meets the plane y = planeY; looking up or too steep a miss, it lands straight ahead. */
 export function surfacePoint(origin: Vector3, dir: Vector3, planeY: number, out: Vector3) {
@@ -78,6 +90,68 @@ function scaleForDistance(bodyId: string, distance: number) {
   return radius / contentRadius(bodyId)
 }
 
+/** Camera AR: samples the camera picture a few dozen times a second and feeds the tracker. */
+function useVideoTracking(enabled: boolean) {
+  const gl = useThree((s) => s.gl)
+  const camera = useThree((s) => s.camera)
+  const resetNonce = useXRApp((s) => s.arResetNonce)
+  useEffect(() => {
+    if (!enabled) return
+    let stop = false
+    let timer = 0
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    const R = new Float64Array(9)
+    arTrack.tracker = null
+    const step = () => {
+      if (stop) return
+      // tests can stand in for the camera with a canvas, or turn the picture tracking off
+      const test = import.meta.env.DEV ? (window as unknown as { __arNoTrack?: boolean; __arFrameSource?: HTMLCanvasElement }) : {}
+      const video: HTMLVideoElement | HTMLCanvasElement | null = test.__arFrameSource ?? document.querySelector<HTMLVideoElement>('video.xr-camera-feed')
+      const srcW = video instanceof HTMLVideoElement ? video.videoWidth : (video?.width ?? 0)
+      const srcH = video instanceof HTMLVideoElement ? video.videoHeight : (video?.height ?? 0)
+      const ready = video instanceof HTMLVideoElement ? video.readyState >= 2 : true
+      if (ctx && video && !test.__arNoTrack && ready && srcW > 0) {
+        const w = TRACK_WIDTH
+        const h = Math.max(48, Math.round((TRACK_WIDTH * srcH) / srcW))
+        if (!arTrack.tracker || arTrack.w !== w || arTrack.h !== h) {
+          canvas.width = w
+          canvas.height = h
+          // the picture is shown covering the screen: the focal length of the tracked frame follows from how much of it is visible
+          const cw = gl.domElement.clientWidth || 1
+          const ch = gl.domElement.clientHeight || 1
+          const s = Math.max(cw / w, ch / h)
+          const f = (ch / s / 2) / Math.tan((AR_FOV * Math.PI) / 360)
+          arTrack.tracker = createTracker(w, h, f)
+          arTrack.w = w
+          arTrack.h = h
+        }
+        try {
+          ctx.drawImage(video, 0, 0, w, h)
+          const d = ctx.getImageData(0, 0, w, h).data
+          const gray = new Uint8Array(w * h)
+          for (let i = 0, j = 0; i < gray.length; i++, j += 4) gray[i] = (d[j] * 77 + d[j + 1] * 150 + d[j + 2] * 29) >> 8
+          rotationFromQuaternion(camera.quaternion, R)
+          arTrack.tracker.update(gray, R)
+        } catch {
+          // a frame that cannot be read is skipped
+        }
+      }
+      timer = window.setTimeout(step, 33)
+    }
+    step()
+    return () => {
+      stop = true
+      window.clearTimeout(timer)
+      arTrack.tracker = null
+    }
+  }, [enabled, gl, camera])
+  // "Reset": start following again from the next picture
+  useEffect(() => {
+    arTrack.tracker?.clear()
+  }, [resetNonce])
+}
+
 /** Wraps the scene content. `mode` is 'camera' (gyro + camera feed) or 'xr' (immersive AR, passthrough). */
 export function ArAnchor({ bodyId, mode, children }: { bodyId: string; mode: 'camera' | 'xr'; children: ReactNode }) {
   const group = useRef<Group>(null)
@@ -91,6 +165,9 @@ export function ArAnchor({ bodyId, mode, children }: { bodyId: string; mode: 'ca
   lockedRef.current = locked
   const surfaceRef = useRef(surface)
   surfaceRef.current = surface
+  useVideoTracking(mode === 'camera')
+  /** the pinned spot is held in the camera picture: how far the model was from the camera when it was pinned */
+  const pinned = useRef<{ dist: number } | null>(null)
   const placedOnce = useRef(false)
   /** a tap has put the model down; the pin itself is applied just after the click has reached every handler */
   const pinning = useRef(false)
@@ -149,6 +226,36 @@ export function ArAnchor({ bodyId, mode, children }: { bodyId: string; mode: 'ca
     cam.getWorldDirection(_dir)
 
     if (mode === 'camera') {
+      const tr = arTrack.tracker
+      // just pinned: hold this spot in the camera picture from now on
+      if (lockedRef.current && !pinned.current && tr) {
+        _nd2.copy(g.position).project(camera)
+        const cw = gl.domElement.clientWidth || 1
+        const ch = gl.domElement.clientHeight || 1
+        const s = Math.max(cw / arTrack.w, ch / arTrack.h)
+        const X = ((_nd2.x + 1) / 2) * cw
+        const Y = ((1 - _nd2.y) / 2) * ch
+        tr.place((X - cw / 2) / s + arTrack.w / 2, (Y - ch / 2) / s + arTrack.h / 2)
+        pinned.current = { dist: _pos.distanceTo(g.position) }
+      }
+      if (!lockedRef.current && pinned.current) {
+        pinned.current = null
+        tr?.clear()
+      }
+      if (lockedRef.current && pinned.current && tr && tr.anchor.valid) {
+        // the spot's place in the picture -> a ray through it -> the model along that ray, nearer when the table looks bigger
+        const cw = gl.domElement.clientWidth || 1
+        const ch = gl.domElement.clientHeight || 1
+        const s = Math.max(cw / arTrack.w, ch / arTrack.h)
+        const X = (tr.anchor.x - arTrack.w / 2) * s + cw / 2
+        const Y = (tr.anchor.y - arTrack.h / 2) * s + ch / 2
+        _nd2.set((X / cw) * 2 - 1, -((Y / ch) * 2 - 1), 0.5).unproject(camera)
+        _dir.copy(_nd2).sub(_pos).normalize()
+        const dist = Math.max(0.25, Math.min(4, pinned.current.dist / tr.anchor.scale))
+        g.position.copy(_pos).addScaledVector(_dir, dist)
+        g.scale.setScalar(scaleNow.current)
+        return
+      }
       if (!placedOnce.current || (!lockedRef.current && !pinning.current)) {
         // on the assumed surface, where the middle of the screen points
         surfacePoint(_pos, _dir, _pos.y - SURFACE_DROP[surfaceRef.current], _hit)
@@ -192,7 +299,7 @@ export function ArAnchor({ bodyId, mode, children }: { bodyId: string; mode: 'ca
 
   useEffect(() => {
     if (!import.meta.env.DEV) return
-    ;(window as unknown as { __arAnchor: unknown }).__arAnchor = { group, locked, mode, surface, SURFACE_DROP }
+    ;(window as unknown as { __arAnchor: unknown }).__arAnchor = { group, locked, mode, surface, SURFACE_DROP, track: arTrack }
   }, [locked, mode, surface])
 
   return (
