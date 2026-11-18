@@ -97,6 +97,8 @@ export interface XRAppState {
   arAnchor: [number, number, number] | null
   /** AR (camera or passthrough): the model is pinned in one place; false = it floats in front of where you aim */
   arLocked: boolean
+  /** Camera AR: the assumed surface under the phone (a table is closer than the floor) */
+  arSurface: 'table' | 'floor'
   /** bumped by "Reset": the model comes back in front of you and the phone's compass is re-centred */
   arResetNonce: number
   /** True when an asteroid is shown as the procedural placeholder instead of a real shape model. */
@@ -149,6 +151,7 @@ export interface XRAppState {
   setGyroEnabled: (on: boolean) => void
   setCameraAr: (on: boolean) => void
   setArLocked: (locked: boolean) => void
+  setArSurface: (surface: 'table' | 'floor') => void
   resetAr: () => void
   setArAnchor: (p: [number, number, number] | null) => void
   setLastGuideRequest: (r: GuideRequest) => void
@@ -231,13 +234,19 @@ export const useXRApp = create<XRAppState>((set) => ({
   cameraAr: false,
   arAnchor: null,
   arLocked: false,
+  arSurface: 'table',
   arResetNonce: 0,
   shapeIsIllustration: false,
   lastGuideRequest: null,
   toast: null,
 
   selectBody: (id) =>
-    set((s) => (s.bodyId === id && !s.siteId ? s : { bodyId: id, siteId: null, hotspotId: null, hoveredId: null, shapeIsIllustration: false })),
+    set((s) =>
+      // phone AR, model not placed yet: a tap puts the model down (see ArAnchor), it must not also open a planet
+      (id !== null && s.cameraAr && s.gyroEnabled && !s.arLocked) || (s.bodyId === id && !s.siteId)
+        ? s
+        : { bodyId: id, siteId: null, hotspotId: null, hoveredId: null, shapeIsIllustration: false },
+    ),
   selectSite: (id, body) => set((s) => (s.siteId === id ? s : { siteId: id, bodyId: body, hotspotId: null, hoveredId: null })),
   requestGoTo: (goTo) => set({ goTo }),
   setSetting: (key, value) =>
@@ -272,6 +281,7 @@ export const useXRApp = create<XRAppState>((set) => ({
   setGyroEnabled: (gyroEnabled) => set({ gyroEnabled }),
   setCameraAr: (cameraAr) => set({ cameraAr, arLocked: false }),
   setArLocked: (arLocked) => set({ arLocked }),
+  setArSurface: (arSurface) => set({ arSurface }),
   resetAr: () => set((s) => ({ arLocked: false, arResetNonce: s.arResetNonce + 1 })),
   setArAnchor: (arAnchor) => set({ arAnchor }),
   setLastGuideRequest: (lastGuideRequest) => set({ lastGuideRequest }),

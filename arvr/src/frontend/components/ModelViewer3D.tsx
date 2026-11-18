@@ -93,12 +93,13 @@ function Placed({ bodyId, siteId, arGyro, children }: { bodyId: string; siteId: 
 /** Place / Pick up and Reset on the page, for the phone's camera view (a headset gets 3D buttons instead). */
 function ArControlsOverlay() {
   const locked = useXRApp((s) => s.arLocked)
+  const surface = useXRApp((s) => s.arSurface)
   return (
     <>
       {!locked && <div className="ar-reticle" aria-hidden="true" />}
       <div className="ar-controls" role="group" aria-label="AR placement">
         <p className="ar-hint" role="status">
-          {locked ? 'Pinned. Move your phone around it.' : 'Aim at a spot, then tap Place here.'}
+          {locked ? 'Placed. Turn your phone around it.' : `Aim at your ${surface}, then tap the screen to place it.`}
         </p>
         <div className="ar-buttons">
           <button
@@ -123,6 +124,16 @@ function ArControlsOverlay() {
           >
             <span aria-hidden="true">↺</span>
             <span>Reset</span>
+          </button>
+          <button
+            type="button"
+            className="fe-icon-btn ar-btn ar-surface"
+            aria-label={`Surface: ${surface}. Switch to ${surface === 'table' ? 'floor' : 'table'}`}
+            title="Is it going on a table or on the floor?"
+            onClick={() => useXRApp.getState().setArSurface(surface === 'table' ? 'floor' : 'table')}
+          >
+            <span aria-hidden="true">{surface === 'table' ? '▭' : '▁'}</span>
+            <span>{surface === 'table' ? 'Table' : 'Floor'}</span>
           </button>
         </div>
       </div>
